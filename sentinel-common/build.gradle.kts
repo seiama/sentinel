@@ -8,6 +8,5 @@ dependencies {
   api("io.projectreactor.netty:reactor-netty-core:1.1.4")
   api("jakarta.persistence:jakarta.persistence-api:3.1.0")
   api("org.mongodb:bson:4.8.2")
-  api("org.springframework.data:spring-data-commons:3.0.3")
   api("org.springframework.data:spring-data-mongodb:4.0.3")
 }

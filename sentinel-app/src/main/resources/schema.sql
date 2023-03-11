@@ -1,5 +1,6 @@
 create table if not exists temporary_message_links
 (
+  id                bigint auto_increment,
   guild             char(24) not null,
   source_channel_id bigint   not null,
   source_message_id bigint   not null,
