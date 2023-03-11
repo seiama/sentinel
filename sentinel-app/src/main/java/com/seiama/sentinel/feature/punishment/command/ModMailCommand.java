@@ -1,0 +1,69 @@
+package com.seiama.sentinel.feature.punishment.command;
+
+import com.seiama.sentinel.command.GuildCommand;
+import com.seiama.sentinel.command.Options;
+import com.seiama.sentinel.common.model.Feature;
+import com.seiama.sentinel.common.model.ModMailModel;
+import com.seiama.sentinel.feature.punishment.ModMail;
+import discord4j.core.GatewayDiscordClient;
+import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
+import discord4j.core.object.command.ApplicationCommandOption;
+import discord4j.core.object.entity.Guild;
+import discord4j.discordjson.json.ApplicationCommandOptionData;
+import discord4j.discordjson.json.ApplicationCommandRequest;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import reactor.core.publisher.Mono;
+
+@Component
+public class ModMailCommand implements GuildCommand {
+  private static final String NAME = "modmail";
+  private final ModMail modmail;
+
+  @Autowired
+  public ModMailCommand(final ModMail modmail) {
+    this.modmail = modmail;
+  }
+
+  @Override
+  public @NotNull String name() {
+    return NAME;
+  }
+
+  @Override
+  public @NotNull ApplicationCommandRequest request() {
+    return ApplicationCommandRequest.builder()
+      .name(NAME)
+      .description("Sends a message privately to the moderators")
+      .addOption(
+        ApplicationCommandOptionData.builder()
+          .name(Options.MESSAGE)
+          .description("The message to send the moderators")
+          .required(true)
+          .type(ApplicationCommandOption.Type.STRING.getValue())
+          .build()
+      )
+      .build();
+  }
+
+  @Override
+  public @NotNull Feature feature() {
+    return Feature.MODMAIL;
+  }
+
+  @Override
+  public @NotNull Mono<?> on(final @NotNull GatewayDiscordClient client, final @NotNull ChatInputInteractionEvent event, final @NotNull Guild guild) {
+    return event.deferReply()
+      .withEphemeral(true)
+      .then(this.modmail.create(
+        client,
+        guild,
+        event.getInteraction().getUser(),
+        ModMailModel.Type.MODMAIL,
+        null,
+        Options.string(event.getOption(Options.MESSAGE)).orElseThrow()
+      ))
+      .then(event.editReply().withContentOrNull("Your message has been successfully sent."));
+  }
+}
