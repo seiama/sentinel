@@ -56,6 +56,9 @@
       <v-icon class='float-end' @click='filter("punisher_id", item.raw.punisher_id)' icon="mdi-search-web">
       </v-icon>
     </template>
+    <template v-slot:item._id="{ item }">
+      <v-btn icon='mdi-content-copy' size='small' @click='copyText(item.raw._id)' color='info' />
+    </template>
     <template v-slot:expanded-row='{ columns, item }'>
       <td :colspan='columns.length'>
         <v-table class='flipped' density="compact">
@@ -81,13 +84,13 @@ export default {
         { key: 'date', order: 'desc' }
       ],
       headers: [
-        { title: 'ID', align: 'start', sortable: false, key: '_id' },
         { title: 'DATE', align: 'start', key: 'date' },
         { title: 'TYPE', align: 'start', key: 'type' },
         { title: 'PUNISHED', align: 'start', key: 'punished_username' },
         { title: 'REASON', align: 'start', key: 'reason' },
         { title: 'STALE', align: 'start', key: 'stale' },
         { title: 'PUNISHER', align: 'start', key: 'punisher_username' },
+        { title: 'Copy ID', align: 'center', sortable: false, key: '_id' },
       ],
       punishments: [],
       typeColor: {
@@ -133,6 +136,9 @@ export default {
     },
     removeFilter(field) {
       delete this.filters[field]
+    },
+    copyText(text) {
+      navigator.clipboard.writeText(text)
     },
   },
 }
