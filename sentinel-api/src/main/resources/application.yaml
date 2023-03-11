@@ -2,9 +2,3 @@ spring:
   data:
     mongodb:
       database: "sentinel"
-logging:
-  file:
-    name: "app.log"
-  level:
-    root: debug
-    com: debug

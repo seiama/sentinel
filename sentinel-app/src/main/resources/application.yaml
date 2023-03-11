@@ -4,9 +4,3 @@ spring:
       database: "sentinel"
   r2dbc:
     url: "r2dbc:h2:file:///./sentinel-semi-persistent"
-logging:
-  file:
-    name: "app.log"
-  level:
-    root: debug
-    com: debug
