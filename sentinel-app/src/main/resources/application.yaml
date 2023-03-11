@@ -2,5 +2,6 @@ spring:
   data:
     mongodb:
       database: "sentinel"
+      field-naming-strategy: "org.springframework.data.mapping.model.SnakeCaseFieldNamingStrategy"
   r2dbc:
     url: "r2dbc:h2:file:///./sentinel-semi-persistent"

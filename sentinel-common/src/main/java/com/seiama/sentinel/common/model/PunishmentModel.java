@@ -2,6 +2,8 @@ package com.seiama.sentinel.common.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.seiama.sentinel.common.discord.Emoji;
 import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.User;
@@ -45,20 +47,23 @@ public interface PunishmentModel {
 
   interface Partial extends AbstractPartial {
     @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     interface Reason extends Partial {
       @JsonProperty @Nullable String reason();
     }
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     interface Expunged extends Partial {
       @JsonProperty @Nullable Boolean expunged();
     }
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     @SuppressWarnings("EmptyLineSeparator")
     interface Stale extends Partial {
       @JsonProperty @Nullable Boolean stale();
-      @JsonProperty @Nullable Boolean stale_automatic();
+      @JsonProperty @Nullable Boolean staleAutomatic();
       @JsonProperty Instant staleAt();
       @JsonProperty Snowflake staleById();
       @JsonProperty String staleByUsername();
@@ -68,78 +73,35 @@ public interface PunishmentModel {
   }
 
   @Document(collection = COLLECTION)
+  @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
   record Complete(
     @Field(Fields._ID)
     @JsonProperty(Fields._ID)
     ObjectId _id,
-    @Field(Fields.GUILD)
-    @JsonProperty(Fields.GUILD)
     Snowflake guild,
-    @Field(Fields.TYPE)
-    @JsonProperty(Fields.TYPE)
     Type type,
-    @Field(Fields.DATE)
-    @JsonProperty(Fields.DATE)
     Instant date,
-    @Field(Fields.PUNISHER_ID)
-    @JsonProperty(Fields.PUNISHER_ID)
     Snowflake punisherId,
-    @Field(Fields.PUNISHER_USERNAME)
-    @JsonProperty(Fields.PUNISHER_USERNAME)
     String punisherUsername,
-    @Field(Fields.PUNISHER_DISCRIMINATOR)
-    @JsonProperty(Fields.PUNISHER_DISCRIMINATOR)
     String punisherDiscriminator,
-    @Field(Fields.PUNISHED_ID)
-    @JsonProperty(Fields.PUNISHED_ID)
     Snowflake punishedId,
-    @Field(Fields.PUNISHED_USERNAME)
-    @JsonProperty(Fields.PUNISHED_USERNAME)
     @Nullable String punishedUsername,
-    @Field(Fields.PUNISHED_DISCRIMINATOR)
-    @JsonProperty(Fields.PUNISHED_DISCRIMINATOR)
     @Nullable String punishedDiscriminator,
-    @Field(Fields.REASON)
-    @JsonProperty(Fields.REASON)
     @Nullable String reason,
     // an automatic punishment is one created without any intervention from a moderator
-    @Field(Fields.AUTOMATIC)
-    @JsonProperty(Fields.AUTOMATIC)
     @Nullable Boolean automatic,
-    @Field(Fields.EXPUNGED)
-    @JsonProperty(Fields.EXPUNGED)
     @Nullable Boolean expunged,
     // a stale punishment is no longer considered active; if a punishment record banning a user
     // is inserted and that record is then marked as stale, then the user is no longer considered banned
-    @Field(Fields.STALE)
-    @JsonProperty(Fields.STALE)
     @Nullable Boolean stale,
-    @Field(Fields.STALE_AUTOMATIC)
-    @JsonProperty(Fields.STALE_AUTOMATIC)
-    @Nullable Boolean stale_automatic,
-    @Field(Fields.STALE_AT)
-    @JsonProperty(Fields.STALE_AT)
+    @Nullable Boolean staleAutomatic,
     @Nullable Instant staleAt,
-    @Field(Fields.STALE_BY_ID)
-    @JsonProperty(Fields.STALE_BY_ID)
     @Nullable Snowflake staleById,
-    @Field(Fields.STALE_BY_USERNAME)
-    @JsonProperty(Fields.STALE_BY_USERNAME)
     @Nullable String staleByUsername,
-    @Field(Fields.STALE_BY_DISCRIMINATOR)
-    @JsonProperty(Fields.STALE_BY_DISCRIMINATOR)
     @Nullable String staleByDiscriminator,
-    @Field(Fields.STALE_REASON)
-    @JsonProperty(Fields.STALE_REASON)
     @Nullable String staleReason,
-    @Field(Fields.IMPORT_BY)
-    @JsonProperty(Fields.IMPORT_BY)
     @Nullable String importBy,
-    @Field(Fields.IMPORT_ID)
-    @JsonProperty(Fields.IMPORT_ID)
     @Nullable String importId,
-    @Field(Fields.IMPORT_AT)
-    @JsonProperty(Fields.IMPORT_AT)
     @Nullable Instant importAt
   ) implements AbstractModel, Partial.Reason, Partial.Expunged, Partial.Stale {
     public static @NotNull Complete create(

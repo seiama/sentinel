@@ -88,8 +88,8 @@ final class ImporterSummary {
         out.add(String.format(
           "%-6s %-20d %-50s: %s",
           punishment.values.type,
-          punishment.values.punished_id,
-          punishment.values.punished_username + "#" + punishment.values.punished_discriminator,
+          punishment.values.punishedId,
+          punishment.values.punishedUsername + "#" + punishment.values.punishedDiscriminator,
           punishment.values.reason != null ? punishment.values.reason.replace("\n", "\\n") : ""
         ));
       }

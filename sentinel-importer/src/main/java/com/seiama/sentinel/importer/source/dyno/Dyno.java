@@ -48,24 +48,24 @@ public final class Dyno implements ImporterPunishmentSource {
     };
     punishment.values.date = DATE_TIME_FORMATTER.parse(this.createdAt, Instant::from);
     if (this.mod != null) {
-      punishment.values.punisher_id = this.mod.id;
-      punishment.values.punisher_username = this.mod.username;
-      punishment.values.punisher_discriminator = this.mod.discriminator;
+      punishment.values.punisherId = this.mod.id;
+      punishment.values.punisherUsername = this.mod.username;
+      punishment.values.punisherDiscriminator = this.mod.discriminator;
     } else if (Boolean.TRUE.equals(this.wasAutomatic())) {
-      punishment.values.punisher_id = ImporterConstants.BOT_DYNO_ID_PREMIUM;
-      punishment.values.punisher_username = ImporterConstants.BOT_DYNO_USERNAME_PREMIUM;
-      punishment.values.punisher_discriminator = ImporterConstants.BOT_DYNO_DISCRIMINATOR_PREMIUM;
+      punishment.values.punisherId = ImporterConstants.BOT_DYNO_ID_PREMIUM;
+      punishment.values.punisherUsername = ImporterConstants.BOT_DYNO_USERNAME_PREMIUM;
+      punishment.values.punisherDiscriminator = ImporterConstants.BOT_DYNO_DISCRIMINATOR_PREMIUM;
     } else {
       throw new IllegalStateException("no moderator for" + this);
     }
-    punishment.values.punished_id = this.user.id;
-    punishment.values.punished_username = this.user.username;
-    punishment.values.punished_discriminator = this.user.discriminator;
+    punishment.values.punishedId = this.user.id;
+    punishment.values.punishedUsername = this.user.username;
+    punishment.values.punishedDiscriminator = this.user.discriminator;
     punishment.values.reason = this.reason;
     punishment.values.automatic = this.wasAutomatic();
-    punishment.values.import_by = ImporterConstants.IMPORTER_DYNO;
-    punishment.values.import_id = String.valueOf(this.caseNum);
-    punishment.values.import_at = Instant.now();
+    punishment.values.importBy = ImporterConstants.IMPORTER_DYNO;
+    punishment.values.importId = String.valueOf(this.caseNum);
+    punishment.values.importAt = Instant.now();
     return punishment;
   }
 

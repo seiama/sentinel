@@ -5,9 +5,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 
-public class AppealRepositoryImpl extends AbstractRepository<PunishmentAppealModel.Partial, PunishmentAppealModel.Complete> implements AppealRepositoryCustom {
+public class AppealRepositoryImpl extends AbstractRepository<AppealModel.Partial, AppealModel.Complete> implements AppealRepositoryCustom {
   @Autowired
   public AppealRepositoryImpl(final @Qualifier("extendedJsonMapper") ObjectMapper mapper, final ReactiveMongoTemplate template) {
-    super(PunishmentAppealModel.Complete.class, mapper, template);
+    super(AppealModel.Complete.class, mapper, template);
   }
 }

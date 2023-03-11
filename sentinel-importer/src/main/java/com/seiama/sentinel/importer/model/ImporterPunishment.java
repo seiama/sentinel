@@ -2,6 +2,8 @@ package com.seiama.sentinel.importer.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.MoreObjects;
 import com.seiama.sentinel.common.jackson.InstantExtendedJsonSerializer;
@@ -19,11 +21,11 @@ public final class ImporterPunishment {
 
   public void stale(final ImporterPunishment that) {
     this.values.stale = true;
-    this.values.stale_at = that.values.date;
-    this.values.stale_by_id = that.values.punisher_id;
-    this.values.stale_by_username = that.values.punisher_username;
-    this.values.stale_by_discriminator = that.values.punisher_discriminator;
-    this.values.stale_reason = that.values.reason;
+    this.values.staleAt = that.values.date;
+    this.values.staleById = that.values.punisherId;
+    this.values.staleByUsername = that.values.punisherUsername;
+    this.values.staleByDiscriminator = that.values.punisherDiscriminator;
+    this.values.staleReason = that.values.reason;
   }
 
   public boolean exportable() {
@@ -39,42 +41,43 @@ public final class ImporterPunishment {
   }
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
+  @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
   @JsonPropertyOrder({
     "guild", "type", "date",
-    "punisher_id", "punisher_username", "punisher_discriminator",
-    "punished_id", "punished_username", "punished_discriminator",
+    "punisherId", "punisherUsername", "punisherDiscriminator",
+    "punishedId", "punishedUsername", "punishedDiscriminator",
     "reason",
     "automatic",
     "expunged",
-    "stale", "stale_automatic", "stale_at", "stale_by_id", "stale_by_username", "stale_by_discriminator", "stale_reason",
-    "import_by", "import_id", "import_at"
+    "stale", "staleAutomatic", "staleAt", "staleById", "staleByUsername", "staleByDiscriminator", "staleReason",
+    "importBy", "importId", "importAt"
   })
   public static final class Values {
     public @Nullable Long guild;
     public @Nullable Type type;
     @JsonSerialize(using = InstantExtendedJsonSerializer.class)
     public @Nullable Instant date;
-    public @Nullable Long punisher_id;
-    public @Nullable String punisher_username;
-    public @Nullable String punisher_discriminator;
-    public @Nullable Long punished_id;
-    public @Nullable String punished_username;
-    public @Nullable String punished_discriminator;
+    public @Nullable Long punisherId;
+    public @Nullable String punisherUsername;
+    public @Nullable String punisherDiscriminator;
+    public @Nullable Long punishedId;
+    public @Nullable String punishedUsername;
+    public @Nullable String punishedDiscriminator;
     public @Nullable String reason;
     public @Nullable Boolean automatic;
     public @Nullable Boolean expunged;
     public @Nullable Boolean stale;
-    public @Nullable Boolean stale_automatic;
+    public @Nullable Boolean staleAutomatic;
     @JsonSerialize(using = InstantExtendedJsonSerializer.class)
-    public @Nullable Instant stale_at;
-    public @Nullable Long stale_by_id;
-    public @Nullable String stale_by_username;
-    public @Nullable String stale_by_discriminator;
-    public @Nullable String stale_reason;
-    public @Nullable String import_by;
-    public @Nullable String import_id;
+    public @Nullable Instant staleAt;
+    public @Nullable Long staleById;
+    public @Nullable String staleByUsername;
+    public @Nullable String staleByDiscriminator;
+    public @Nullable String staleReason;
+    public @Nullable String importBy;
+    public @Nullable String importId;
     @JsonSerialize(using = InstantExtendedJsonSerializer.class)
-    public @Nullable Instant import_at;
+    public @Nullable Instant importAt;
 
     @Override
     public String toString() {
@@ -82,25 +85,25 @@ public final class ImporterPunishment {
         .add("guild", this.guild)
         .add("type", this.type)
         .add("date", this.date)
-        .add("punisher_id", this.punisher_id)
-        .add("punisher_username", this.punisher_username)
-        .add("punisher_discriminator", this.punisher_discriminator)
-        .add("punished_id", this.punished_id)
-        .add("punished_username", this.punished_username)
-        .add("punished_discriminator", this.punished_discriminator)
+        .add("punisherId", this.punisherId)
+        .add("punisherUsername", this.punisherUsername)
+        .add("punisherDiscriminator", this.punisherDiscriminator)
+        .add("punishedId", this.punishedId)
+        .add("punishedUsername", this.punishedUsername)
+        .add("punishedDiscriminator", this.punishedDiscriminator)
         .add("reason", this.reason)
         .add("automatic", this.automatic)
         .add("expunged", this.expunged)
         .add("stale", this.stale)
-        .add("stale_automatic", this.stale_automatic)
-        .add("stale_at", this.stale_at)
-        .add("stale_by_id", this.stale_by_id)
-        .add("stale_by_username", this.stale_by_username)
-        .add("stale_by_discriminator", this.stale_by_discriminator)
-        .add("stale_reason", this.stale_reason)
-        .add("import_by", this.import_by)
-        .add("import_id", this.import_id)
-        .add("import_at", this.import_at)
+        .add("staleAutomatic", this.staleAutomatic)
+        .add("staleAt", this.staleAt)
+        .add("staleById", this.staleById)
+        .add("staleByUsername", this.staleByUsername)
+        .add("staleByDiscriminator", this.staleByDiscriminator)
+        .add("staleReason", this.staleReason)
+        .add("importby", this.importBy)
+        .add("importId", this.importId)
+        .add("importAt", this.importAt)
         .toString();
     }
   }

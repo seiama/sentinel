@@ -36,16 +36,16 @@ public final class Carl implements ImporterPunishmentSource {
       default -> throw new IllegalArgumentException("Unknown punishment type: " + this.type);
     };
     punishment.values.date = this.date != null ? Instant.parse(this.date) : null;
-    punishment.values.punisher_id = (this.punisher_id != null && !this.punisher_id.isEmpty()) ? Long.parseLong(this.punisher_id) : null;
-    punishment.values.punisher_username = this.punisher_username;
-    punishment.values.punisher_discriminator = this.punisher_discriminator;
-    punishment.values.punished_id = this.punished_id;
-    punishment.values.punished_username = this.punished_username;
-    punishment.values.punished_discriminator = this.punished_discriminator;
+    punishment.values.punisherId = (this.punisher_id != null && !this.punisher_id.isEmpty()) ? Long.parseLong(this.punisher_id) : null;
+    punishment.values.punisherUsername = this.punisher_username;
+    punishment.values.punisherDiscriminator = this.punisher_discriminator;
+    punishment.values.punishedId = this.punished_id;
+    punishment.values.punishedUsername = this.punished_username;
+    punishment.values.punishedDiscriminator = this.punished_discriminator;
     punishment.values.reason = this.reason;
-    punishment.values.import_by = ImporterConstants.IMPORTER_CARL;
-    punishment.values.import_id = String.valueOf(this.id);
-    punishment.values.import_at = Instant.now();
+    punishment.values.importBy = ImporterConstants.IMPORTER_CARL;
+    punishment.values.importId = String.valueOf(this.id);
+    punishment.values.importAt = Instant.now();
     return punishment;
   }
 }

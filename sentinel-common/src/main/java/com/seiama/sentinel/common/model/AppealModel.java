@@ -2,6 +2,8 @@ package com.seiama.sentinel.common.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.seiama.sentinel.common.discord.Emoji;
 import discord4j.common.util.Snowflake;
 import discord4j.core.object.reaction.ReactionEmoji;
@@ -14,7 +16,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
-public interface PunishmentAppealModel {
+public interface AppealModel {
   String COLLECTION = "appeals";
 
   static String voteKey(final Vote vote) {
@@ -40,45 +42,37 @@ public interface PunishmentAppealModel {
 
   interface Partial extends AbstractPartial {
     @JsonInclude(value = JsonInclude.Include.NON_NULL)
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     @SuppressWarnings("EmptyLineSeparator")
     interface Close extends Partial {
       @JsonProperty Result result();
       @JsonProperty @Nullable String reason();
-      @JsonProperty(Fields.NEXT_ATTEMPT_MAY_BE_MADE_AT) @Nullable Instant nextAttemptMayBeMadeAt();
+      @JsonProperty @Nullable Instant nextAttemptMayBeMadeAt();
     }
 
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     interface VoteMessage extends Partial {
-      @JsonInclude(value = JsonInclude.Include.NON_NULL) @JsonProperty(Fields.VOTE_MESSAGE) @Nullable Snowflake vote_message();
+      @JsonInclude(value = JsonInclude.Include.NON_NULL) @Nullable Snowflake voteMessage();
     }
   }
 
   @Document(collection = COLLECTION)
+  @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
   record Complete(
     @Field(Fields._ID)
+    @JsonProperty(Fields._ID)
     @Id ObjectId _id,
-    @Field(Fields.GUILD)
     Snowflake guild,
-    @Field(Fields.DATE)
     Instant date,
-    @Field(Fields.USER)
     Snowflake user,
-    @Field(Fields.PUNISHMENT)
     ObjectId punishment,
-    @Field(Fields.APPEAL_CHANNEL)
     Snowflake appealChannel,
-    @Field(Fields.APPEAL_THREAD)
     Snowflake appealThread,
-    @Field(Fields.APPEAL_DISCUSSION_THREAD)
     Snowflake appealDiscussionThread,
-    @Field(Fields.VOTE_MESSAGE)
     @Nullable Snowflake voteMessage,
-    @Field(Fields.VOTES)
     Map<String, List<Snowflake>> votes, // cannot key by Vote
-    @Field(Fields.RESULT)
     Result result,
-    @Field(Fields.REASON)
     @Nullable String reason,
-    @Field(Fields.NEXT_ATTEMPT_MAY_BE_MADE_AT)
     @Nullable Instant nextAttemptMayBeMadeAt
   ) implements AbstractModel {
   }

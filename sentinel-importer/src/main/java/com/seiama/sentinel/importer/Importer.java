@@ -58,9 +58,9 @@ public class Importer {
   private void resolveActive(final LongSet currentlyEnforcedMutes) {
     for (final ImporterPunishment punishment : this.punishments) {
       if (punishment.values.type == ImporterPunishment.Type.BAN) {
-        if (punishment.values.punished_id != null) {
+        if (punishment.values.punishedId != null) {
           for (final ImporterPunishment activeBan : this.punishments.all(Discord.class)) {
-            if (ImporterUtil.equalsNotNull(punishment.values.punished_id, activeBan.values.punished_id)) {
+            if (ImporterUtil.equalsNotNull(punishment.values.punishedId, activeBan.values.punishedId)) {
               punishment.meta.currentlyEnforced = true;
               if (!Boolean.TRUE.equals(punishment.values.stale)) {
                 activeBan.meta.mergedIntoOther = true;
@@ -73,8 +73,8 @@ public class Importer {
     }
     for (final ImporterPunishment punishment : this.punishments) {
       if (punishment.values.type == ImporterPunishment.Type.MUTE) {
-        if (punishment.values.punished_id != null) {
-          if (currentlyEnforcedMutes.contains(punishment.values.punished_id.longValue())) {
+        if (punishment.values.punishedId != null) {
+          if (currentlyEnforcedMutes.contains(punishment.values.punishedId.longValue())) {
             punishment.meta.currentlyEnforced = true;
           }
         }
@@ -113,8 +113,8 @@ public class Importer {
   private void resolveIds(final List<ImporterConfig.UserIdHint> userIdHints) {
     for (final ImporterPunishment punishment : this.punishments) {
       for (final ImporterConfig.UserIdHint hint : userIdHints) {
-        if (punishment.values.punisher_id == null && Objects.equals(punishment.values.punisher_username, hint.username()) && Objects.equals(punishment.values.punisher_discriminator, hint.discriminator())) {
-          punishment.values.punisher_id = hint.id();
+        if (punishment.values.punisherId == null && Objects.equals(punishment.values.punisherUsername, hint.username()) && Objects.equals(punishment.values.punisherDiscriminator, hint.discriminator())) {
+          punishment.values.punisherId = hint.id();
         }
       }
     }
@@ -139,7 +139,7 @@ public class Importer {
           final ImporterPunishment punishment = it.next();
           if (it.hasNext()) {
             punishment.values.stale = true;
-            punishment.values.stale_automatic = true;
+            punishment.values.staleAutomatic = true;
             punishment.meta.markedStale = true;
           }
         }
@@ -176,11 +176,11 @@ public class Importer {
     for (final ImporterConfig.Merge merge : merges) {
       for (final ImporterPunishment sourcePunishment : this.punishments) {
         for (final ImporterPunishment targetPunishment : this.punishments) {
-          if ((merge.sourceType().isInstance(sourcePunishment.source) && String.valueOf(merge.sourceId()).equals(sourcePunishment.values.import_id)) &&
-              (merge.targetType().isInstance(targetPunishment.source) && String.valueOf(merge.targetId()).equals(targetPunishment.values.import_id))) {
+          if ((merge.sourceType().isInstance(sourcePunishment.source) && String.valueOf(merge.sourceId()).equals(sourcePunishment.values.importId)) &&
+              (merge.targetType().isInstance(targetPunishment.source) && String.valueOf(merge.targetId()).equals(targetPunishment.values.importId))) {
             this.merge(sourcePunishment, targetPunishment, true);
             if (merge.eraseTargetId()) {
-              targetPunishment.values.import_id = null;
+              targetPunishment.values.importId = null;
             }
             continue dancing;
           }
@@ -214,7 +214,7 @@ public class Importer {
       (source, target) -> !source.meta.mergedIntoOther && !target.meta.mergedIntoOther,
       (source, target) -> (source.values.type == ImporterPunishment.Type.UNBAN && target.values.type == ImporterPunishment.Type.BAN) || (source.values.type == ImporterPunishment.Type.UNMUTE && target.values.type == ImporterPunishment.Type.MUTE),
       (source, target) -> source.values.date != null && target.values.date != null && (source.values.date.isAfter(target.values.date) || source.values.date.equals(target.values.date)),
-      (source, target) -> Objects.equals(source.values.punished_id, target.values.punished_id)
+      (source, target) -> Objects.equals(source.values.punishedId, target.values.punishedId)
     ));
   }
 
@@ -225,17 +225,17 @@ public class Importer {
       (source, target) -> !source.meta.mergedIntoOther && !target.meta.mergedIntoOther,
       (source, target) -> source.values.type == target.values.type,
       (source, target) -> source.values.date != null && target.values.date != null && source.values.date.equals(target.values.date),
-      (source, target) -> Objects.equals(source.values.punisher_id, target.values.punisher_id),
-      (source, target) -> Objects.equals(source.values.punished_id, target.values.punished_id),
+      (source, target) -> Objects.equals(source.values.punisherId, target.values.punisherId),
+      (source, target) -> Objects.equals(source.values.punishedId, target.values.punishedId),
       (source, target) -> Objects.equals(source.values.reason, target.values.reason),
-      (source, target) -> !ImporterUtil.equalsNotNull(source.values.import_id, target.values.import_id)
+      (source, target) -> !ImporterUtil.equalsNotNull(source.values.importId, target.values.importId)
     ));
   }
 
   private void mutate(final List<ImporterConfig.SingleModifier> modifiers) {
     for (final ImporterConfig.SingleModifier modifier : modifiers) {
       for (final ImporterPunishment punishment : this.punishments) {
-        if (modifier.type().isInstance(punishment.source) && Objects.equals(punishment.values.import_id, String.valueOf(modifier.id()))) {
+        if (modifier.type().isInstance(punishment.source) && Objects.equals(punishment.values.importId, String.valueOf(modifier.id()))) {
           modifier.modifier().accept(punishment);
         }
       }
@@ -249,12 +249,12 @@ public class Importer {
         if (punishment.values.guild == null) punishment.values.guild = guild;
         if (punishment.values.type == null) System.out.println("Punishment is missing type: " + punishment);
         if (punishment.values.date == null) System.out.println("Punishment is missing date: " + punishment);
-        if (!skip && punishment.values.punisher_id == null) System.out.println("Punishment is missing punisher_id: " + punishment);
-        if (!skip && punishment.values.punisher_username == null) System.out.println("Punishment is missing punisher_username: " + punishment);
-        if (!skip && punishment.values.punisher_discriminator == null) System.out.println("Punishment is missing punisher_discriminator: " + punishment);
-        if (punishment.values.punished_id == null) System.out.println("Punishment is missing punished_id: " + punishment);
-        if (punishment.values.punished_username == null) System.out.println("Punishment is missing punished_username: " + punishment);
-        if (punishment.values.punished_discriminator == null) System.out.println("Punishment is missing punished_discriminator: " + punishment);
+        if (!skip && punishment.values.punisherId == null) System.out.println("Punishment is missing punisher_id: " + punishment);
+        if (!skip && punishment.values.punisherUsername == null) System.out.println("Punishment is missing punisher_username: " + punishment);
+        if (!skip && punishment.values.punisherDiscriminator == null) System.out.println("Punishment is missing punisher_discriminator: " + punishment);
+        if (punishment.values.punishedId == null) System.out.println("Punishment is missing punished_id: " + punishment);
+        if (punishment.values.punishedUsername == null) System.out.println("Punishment is missing punished_username: " + punishment);
+        if (punishment.values.punishedDiscriminator == null) System.out.println("Punishment is missing punished_discriminator: " + punishment);
       }
     }
   }
