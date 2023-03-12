@@ -484,11 +484,6 @@ public class Appeals implements Listener {
           }
 
           @Override
-          public Boolean staleAutomatic() {
-            return AppealFinisher.this.automatic;
-          }
-
-          @Override
           public Instant staleAt() {
             return Instant.now();
           }
@@ -511,6 +506,16 @@ public class Appeals implements Listener {
           @Override
           public String staleReason() {
             return AppealFinisher.this.reason;
+          }
+
+          @Override
+          public Boolean staleAutomatic() {
+            return AppealFinisher.this.automatic;
+          }
+
+          @Override
+          public @Nullable ObjectId staleAppeal() {
+            return AppealFinisher.this.model._id();
           }
         });
         return updatedPunishment

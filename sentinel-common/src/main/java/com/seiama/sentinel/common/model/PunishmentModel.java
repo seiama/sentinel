@@ -63,12 +63,13 @@ public interface PunishmentModel {
     @SuppressWarnings("EmptyLineSeparator")
     interface Stale extends Partial {
       @JsonProperty @Nullable Boolean stale();
-      @JsonProperty @Nullable Boolean staleAutomatic();
       @JsonProperty Instant staleAt();
       @JsonProperty Snowflake staleById();
       @JsonProperty String staleByUsername();
       @JsonProperty String staleByDiscriminator();
       @JsonProperty @Nullable String staleReason();
+      @JsonProperty @Nullable Boolean staleAutomatic();
+      @JsonProperty @Nullable ObjectId staleAppeal();
     }
   }
 
@@ -94,12 +95,14 @@ public interface PunishmentModel {
     // a stale punishment is no longer considered active; if a punishment record banning a user
     // is inserted and that record is then marked as stale, then the user is no longer considered banned
     @Nullable Boolean stale,
-    @Nullable Boolean staleAutomatic,
     @Nullable Instant staleAt,
     @Nullable Snowflake staleById,
     @Nullable String staleByUsername,
     @Nullable String staleByDiscriminator,
     @Nullable String staleReason,
+    @Nullable Boolean staleAutomatic,
+    // only non-null if the punishment was appealed
+    @Nullable ObjectId staleAppeal,
     @Nullable String importBy,
     @Nullable String importId,
     @Nullable Instant importAt
@@ -128,11 +131,12 @@ public interface PunishmentModel {
         automatic,
         false,
         false,
+        null,
+        null,
+        null,
+        null,
+        null,
         false,
-        null,
-        null,
-        null,
-        null,
         null,
         null,
         null,
