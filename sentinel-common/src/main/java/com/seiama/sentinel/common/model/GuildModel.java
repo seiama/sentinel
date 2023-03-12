@@ -15,9 +15,6 @@ public interface GuildModel {
   interface Fields {
     @SuppressWarnings("ConstantName")
     String _ID = AbstractModel._ID;
-    String GUILD = "guild";
-    String INVITE = "invite";
-    String FEATURES = "features";
   }
 
   interface Partial extends AbstractPartial {
@@ -29,11 +26,8 @@ public interface GuildModel {
     @Field(Fields._ID)
     @JsonProperty(Fields._ID)
     @Id ObjectId _id,
-    @Field(Fields.GUILD)
     Snowflake guild,
-    @Field(Fields.INVITE)
     String invite,
-    @Field(Fields.FEATURES)
     Features features
   ) implements AbstractModel {
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
