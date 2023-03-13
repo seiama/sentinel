@@ -22,8 +22,10 @@ import reactor.function.TupleUtils;
 @Component
 public final class AppealCommand implements GuildCommand {
   private static final String NAME = "appeal";
+
   private static final String ACCEPT = "accept";
   private static final String DENY = "deny";
+
   private final Appeals appeals;
 
   @Autowired
@@ -41,6 +43,7 @@ public final class AppealCommand implements GuildCommand {
     return ApplicationCommandRequest.builder()
       .name(NAME)
       .description("Manage punishment appeals")
+      .defaultPermission(false)
       .addOption(
         ApplicationCommandOptionData.builder()
           .name(ACCEPT)
@@ -72,10 +75,9 @@ public final class AppealCommand implements GuildCommand {
   }
 
   @Override
-  public @NotNull Mono<?> on(final @NotNull ChatInputInteractionEvent event, final @NotNull Guild guild) {
-    final GatewayDiscordClient client = event.getClient();
+  public @NotNull Mono<?> on(final @NotNull GatewayDiscordClient client, final @NotNull ChatInputInteractionEvent event, final @NotNull Guild guild) {
     final Interaction interaction = event.getInteraction();
-    return Command.executeOne(event, Map.of(
+    return event.deferReply().then(Command.executeOne(event, Map.of(
       ACCEPT, option -> {
         return this.appeals.findByAppealThread(interaction.getChannelId())
           .switchIfEmpty(event.editReply().withContentOrNull(Appeals.NO_APPEAL_ASSOCIATED_WITH_THIS_CHANNEL).then(Mono.empty()))
@@ -89,6 +91,6 @@ public final class AppealCommand implements GuildCommand {
           .flatMap(TupleUtils.function((reason, model) -> this.appeals.deny(client, model, interaction.getUser(), reason.orElse(null), null)))
           .then(event.editReply().withContentOrNull(Emoji.YES.asFormat() + " Successfully denied appeal."));
       }
-    ));
+    )));
   }
 }

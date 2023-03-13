@@ -9,6 +9,7 @@ import com.seiama.sentinel.feature.punishment.display.PunishmentDisplay;
 import com.seiama.sentinel.feature.punishment.display.PunishmentDisplayStyle;
 import com.seiama.sentinel.feature.punishment.display.PunishmentMessages;
 import com.seiama.sentinel.feature.punishment.search.PunishmentSearchResult;
+import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.core.object.command.ApplicationCommandOption;
 import discord4j.core.object.entity.Guild;
@@ -47,6 +48,7 @@ public final class PunishmentCommand implements GuildCommand {
     return ApplicationCommandRequest.builder()
       .name(NAME)
       .description("Query and manage punishments")
+      .defaultPermission(false)
       .addOption(
         ApplicationCommandOptionData.builder()
           .name(SEARCH)
@@ -93,7 +95,7 @@ public final class PunishmentCommand implements GuildCommand {
   }
 
   @Override
-  public @NotNull Mono<?> on(final @NotNull ChatInputInteractionEvent event, final @NotNull Guild guild) {
+  public @NotNull Mono<?> on(final @NotNull GatewayDiscordClient client, final @NotNull ChatInputInteractionEvent event, final @NotNull Guild guild) {
     return Command.executeOne(event, Map.of(
       SHOW, option -> {
         return Mono.justOrEmpty(Options.string(option, Options.PUNISHMENT).orElse(null))
@@ -110,19 +112,5 @@ public final class PunishmentCommand implements GuildCommand {
           .flatMap(result -> event.editReply().withEmbeds(PunishmentMessages.punishmentSearchEmbed(result)));
       }
     ));
-    /*return Mono.when(
-      Mono.justOrEmpty(event.getOption(SHOW))
-        .mapNotNull(show -> Options.string(show, Options.PUNISHMENT).orElse(null))
-        .map(ObjectId::new)
-        .flatMap(this.punishments::findOneById)
-        .flatMap(punishment -> event.editReply().withEmbeds(PunishmentDisplay.punishment(punishment, PunishmentDisplayStyle.FULL)))
-        .onErrorResume(throwable -> event.editReply().withContentOrNull(PunishmentMessages.PUNISHMENT_NOT_FOUND)),
-      Mono.justOrEmpty(event.getOption(SEARCH))
-        .mapNotNull(search -> search.getOption(USER).orElse(null))
-        .flatMap(user -> Options.user(user, Options.USER).orElseGet(Mono::empty))
-        .flatMap(user -> this.punishments.findAll(Filters.eq(PunishmentModel.PUNISHED_ID, String.valueOf(user.getId().asLong()))).collectList().zipWith(Mono.just(user)))
-        .map(TupleUtils.function((punishment, user) -> new PunishmentSearchResult(user, punishment)))
-        .flatMap(result -> event.editReply().withEmbeds(PunishmentMessages.punishmentSearchEmbed(result)))
-    );*/
   }
 }

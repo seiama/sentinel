@@ -71,27 +71,26 @@ class Commands implements Listener {
   public @NotNull Mono<Void> listen(final @NotNull GatewayDiscordClient client) {
     return Mono.when(
       client.on(ChatInputInteractionEvent.class, event -> {
-        return event.deferReply()
-          .then(Mono.defer(() -> Mono.when(
-            Mono.defer(() -> {
-              return event.getInteraction().getGuild()
-                .flatMap(guild -> {
-                  return Flux.fromIterable(this.guildCommandsByGuild.get(guild.getId()))
-                    .filter(command -> command.test(event, guild))
-                    .next()
-                    .flatMap(command -> command.on(event, guild));
-                });
-            }),
-            Mono.defer(() -> {
-              return event.getInteraction().getGuild()
-                .flatMap(guild -> {
-                  return Flux.fromIterable(this.globalCommands)
-                    .filter(command -> command.test(event))
-                    .next()
-                    .flatMap(command -> command.on(event));
-                });
-            })
-          )));
+        return Mono.when(
+          Mono.defer(() -> {
+            return event.getInteraction().getGuild()
+              .flatMap(guild -> {
+                return Flux.fromIterable(this.guildCommandsByGuild.get(guild.getId()))
+                  .filter(command -> command.test(event, guild))
+                  .next()
+                  .flatMap(command -> command.on(client, event, guild));
+              });
+          }),
+          Mono.defer(() -> {
+            return event.getInteraction().getGuild()
+              .flatMap(guild -> {
+                return Flux.fromIterable(this.globalCommands)
+                  .filter(command -> command.test(event))
+                  .next()
+                  .flatMap(command -> command.on(client, event));
+              });
+          })
+        );
       })
     );
   }

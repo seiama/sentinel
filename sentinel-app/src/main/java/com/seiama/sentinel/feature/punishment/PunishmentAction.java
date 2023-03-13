@@ -53,7 +53,7 @@ public final class PunishmentAction {
     final Function3<Guild, User, PunishmentModel.Complete, Mono<Void>> action
   ) {
     final Interaction interaction = event.getInteraction();
-    return Options.user(event, Options.MEMBER)
+    return event.deferReply().then(Options.user(event, Options.MEMBER)
       .orElse(Mono.empty())
       .zipWhen(user -> punishments.insert(PunishmentModel.Complete.create(
         guild.getId(),
@@ -68,6 +68,6 @@ public final class PunishmentAction {
       .flatMap(TupleUtils.function((user, punishment) -> Mono.whenDelayError(
         notifyAndApply(guild, user, punishment, action),
         event.editReply().withContent(Possible.of(Optional.of(PunishmentMessages.punishmentPunisherResponse(punishment))))
-      )));
+      ))));
   }
 }

@@ -1,6 +1,7 @@
 package com.seiama.sentinel.command;
 
 import com.seiama.sentinel.feature.Feature;
+import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.core.object.entity.Guild;
 import org.jetbrains.annotations.NotNull;
@@ -13,5 +14,5 @@ public interface GuildCommand extends Command {
     return Command.super.test(event);
   }
 
-  @NotNull Mono<?> on(final @NotNull ChatInputInteractionEvent event, final @NotNull Guild guild);
+  @NotNull Mono<?> on(final @NotNull GatewayDiscordClient client, final @NotNull ChatInputInteractionEvent event, final @NotNull Guild guild);
 }
