@@ -1,0 +1,217 @@
+package com.seiama.sentinel.feature.factoid;
+
+import com.seiama.sentinel.command.Command;
+import com.seiama.sentinel.command.GuildCommand;
+import com.seiama.sentinel.command.Options;
+import com.seiama.sentinel.common.discord.Emoji;
+import com.seiama.sentinel.common.model.FactoidModel;
+import com.seiama.sentinel.common.model.FactoidRepository;
+import com.seiama.sentinel.common.model.Feature;
+import com.seiama.sentinel.common.model.response.Response;
+import discord4j.common.util.Snowflake;
+import discord4j.core.GatewayDiscordClient;
+import discord4j.core.event.domain.interaction.ChatInputAutoCompleteEvent;
+import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
+import discord4j.core.object.command.ApplicationCommandInteractionOption;
+import discord4j.core.object.command.ApplicationCommandInteractionOptionValue;
+import discord4j.core.object.command.ApplicationCommandOption;
+import discord4j.core.object.entity.Guild;
+import discord4j.discordjson.json.ApplicationCommandOptionChoiceData;
+import discord4j.discordjson.json.ApplicationCommandOptionData;
+import discord4j.discordjson.json.ApplicationCommandRequest;
+import discord4j.rest.RestClient;
+import discord4j.rest.service.ApplicationService;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.BiFunction;
+import org.bson.types.ObjectId;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
+import reactor.core.publisher.Mono;
+
+@Component
+public final class FactoidCommand implements GuildCommand {
+  private static final String NAME = "factoid";
+
+  private static final String SET = "set";
+  private static final String REMOVE = "remove";
+
+  private final FactoidRepository factoids;
+  private final RestClient rest;
+
+  @Autowired
+  private FactoidCommand(final FactoidRepository factoids, final @Qualifier("factoidsRest") RestClient rest) {
+    this.factoids = factoids;
+    this.rest = rest;
+  }
+
+  @Override
+  public @NotNull String name() {
+    return NAME;
+  }
+
+  @Override
+  public @NotNull ApplicationCommandRequest request() {
+    return ApplicationCommandRequest.builder()
+      .name(NAME)
+      .description("Manage factoids")
+      .defaultPermission(false)
+      .addOption(
+        ApplicationCommandOptionData.builder()
+          .name(SET)
+          .description("Set details about a factoid")
+          .type(ApplicationCommandOption.Type.SUB_COMMAND.getValue())
+          .addOption(
+            ApplicationCommandOptionData.builder()
+              .name(Options.NAME)
+              .description("The name of the factoid to set")
+              .required(true)
+              .type(ApplicationCommandOption.Type.STRING.getValue())
+              .autocomplete(true)
+              .build()
+          )
+          .addOption(
+            ApplicationCommandOptionData.builder()
+              .name(Options.DESCRIPTION)
+              .description("The description for the factoid")
+              .required(false)
+              .type(ApplicationCommandOption.Type.STRING.getValue())
+              .build()
+          )
+          .addOption(
+            ApplicationCommandOptionData.builder()
+              .name(Options.CONTENT)
+              .description("The content for the factoid")
+              .required(false)
+              .type(ApplicationCommandOption.Type.STRING.getValue())
+              .build()
+          )
+          .build()
+      )
+      .addOption(
+        ApplicationCommandOptionData.builder()
+          .name(REMOVE)
+          .description("Remove a factoid")
+          .type(ApplicationCommandOption.Type.SUB_COMMAND.getValue())
+          .addOption(
+            ApplicationCommandOptionData.builder()
+              .name(Options.NAME)
+              .description("The name of the factoid to remove")
+              .required(true)
+              .type(ApplicationCommandOption.Type.STRING.getValue())
+              .autocomplete(true)
+              .build()
+          )
+          .build()
+      )
+      .build();
+  }
+
+  @Override
+  public @NotNull Feature feature() {
+    return Feature.FACTOIDS;
+  }
+
+  @Override
+  public @NotNull Mono<?> on(final @NotNull GatewayDiscordClient client, final @NotNull ChatInputInteractionEvent event, final @NotNull Guild guild) {
+    return event.deferReply()
+      .withEphemeral(true)
+      .then(Command.executeOne(event, Map.of(
+        SET, option -> {
+          return Mono.justOrEmpty(Options.string(option, Options.NAME))
+            .flatMap(name -> {
+              final Optional<String> description = Options.string(option, Options.DESCRIPTION);
+              final Optional<String> content = Options.string(option, Options.CONTENT);
+              final Response response;
+              if (content.isPresent()) {
+                response = new Response(
+                  content.orElse(null),
+                  List.of(),
+                  List.of()
+                );
+              } else {
+                response = null;
+              }
+              return this.factoids.findByGuildAndName(guild.getId(), name)
+                .flatMap(model -> this.factoids.update(model, new FactoidModel.Partial.SetDescriptionAndResponse() {
+                  @Override
+                  public @Nullable String description() {
+                    return description.orElse(null);
+                  }
+
+                  @Override
+                  public @Nullable Response response() {
+                    return response;
+                  }
+                }))
+                .switchIfEmpty(this.factoids.insert(new FactoidModel.Complete(new ObjectId(), guild.getId(), name, description.orElse("(description not set)"), response, null)))
+                .flatMap(model -> {
+                  if (model.commandId() == null) {
+                    return this.appAction((applicationId, service) -> service.createGuildApplicationCommand(
+                      applicationId,
+                      guild.getId().asLong(),
+                      model.asRequest()
+                    )).flatMap(data -> this.factoids.update(model, new FactoidModel.Partial.SetCommandId() {
+                      @Override
+                      public Snowflake commandId() {
+                        return Snowflake.of(data.id());
+                      }
+                    }));
+                  } else {
+                    if (description.isPresent()) {
+                      return this.appAction((applicationId, service) -> service.modifyGuildApplicationCommand(
+                        applicationId,
+                        guild.getId().asLong(),
+                        model.commandId().asLong(),
+                        model.asRequest()
+                      ));
+                    }
+                    return Mono.empty();
+                  }
+                })
+                .then(event.editReply().withContentOrNull(Emoji.toString(Emoji.YES)));
+            });
+        },
+        REMOVE, option -> {
+          return Mono.justOrEmpty(Options.string(option, Options.NAME))
+            .flatMap(name -> {
+              return this.factoids.findByGuildAndName(guild.getId(), name)
+                .switchIfEmpty(event.editReply().withContentOrNull("%s Could not find a factoid with name `%s`.".formatted(Emoji.toString(Emoji.NO), name)).then(Mono.empty()))
+                .flatMap(model -> this.appAction((id, service) -> service.deleteGuildApplicationCommand(id, guild.getId().asLong(), model.commandId().asLong())).thenReturn(model))
+                .flatMap(this.factoids::delete)
+                .then(event.editReply().withContentOrNull(Emoji.toString(Emoji.YES)));
+            });
+        }
+      )));
+  }
+
+  @Override
+  public @NotNull Mono<?> suggest(final @NotNull GatewayDiscordClient client, final @NotNull ChatInputAutoCompleteEvent event, final @NotNull Guild guild) {
+    final ApplicationCommandInteractionOption option = event.getFocusedOption();
+    final Optional<ApplicationCommandInteractionOptionValue> value = option.getValue();
+    if (value.isPresent()) {
+      if (Options.NAME.equals(option.getName())) {
+        return this.factoids.findAllByGuild(guild.getId())
+          .filter(model -> model.name().startsWith(value.orElseThrow().asString()))
+          .map(model -> {
+            return ApplicationCommandOptionChoiceData.builder()
+              .name(model.name())
+              .value(model.name())
+              .build();
+          })
+          .cast(ApplicationCommandOptionChoiceData.class)
+          .collectList()
+          .flatMap(event::respondWithSuggestions);
+      }
+    }
+    return GuildCommand.super.suggest(client, event, guild);
+  }
+
+  private <T> Mono<T> appAction(final BiFunction<Long, ApplicationService, Mono<T>> consumer) {
+    return this.rest.getApplicationId().flatMap(applicationId -> consumer.apply(applicationId, this.rest.getApplicationService()));
+  }
+}

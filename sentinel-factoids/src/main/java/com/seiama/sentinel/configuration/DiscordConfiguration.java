@@ -5,33 +5,19 @@ import discord4j.core.object.presence.ClientPresence;
 import discord4j.gateway.ShardInfo;
 import discord4j.gateway.intent.Intent;
 import discord4j.gateway.intent.IntentSet;
-import discord4j.rest.RestClient;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class DiscordConfiguration extends AbstractDiscordConfiguration {
-  private static final String DISCORD_TOKEN_FACTOIDS = "DISCORD_TOKEN_FACTOIDS";
-
   @Override
   protected IntentSet intents() {
     return IntentSet.of(
-      Intent.GUILDS,
-      Intent.GUILD_MEMBERS,
-      Intent.GUILD_MODERATION,
-      Intent.GUILD_MESSAGES,
-      Intent.GUILD_MESSAGE_REACTIONS,
-      Intent.MESSAGE_CONTENT
+      Intent.GUILDS
     );
   }
 
   @Override
   protected ClientPresence presence(final ShardInfo shard) {
     return ClientPresence.online();
-  }
-
-  @Bean("factoidsRest")
-  RestClient factoidsRest() {
-    return RestClient.create(System.getenv(DISCORD_TOKEN_FACTOIDS));
   }
 }

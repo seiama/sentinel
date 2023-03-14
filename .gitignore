@@ -7,6 +7,7 @@
 /sentinel-api/build/
 /sentinel-app/build/
 /sentinel-common/build/
+/sentinel-factoids/build/
 /sentinel-frontend/dist/
 /sentinel-frontend/node_modules/
 /sentinel-frontend/src/@iconify/*.js

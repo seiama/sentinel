@@ -1,0 +1,5 @@
+spring:
+  data:
+    mongodb:
+      database: "sentinel"
+      field-naming-strategy: "org.springframework.data.mapping.model.SnakeCaseFieldNamingStrategy"
