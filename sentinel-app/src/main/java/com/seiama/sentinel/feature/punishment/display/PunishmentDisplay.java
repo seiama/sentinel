@@ -1,8 +1,8 @@
 package com.seiama.sentinel.feature.punishment.display;
 
 import com.seiama.sentinel.common.discord.Emoji;
+import com.seiama.sentinel.common.discord.Mention;
 import com.seiama.sentinel.common.model.PunishmentModel;
-import com.seiama.sentinel.util.Mention;
 import discord4j.common.util.TimestampFormat;
 import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.rest.util.Color;

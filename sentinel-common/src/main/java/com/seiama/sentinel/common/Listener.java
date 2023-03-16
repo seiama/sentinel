@@ -1,4 +1,4 @@
-package com.seiama.sentinel.core;
+package com.seiama.sentinel.common;
 
 import discord4j.core.GatewayDiscordClient;
 import org.jetbrains.annotations.NotNull;

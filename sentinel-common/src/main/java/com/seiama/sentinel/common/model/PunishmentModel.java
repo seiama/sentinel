@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.seiama.sentinel.common.annotation.MongoDate;
+import com.seiama.sentinel.common.annotation.MongoId;
+import com.seiama.sentinel.common.annotation.MongoPrimaryId;
 import com.seiama.sentinel.common.discord.Emoji;
 import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.User;
@@ -12,17 +15,10 @@ import java.time.Instant;
 import org.bson.types.ObjectId;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
 
 public interface PunishmentModel {
   String COLLECTION = "punishments";
-
-  interface Fields {
-    @SuppressWarnings("ConstantName")
-    String _ID = AbstractModel._ID;
-  }
 
   interface Partial extends AbstractPartial {
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -48,19 +44,17 @@ public interface PunishmentModel {
       @JsonProperty String staleByDiscriminator();
       @JsonProperty @Nullable String staleReason();
       @JsonProperty @Nullable Boolean staleAutomatic();
-      @JsonProperty @Nullable ObjectId staleAppeal();
+      @JsonProperty @MongoId @Nullable ObjectId staleAppeal();
     }
   }
 
   @Document(collection = COLLECTION)
   @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
   record Complete(
-    @Field(Fields._ID)
-    @JsonProperty(Fields._ID)
-    @Id ObjectId _id,
+    @MongoPrimaryId ObjectId _id,
     Snowflake guild,
     Type type,
-    Instant date,
+    @MongoDate Instant date,
     Snowflake punisherId,
     String punisherUsername,
     String punisherDiscriminator,
@@ -74,17 +68,17 @@ public interface PunishmentModel {
     // a stale punishment is no longer considered active; if a punishment record banning a user
     // is inserted and that record is then marked as stale, then the user is no longer considered banned
     @Nullable Boolean stale,
-    @Nullable Instant staleAt,
+    @MongoDate @Nullable Instant staleAt,
     @Nullable Snowflake staleById,
     @Nullable String staleByUsername,
     @Nullable String staleByDiscriminator,
     @Nullable String staleReason,
     @Nullable Boolean staleAutomatic,
     // only non-null if the punishment was appealed
-    @Nullable ObjectId staleAppeal,
+    @MongoId @Nullable ObjectId staleAppeal,
     @Nullable String importBy,
     @Nullable String importId,
-    @Nullable Instant importAt
+    @MongoDate @Nullable Instant importAt
   ) implements AbstractModel, Partial.Reason, Partial.Expunged, Partial.Stale {
     public static @NotNull Complete create(
       final @NotNull Snowflake guild,

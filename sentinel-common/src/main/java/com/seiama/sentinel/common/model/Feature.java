@@ -1,6 +1,5 @@
-package com.seiama.sentinel.feature;
+package com.seiama.sentinel.common.model;
 
-import com.seiama.sentinel.common.model.GuildModel;
 import java.util.function.Predicate;
 
 public record Feature(

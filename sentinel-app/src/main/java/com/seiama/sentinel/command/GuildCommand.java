@@ -1,6 +1,6 @@
 package com.seiama.sentinel.command;
 
-import com.seiama.sentinel.feature.Feature;
+import com.seiama.sentinel.common.model.Feature;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.core.object.entity.Guild;

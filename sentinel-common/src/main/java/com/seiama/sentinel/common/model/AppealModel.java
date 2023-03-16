@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.seiama.sentinel.common.annotation.MongoDate;
+import com.seiama.sentinel.common.annotation.MongoId;
+import com.seiama.sentinel.common.annotation.MongoPrimaryId;
 import com.seiama.sentinel.common.discord.Emoji;
 import discord4j.common.util.Snowflake;
 import discord4j.core.object.reaction.ReactionEmoji;
@@ -12,16 +15,12 @@ import java.util.List;
 import java.util.Map;
 import org.bson.types.ObjectId;
 import org.jetbrains.annotations.Nullable;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
 
 public interface AppealModel {
   String COLLECTION = "appeals";
 
   interface Fields {
-    @SuppressWarnings("ConstantName")
-    String _ID = AbstractModel._ID;
     String VOTES = "votes";
 
     static String votes(final Vote vote) {
@@ -48,13 +47,11 @@ public interface AppealModel {
   @Document(collection = COLLECTION)
   @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
   record Complete(
-    @Field(Fields._ID)
-    @JsonProperty(Fields._ID)
-    @Id ObjectId _id,
+    @MongoPrimaryId ObjectId _id,
     Snowflake guild,
-    Instant date,
+    @MongoDate Instant date,
     Snowflake user,
-    ObjectId punishment,
+    @MongoId ObjectId punishment,
     Snowflake appealChannel,
     Snowflake appealThread,
     Snowflake appealDiscussionThread,
@@ -62,7 +59,7 @@ public interface AppealModel {
     Map<String, List<Snowflake>> votes, // cannot key by Vote
     Result result,
     @Nullable String reason,
-    @Nullable Instant nextAttemptMayBeMadeAt
+    @MongoDate @Nullable Instant nextAttemptMayBeMadeAt
   ) implements AbstractModel {
   }
 

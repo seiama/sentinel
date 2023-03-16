@@ -1,4 +1,4 @@
-package com.seiama.sentinel.discord;
+package com.seiama.sentinel.common.configuration;
 
 import discord4j.core.DiscordClientBuilder;
 import discord4j.core.GatewayDiscordClient;
@@ -6,33 +6,28 @@ import discord4j.core.object.presence.ClientPresence;
 import discord4j.core.shard.GatewayBootstrap;
 import discord4j.core.shard.ShardingStrategy;
 import discord4j.gateway.GatewayOptions;
-import discord4j.gateway.intent.Intent;
+import discord4j.gateway.ShardInfo;
 import discord4j.gateway.intent.IntentSet;
 import discord4j.rest.RestClient;
 import discord4j.rest.service.ApplicationService;
 import discord4j.rest.util.AllowedMentions;
 import java.util.function.Consumer;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
-@Configuration
-public class DiscordModule {
+public abstract class AbstractDiscordConfiguration {
   private static final String DISCORD_TOKEN = "DISCORD_TOKEN";
 
   @Bean
   GatewayDiscordClient client() {
     return this.client(System.getenv(DISCORD_TOKEN), bootstrap -> {
-      bootstrap.setEnabledIntents(IntentSet.of(
-        Intent.GUILDS,
-        Intent.GUILD_MEMBERS,
-        Intent.GUILD_MODERATION,
-        Intent.GUILD_MESSAGES,
-        Intent.GUILD_MESSAGE_REACTIONS,
-        Intent.MESSAGE_CONTENT
-      ));
-      bootstrap.setInitialPresence(shard -> ClientPresence.online());
+      bootstrap.setEnabledIntents(this.intents());
+      bootstrap.setInitialPresence(this::presence);
     });
   }
+
+  protected abstract IntentSet intents();
+
+  protected abstract ClientPresence presence(final ShardInfo shard);
 
   @Bean
   RestClient restClient(final GatewayDiscordClient client) {

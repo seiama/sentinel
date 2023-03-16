@@ -1,7 +1,7 @@
 package com.seiama.sentinel.command;
 
+import com.seiama.sentinel.common.Listener;
 import com.seiama.sentinel.common.model.GuildRepository;
-import com.seiama.sentinel.core.Listener;
 import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;

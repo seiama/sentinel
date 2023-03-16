@@ -1,4 +1,4 @@
-package com.seiama.sentinel.util;
+package com.seiama.sentinel.common.discord;
 
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.User;
