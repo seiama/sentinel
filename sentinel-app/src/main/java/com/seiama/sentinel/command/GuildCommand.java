@@ -10,9 +10,5 @@ import reactor.core.publisher.Mono;
 public interface GuildCommand extends Command {
   @NotNull Feature feature();
 
-  default boolean test(final ChatInputInteractionEvent event, final Guild guild) {
-    return Command.super.test(event);
-  }
-
   @NotNull Mono<?> on(final @NotNull GatewayDiscordClient client, final @NotNull ChatInputInteractionEvent event, final @NotNull Guild guild);
 }

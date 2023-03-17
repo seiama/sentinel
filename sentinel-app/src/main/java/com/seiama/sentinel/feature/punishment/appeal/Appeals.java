@@ -387,7 +387,11 @@ public class Appeals implements Listener {
         this.client.getSelf().flatMap(user -> {
           final Instant now = Instant.now();
           return switch (result) {
-            case NONE -> this.client.rest().getChannelById(this.model.appealDiscussionThread()).createMessage(String.format("%s The result of the vote could not be determined at this time, and will be recalculated shortly.", Emoji.toString(Emoji.CLOCK1)));
+            case NONE -> this.client.rest().getChannelById(this.model.appealDiscussionThread()).createMessage(String.format(
+              "%s The result of the vote could not be determined at this time and will be recalculated %s.",
+              Emoji.toString(Emoji.CLOCK1),
+              TimestampFormat.LONG_DATE_TIME.format(Instant.now().plus(VOTE_CHECK_INTERVAL))
+            ));
             case YES -> Appeals.this.accept(this.client, this.model, user);
             case NO -> Appeals.this.deny(this.client, this.model, user, null, now.plus(COOLDOWN_NO));
             case LATER -> Appeals.this.deny(this.client, this.model, user, null, now.plus(COOLDOWN_LATER));
@@ -619,7 +623,7 @@ public class Appeals implements Listener {
 
     private String nextAttemptMayBeMadeAt(final String start) {
       if (this.nextAttemptMayBeMadeAt != null) {
-        return String.format(" %s next attempt at an appeal may be made at %s.", start, TimestampFormat.LONG_DATE_TIME.format(this.nextAttemptMayBeMadeAt));
+        return String.format(" %s next attempt at an appeal may be made %s.", start, TimestampFormat.LONG_DATE_TIME.format(this.nextAttemptMayBeMadeAt));
       }
       return "";
     }
