@@ -6,6 +6,7 @@ import com.seiama.sentinel.common.model.Feature;
 import com.seiama.sentinel.common.model.PunishmentModel;
 import com.seiama.sentinel.common.model.PunishmentRepository;
 import com.seiama.sentinel.feature.punishment.PunishmentAction;
+import com.seiama.sentinel.feature.punishment.PunishmentApplier;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.core.object.command.ApplicationCommandOption;
@@ -65,12 +66,12 @@ public final class BanCommand implements GuildCommand {
 
   @Override
   public @NotNull Mono<?> on(final @NotNull GatewayDiscordClient client, final @NotNull ChatInputInteractionEvent event, final @NotNull Guild guild) {
-    return PunishmentAction.apply(
+    return PunishmentApplier.apply(
       event,
       guild,
       this.punishments,
       PunishmentModel.Type.BAN,
-      PunishmentAction.BAN
+      PunishmentAction.ban()
     );
   }
 }
