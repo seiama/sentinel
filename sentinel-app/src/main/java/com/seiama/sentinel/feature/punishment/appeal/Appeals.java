@@ -137,6 +137,7 @@ public class Appeals implements Listener {
         return this.guilds.findByFeaturesPunishmentsAppealsGuild(event.getGuildId())
           .filter(Feature.PUNISHMENTS_APPEALS.enabledForGuild())
           .flatMap(guildModel -> {
+            final ObjectId appealId = new ObjectId();
             final GuildModel.Complete.Features.Punishments.Appeals config = guildModel.features().punishments().appeals();
             final Member member = event.getMember();
             final Mono<PunishmentModel.Complete> getPunishment = this.punishments.findByPunishedIdAndStaleIsNotOrderByDateDesc(member.getId(), true);
@@ -144,13 +145,14 @@ public class Appeals implements Listener {
               .flatMap(guild -> guild.kick(member.getId(), null))
               .then(Mono.empty());
             final Mono<TextChannel> createAppealChannel = event.getGuild()
-              .flatMap(guild -> guild.createTextChannel(createChannelName(member))
+              .flatMap(guild -> guild.createTextChannel(createChannelName(member, appealId))
                 .withParentId(config.appealChannelsCategory())
                 .withPermissionOverwrites(
                   PermissionOverwrite.forMember(member.getId(), PermissionSet.of(Permission.VIEW_CHANNEL), PermissionSet.none()),
                   PermissionOverwrite.forRole(config.everyoneRole(), PermissionSet.none(), PermissionSet.of(Permission.VIEW_CHANNEL, Permission.ATTACH_FILES))
                 )
                 .withRateLimitPerUser(CHANNEL_RATE_LIMIT)
+                .withTopic(appealId.toString())
               );
             final Mono<ChannelData> createAppealThread = client.rest().getChannelService().startThreadWithoutMessage(
               config.appealThreadsChannel().asLong(),
@@ -176,7 +178,7 @@ public class Appeals implements Listener {
                 createAppealDiscussionThread
               )
               .zipWhen(TupleUtils.function((punishment, channel, appealThread, appealDiscussionThread) -> this.appeals.insert(new AppealModel.Complete(
-                new ObjectId(),
+                appealId,
                 punishment.guild(),
                 Instant.now(),
                 member.getId(),
@@ -198,7 +200,6 @@ public class Appeals implements Listener {
                 final RestChannel appealThreadChannel = client.rest().getChannelById(Snowflake.of(appealThread.id()));
                 final RestChannel appealDiscussionThreadChannel = client.rest().getChannelById(Snowflake.of(appealDiscussionThread.id()));
                 return Mono.when(
-                  channel.edit().withTopic(model._id().toString()),
                   channel.createMessage(PunishmentDisplay.punishment(punishment, PunishmentDisplayStyle.APPEAL)),
                   channel.createMessage(String.format("Hey, %s! This appeal is now active. Please explain why you think this punishment should be appealed.", member.getMention())),
                   appealThreadChannel.createMessage(PunishmentDisplay.punishment(punishment, PunishmentDisplayStyle.FULL).asRequest()),
@@ -330,11 +331,10 @@ public class Appeals implements Listener {
     );
   }
 
-  private static String createChannelName(final Member member) {
-    return "a-" + member.getId().asLong();
+  private static String createChannelName(final Member member, final ObjectId appealId) {
+    return "a-" + member.getId().asLong() + "-" + appealId;
   }
 
-  // TODO: does this need to be sanitized
   private static String createThreadName(final Member member) {
     return member.getUsername() + "#" + member.getDiscriminator();
   }
