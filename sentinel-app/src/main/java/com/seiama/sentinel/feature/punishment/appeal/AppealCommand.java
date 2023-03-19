@@ -81,15 +81,23 @@ public final class AppealCommand implements GuildCommand {
       ACCEPT, option -> {
         return this.appeals.findByAppealThread(interaction.getChannelId())
           .switchIfEmpty(event.editReply().withContentOrNull(Appeals.NO_APPEAL_ASSOCIATED_WITH_THIS_CHANNEL).then(Mono.empty()))
-          .flatMap(model -> this.appeals.accept(client, model, interaction.getUser()))
-          .then(event.editReply().withContentOrNull(Emoji.YES.asFormat() + " Successfully accepted appeal."));
+          .filter(model -> model.result() == null)
+          .switchIfEmpty(event.editReply().withContentOrNull(Appeals.NO_ACTIVE_APPEAL).then(Mono.empty()))
+          .flatMap(model -> {
+            return this.appeals.accept(client, model, interaction.getUser())
+              .then(event.editReply().withContentOrNull(Emoji.YES.asFormat() + " Successfully accepted appeal."));
+          });
       },
       DENY, option -> {
         return Mono.just(Options.string(option, Options.REASON))
           .zipWith(this.appeals.findByAppealThread(interaction.getChannelId()))
           .switchIfEmpty(event.editReply().withContentOrNull(Appeals.NO_APPEAL_ASSOCIATED_WITH_THIS_CHANNEL).then(Mono.empty()))
-          .flatMap(TupleUtils.function((reason, model) -> this.appeals.deny(client, model, interaction.getUser(), reason.orElse(null), null)))
-          .then(event.editReply().withContentOrNull(Emoji.YES.asFormat() + " Successfully denied appeal."));
+          .filter(t2 -> t2.getT2().result() == null)
+          .switchIfEmpty(event.editReply().withContentOrNull(Appeals.NO_ACTIVE_APPEAL).then(Mono.empty()))
+          .flatMap(TupleUtils.function((reason, model) -> {
+            return this.appeals.deny(client, model, interaction.getUser(), reason.orElse(null), null)
+              .then(event.editReply().withContentOrNull(Emoji.YES.asFormat() + " Successfully denied appeal."));
+          }));
       }
     )));
   }
