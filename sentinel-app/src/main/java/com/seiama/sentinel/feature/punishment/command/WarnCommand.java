@@ -3,6 +3,7 @@ package com.seiama.sentinel.feature.punishment.command;
 import com.seiama.sentinel.command.GuildCommand;
 import com.seiama.sentinel.command.Options;
 import com.seiama.sentinel.common.model.Feature;
+import com.seiama.sentinel.common.model.GuildRepository;
 import com.seiama.sentinel.common.model.PunishmentModel;
 import com.seiama.sentinel.common.model.PunishmentRepository;
 import com.seiama.sentinel.feature.punishment.PunishmentAction;
@@ -22,10 +23,12 @@ import reactor.core.publisher.Mono;
 public final class WarnCommand implements GuildCommand {
   private static final String NAME = "warn";
 
+  private final GuildRepository guilds;
   private final PunishmentRepository punishments;
 
   @Autowired
-  private WarnCommand(final PunishmentRepository punishments) {
+  private WarnCommand(final GuildRepository guilds, final PunishmentRepository punishments) {
+    this.guilds = guilds;
     this.punishments = punishments;
   }
 
@@ -69,6 +72,7 @@ public final class WarnCommand implements GuildCommand {
     return PunishmentApplier.apply(
       event,
       guild,
+      this.guilds,
       this.punishments,
       PunishmentModel.Type.WARN,
       PunishmentAction.warn()

@@ -4,20 +4,27 @@ import com.seiama.sentinel.command.Command;
 import com.seiama.sentinel.command.GuildCommand;
 import com.seiama.sentinel.command.Options;
 import com.seiama.sentinel.common.model.Feature;
+import com.seiama.sentinel.common.model.GuildRepository;
+import com.seiama.sentinel.common.model.PunishmentModel;
 import com.seiama.sentinel.common.model.PunishmentRepository;
+import com.seiama.sentinel.feature.punishment.Punishments;
 import com.seiama.sentinel.feature.punishment.display.PunishmentDisplay;
 import com.seiama.sentinel.feature.punishment.display.PunishmentDisplayStyle;
 import com.seiama.sentinel.feature.punishment.display.PunishmentMessages;
 import com.seiama.sentinel.feature.punishment.search.PunishmentSearchResult;
+import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.core.object.command.ApplicationCommandOption;
 import discord4j.core.object.entity.Guild;
+import discord4j.core.object.entity.Member;
 import discord4j.discordjson.json.ApplicationCommandOptionData;
 import discord4j.discordjson.json.ApplicationCommandRequest;
+import java.time.Instant;
 import java.util.Map;
 import org.bson.types.ObjectId;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -30,11 +37,15 @@ public final class PunishmentCommand implements GuildCommand {
   private static final String SEARCH = "search";
   private static final String USER = "user";
   private static final String SHOW = "show";
+  private static final String REASON = "reason";
+  private static final String STALE = "stale";
 
+  private final GuildRepository guilds;
   private final PunishmentRepository punishments;
 
   @Autowired
-  private PunishmentCommand(final PunishmentRepository punishments) {
+  private PunishmentCommand(final GuildRepository guilds, final PunishmentRepository punishments) {
+    this.guilds = guilds;
     this.punishments = punishments;
   }
 
@@ -86,6 +97,52 @@ public final class PunishmentCommand implements GuildCommand {
           )
           .build()
       )
+      .addOption(
+        ApplicationCommandOptionData.builder()
+          .name(REASON)
+          .description("Set the reason of a punishment")
+          .type(ApplicationCommandOption.Type.SUB_COMMAND.getValue())
+          .addOption(
+            ApplicationCommandOptionData.builder()
+              .name(Options.PUNISHMENT)
+              .description("The id of the punishment to modify")
+              .required(true)
+              .type(ApplicationCommandOption.Type.STRING.getValue())
+              .build()
+          )
+          .addOption(
+            ApplicationCommandOptionData.builder()
+              .name(Options.REASON)
+              .description("The new reason")
+              .required(true)
+              .type(ApplicationCommandOption.Type.STRING.getValue())
+              .build()
+          )
+          .build()
+      )
+      .addOption(
+        ApplicationCommandOptionData.builder()
+          .name(STALE)
+          .description("Mark a punishment stale")
+          .type(ApplicationCommandOption.Type.SUB_COMMAND.getValue())
+          .addOption(
+            ApplicationCommandOptionData.builder()
+              .name(Options.PUNISHMENT)
+              .description("The id of the punishment to mark as stale")
+              .required(true)
+              .type(ApplicationCommandOption.Type.STRING.getValue())
+              .build()
+          )
+          .addOption(
+            ApplicationCommandOptionData.builder()
+              .name(Options.REASON)
+              .description("The reason for marking this punishment stale")
+              .required(false)
+              .type(ApplicationCommandOption.Type.STRING.getValue())
+              .build()
+          )
+          .build()
+      )
       .build();
   }
 
@@ -96,16 +153,86 @@ public final class PunishmentCommand implements GuildCommand {
 
   @Override
   public @NotNull Mono<?> on(final @NotNull GatewayDiscordClient client, final @NotNull ChatInputInteractionEvent event, final @NotNull Guild guild) {
+    final Member member = event.getInteraction().getMember().orElseThrow();
     return event.deferReply().then(Command.executeOne(event, Map.of(
       SHOW, option -> {
         return Mono.justOrEmpty(Options.string(option, Options.PUNISHMENT).orElse(null))
+          .filterWhen(Punishments.mayPunish(this.guilds, guild, member))
           .map(ObjectId::new)
           .flatMap(this.punishments::findById)
           .flatMap(punishment -> event.editReply().withEmbeds(PunishmentDisplay.punishment(punishment, PunishmentDisplayStyle.FULL)))
           .onErrorResume(throwable -> event.editReply().withContentOrNull(PunishmentMessages.PUNISHMENT_NOT_FOUND));
       },
+      REASON, option -> {
+        return Mono.justOrEmpty(Options.string(option, Options.PUNISHMENT).orElse(null))
+          .filterWhen(Punishments.mayPunish(this.guilds, guild, member))
+          .map(ObjectId::new)
+          .zipWith(Mono.justOrEmpty(Options.string(option, Options.REASON).orElse(null)))
+          .flatMap(TupleUtils.function((id, reason) -> {
+            return this.punishments.findById(id)
+              .flatMap(model -> this.punishments.update(model, new PunishmentModel.Partial.Reason() {
+                @Override
+                public @Nullable String reason() {
+                  return reason;
+                }
+              }));
+          }))
+          .flatMap(result -> event.editReply().withContentOrNull(PunishmentMessages.punishmentUpdated(result)));
+      },
+      STALE, option -> {
+        return Mono.justOrEmpty(Options.string(option, Options.PUNISHMENT).orElse(null))
+          .filterWhen(Punishments.mayPunish(this.guilds, guild, member))
+          .map(ObjectId::new)
+          .zipWith(Mono.just(Options.string(option, Options.REASON)))
+          .flatMap(TupleUtils.function((id, reason) -> {
+            return this.punishments.findById(id)
+              .flatMap(model -> this.punishments.update(model, new PunishmentModel.Partial.Stale() {
+                @Override
+                public @NotNull Boolean stale() {
+                  return true;
+                }
+
+                @Override
+                public Instant staleAt() {
+                  return Instant.now();
+                }
+
+                @Override
+                public Snowflake staleById() {
+                  return member.getId();
+                }
+
+                @Override
+                public String staleByUsername() {
+                  return member.getUsername();
+                }
+
+                @Override
+                public String staleByDiscriminator() {
+                  return member.getDiscriminator();
+                }
+
+                @Override
+                public @Nullable String staleReason() {
+                  return reason.orElse(null);
+                }
+
+                @Override
+                public @NotNull Boolean staleAutomatic() {
+                  return false;
+                }
+
+                @Override
+                public @Nullable ObjectId staleAppeal() {
+                  return null;
+                }
+              }));
+          }))
+          .flatMap(result -> event.editReply().withContentOrNull(PunishmentMessages.punishmentMarkedStale(result)).withEmbeds(PunishmentDisplay.punishment(result, PunishmentDisplayStyle.FULL)));
+      },
       SEARCH, option -> {
         return Mono.justOrEmpty(option.getOption(USER).orElse(null))
+          .filterWhen(Punishments.mayPunish(this.guilds, guild, member))
           .flatMap(user -> Options.user(user, Options.USER).orElseGet(Mono::empty))
           .flatMap(user -> this.punishments.findAllByPunishedId(user.getId()).collectList().zipWith(Mono.just(user)))
           .map(TupleUtils.function((punishment, user) -> new PunishmentSearchResult(user, punishment)))

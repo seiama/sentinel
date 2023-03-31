@@ -5,11 +5,14 @@ import com.seiama.sentinel.command.GuildCommand;
 import com.seiama.sentinel.command.Options;
 import com.seiama.sentinel.common.discord.Emoji;
 import com.seiama.sentinel.common.model.Feature;
+import com.seiama.sentinel.common.model.GuildRepository;
+import com.seiama.sentinel.feature.punishment.Punishments;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.core.object.command.ApplicationCommandOption;
 import discord4j.core.object.command.Interaction;
 import discord4j.core.object.entity.Guild;
+import discord4j.core.object.entity.Member;
 import discord4j.discordjson.json.ApplicationCommandOptionData;
 import discord4j.discordjson.json.ApplicationCommandRequest;
 import java.util.Map;
@@ -26,10 +29,12 @@ public final class AppealCommand implements GuildCommand {
   private static final String ACCEPT = "accept";
   private static final String DENY = "deny";
 
+  private final GuildRepository guilds;
   private final Appeals appeals;
 
   @Autowired
-  private AppealCommand(final Appeals appeals) {
+  private AppealCommand(final GuildRepository guilds, final Appeals appeals) {
+    this.guilds = guilds;
     this.appeals = appeals;
   }
 
@@ -77,9 +82,11 @@ public final class AppealCommand implements GuildCommand {
   @Override
   public @NotNull Mono<?> on(final @NotNull GatewayDiscordClient client, final @NotNull ChatInputInteractionEvent event, final @NotNull Guild guild) {
     final Interaction interaction = event.getInteraction();
+    final Member member = interaction.getMember().orElseThrow();
     return event.deferReply().then(Command.executeOne(event, Map.of(
       ACCEPT, option -> {
         return this.appeals.findByAppealThread(interaction.getChannelId())
+          .filterWhen(Punishments.mayPunish(this.guilds, guild, member))
           .switchIfEmpty(event.editReply().withContentOrNull(Appeals.NO_APPEAL_ASSOCIATED_WITH_THIS_CHANNEL).then(Mono.empty()))
           .filter(model -> model.result() == null)
           .switchIfEmpty(event.editReply().withContentOrNull(Appeals.NO_ACTIVE_APPEAL).then(Mono.empty()))
@@ -90,6 +97,7 @@ public final class AppealCommand implements GuildCommand {
       },
       DENY, option -> {
         return Mono.just(Options.string(option, Options.REASON))
+          .filterWhen(Punishments.mayPunish(this.guilds, guild, member))
           .zipWith(this.appeals.findByAppealThread(interaction.getChannelId()))
           .switchIfEmpty(event.editReply().withContentOrNull(Appeals.NO_APPEAL_ASSOCIATED_WITH_THIS_CHANNEL).then(Mono.empty()))
           .filter(t2 -> t2.getT2().result() == null)
