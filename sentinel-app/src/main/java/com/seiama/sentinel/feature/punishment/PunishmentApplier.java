@@ -4,6 +4,7 @@ import com.seiama.sentinel.command.Options;
 import com.seiama.sentinel.common.model.PunishmentModel;
 import com.seiama.sentinel.common.model.PunishmentRepository;
 import com.seiama.sentinel.feature.punishment.display.PunishmentMessages;
+import com.seiama.sentinel.reactive.Reactive;
 import discord4j.common.util.Snowflake;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.core.object.command.Interaction;
@@ -39,7 +40,7 @@ public final class PunishmentApplier {
           }
         }))
         // we don't actually care if we can't send a notification to the user
-        .onErrorResume(t -> Mono.empty()), // avoid possible 50007
+        .onErrorResume(Reactive.ignoringException()), // avoid possible 50007
       ACTUALLY_APPLY_PUNISHMENT ? action.apply(guild, user, punishment) : Mono.empty()
     );
   }
