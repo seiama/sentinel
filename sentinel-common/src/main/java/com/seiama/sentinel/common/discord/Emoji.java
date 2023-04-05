@@ -11,13 +11,15 @@ public interface Emoji {
   ReactionEmoji.Unicode TADA = ReactionEmoji.unicode("🎉");
   ReactionEmoji.Unicode WARNING = ReactionEmoji.unicode("⚠️");
 
-  ReactionEmoji.Custom NO = ReactionEmoji.custom(Snowflake.of(1080888011639767091L), "no", false);
-  ReactionEmoji.Custom UNKNOWN = ReactionEmoji.custom(Snowflake.of(1078266827626512475L), "unknown", false);
-  ReactionEmoji.Custom YES = ReactionEmoji.custom(Snowflake.of(1080888013275533372L), "yes", false);
-  ReactionEmoji.Custom DOT_GREY = ReactionEmoji.custom(Snowflake.of(1078266818747191317L), "dot_grey", false);
-  ReactionEmoji.Custom DOT_ORANGE = ReactionEmoji.custom(Snowflake.of(1078266820584275968L), "dot_orange", false);
-  ReactionEmoji.Custom DOT_PURPLE = ReactionEmoji.custom(Snowflake.of(1078266822509461584L), "dot_purple", false);
-  ReactionEmoji.Custom DOT_RED = ReactionEmoji.custom(Snowflake.of(978536050941108225L), "punishment_ban", false);
+  ReactionEmoji.Custom NO = ReactionEmoji.custom(Snowflake.of(1093063325899833404L), "no", false);
+  ReactionEmoji.Custom UNKNOWN = ReactionEmoji.custom(Snowflake.of(1093063326948401222L), "unknown", false);
+  ReactionEmoji.Custom YES = ReactionEmoji.custom(Snowflake.of(1093063327963426896L), "yes", false);
+  ReactionEmoji.Custom DOT_BLUE = ReactionEmoji.custom(Snowflake.of(1093064456734507099L), "dot_blue", false); // 0x3498db
+  ReactionEmoji.Custom DOT_GREEN = ReactionEmoji.custom(Snowflake.of(1093063322636656680L), "dot_green", false); // 0x43b581
+  ReactionEmoji.Custom DOT_GREY = ReactionEmoji.custom(Snowflake.of(1093063901626765333L), "dot_grey", false); // 0xb5988e
+  ReactionEmoji.Custom DOT_ORANGE = ReactionEmoji.custom(Snowflake.of(1093063902675345418L), "dot_orange", false); // 0xfaa61a
+  ReactionEmoji.Custom DOT_PURPLE = ReactionEmoji.custom(Snowflake.of(1093063904382435381L), "dot_purple", false); // 0x9b59b6
+  ReactionEmoji.Custom DOT_RED = ReactionEmoji.custom(Snowflake.of(1093063324662513664L), "dot_red", false); // 0xf04747
 
   static ReactionEmoji emoji(final @Nullable Boolean value) {
     if (value == null) return NO;

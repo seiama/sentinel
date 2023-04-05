@@ -127,23 +127,30 @@ public interface PunishmentModel {
   }
 
   enum Type {
-    BAN(0xe22966, new Words("ban", "banned"), Emoji.DOT_RED),
-    KICK(0xe24929, new Words("kick", "kicked"), Emoji.DOT_GREY),
-    MUTE(0xe2a629, new Words("mute", "muted"), Emoji.DOT_PURPLE),
-    WARN(0x2965e2, new Words("warn", "warned"), Emoji.DOT_ORANGE);
+    BAN(0xf04747, true, new Words("ban", "banned"), Emoji.DOT_RED),
+    KICK(0xb5988e, true, new Words("kick", "kicked"), Emoji.DOT_GREY),
+    MUTE(0x9b59b6, true, new Words("mute", "muted"), Emoji.DOT_PURPLE),
+    NOTE(0x3498db, false, new Words("note", "noted"), Emoji.DOT_BLUE),
+    WARN(0xfaa61a, true, new Words("warn", "warned"), Emoji.DOT_ORANGE);
 
     private final int color;
+    private final boolean notification;
     private final Words words;
     private final ReactionEmoji emoji;
 
-    Type(final int color, final Words words, final ReactionEmoji emoji) {
+    Type(final int color, final boolean notification, final Words words, final ReactionEmoji emoji) {
       this.color = color;
+      this.notification = notification;
       this.words = words;
       this.emoji = emoji;
     }
 
     public int color() {
       return this.color;
+    }
+
+    public boolean notification() {
+      return this.notification;
     }
 
     public Words words() {
