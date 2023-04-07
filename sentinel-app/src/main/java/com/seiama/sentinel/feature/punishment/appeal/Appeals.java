@@ -39,6 +39,7 @@ import discord4j.core.object.reaction.ReactionEmoji;
 import discord4j.core.spec.EmbedCreateFields;
 import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.core.spec.MessageCreateSpec;
+import discord4j.core.util.MentionUtil;
 import discord4j.discordjson.json.ChannelData;
 import discord4j.discordjson.json.EmbedData;
 import discord4j.discordjson.json.MessageData;
@@ -54,7 +55,6 @@ import discord4j.rest.util.Permission;
 import discord4j.rest.util.PermissionSet;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -66,7 +66,6 @@ import org.bson.types.ObjectId;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -96,9 +95,8 @@ public class Appeals implements Listener {
   private static final Duration VOTE_DURATION = Duration.ofDays(3);
   private static final Duration VOTE_CHECK_INTERVAL = Duration.ofMinutes(30);
 
-  private static final AppealModel.Vote[] VOTES = AppealModel.Vote.values();
   private static final String VOTE_BUTTON_PREFIX = "appeal-vote:";
-  private static final Map<String, AppealModel.Vote> VOTE_BUTTONS = Arrays.stream(VOTES)
+  private static final Map<String, AppealModel.Vote> VOTE_BUTTONS = AppealModel.Vote.all()
     .collect(Collectors.toMap(vote -> VOTE_BUTTON_PREFIX + vote.words().button(), Function.identity()));
   private static final Map<AppealModel.Vote, Function3<String, ReactionEmoji, String, Button>> VOTE_BUTTON_FACTORY = Map.of(
     AppealModel.Vote.YES, Button::success,
@@ -153,7 +151,7 @@ public class Appeals implements Listener {
                   PermissionOverwrite.forRole(config.everyoneRole(), PermissionSet.none(), PermissionSet.of(Permission.VIEW_CHANNEL, Permission.ATTACH_FILES))
                 )
                 .withRateLimitPerUser(CHANNEL_RATE_LIMIT)
-                .withTopic(appealId.toString())
+                .withTopic("Appeal channel for %s".formatted(member.getMention()))
               );
             final Mono<ChannelData> createAppealThread = client.rest().getChannelService().startThreadWithoutMessage(
               config.appealThreadsChannel().asLong(),
@@ -206,8 +204,8 @@ public class Appeals implements Listener {
                   appealThreadChannel.createMessage(PunishmentDisplay.punishment(punishment, PunishmentDisplayStyle.FULL).asRequest()),
                   appealThreadChannel.createMessage(String.format(
                     "%s Please note that any messages sent in this channel will be shared with the user who is appealing. For staff discussion, please use %s",
-                    Emoji.toString(Emoji.WARNING),
-                    Mention.channel(appealDiscussionThread.id().asLong())
+                    Emoji.WARNING.asFormat(),
+                    MentionUtil.forChannel(Snowflake.of(appealDiscussionThread.id()))
                   )),
                   appealDiscussionThreadChannel.createMessage(
                     MessageCreateSpec.builder()
@@ -229,8 +227,8 @@ public class Appeals implements Listener {
                       .color(Color.of(NEW_APPEAL_NOTIFICATION_COLOR))
                       .title("A new appeal has been created")
                       .description(String.format("A new appeal has been created by %s.", Mention.userWithId(member.getId(), member.getUsername(), member.getDiscriminator())))
-                      .addField("Appeal channel", Mention.channel(appealThread.id().asLong()), false)
-                      .addField("Discussion channel", Mention.channel(appealDiscussionThread.id().asLong()), false)
+                      .addField("Appeal channel", MentionUtil.forChannel(Snowflake.of(appealThread.id())), false)
+                      .addField("Discussion channel", MentionUtil.forChannel(Snowflake.of(appealDiscussionThread.id())), false)
                       .build()
                       .asRequest()
                   )
@@ -315,16 +313,7 @@ public class Appeals implements Listener {
           final Snowflake channelId = event.getInteraction().getChannelId();
           return event.deferEdit()
             .then(this.appeals.findByAppealDiscussionThreadAndResultIsNull(channelId))
-            .flatMap(model -> {
-              final Update updates = new Update();
-              for (final AppealModel.Vote value : VOTES) {
-                if (value != vote) {
-                  updates.pull(AppealModel.Fields.votes(value), user);
-                }
-              }
-              updates.push(AppealModel.Fields.votes(vote), user);
-              return this.appeals.update(model._id(), updates);
-            })
+            .flatMap(model -> this.appeals.update(model._id(), AppealModel.setVote(user, vote)))
             .flatMap(model -> event.editReply().withComponents(createVoteButtons(model.votes())));
         }
         return Mono.empty();
@@ -359,7 +348,7 @@ public class Appeals implements Listener {
 
   private static ActionRow createVoteButtons(final Map<String, List<Snowflake>> votes) {
     return ActionRow.of(
-      Arrays.stream(VOTES)
+      AppealModel.Vote.all()
         .map(vote -> VOTE_BUTTON_FACTORY.get(vote).apply(
           VOTE_BUTTON_PREFIX + vote.words().button(),
           vote.emoji(),
@@ -390,7 +379,7 @@ public class Appeals implements Listener {
           return switch (result) {
             case NONE -> this.client.rest().getChannelById(this.model.appealDiscussionThread()).createMessage(String.format(
               "%s The result of the vote could not be determined at this time and will be recalculated %s.",
-              Emoji.toString(Emoji.CLOCK1),
+              Emoji.CLOCK1.asFormat(),
               TimestampFormat.LONG_DATE_TIME.format(Instant.now().plus(VOTE_CHECK_INTERVAL))
             ));
             case YES -> Appeals.this.accept(this.client, this.model, user);
@@ -482,47 +471,7 @@ public class Appeals implements Listener {
 
     private Mono<Void> unenforce() {
       if (this.result == AppealModel.Result.ACCEPTED) {
-        final Mono<PunishmentModel.Complete> updatedPunishment = Appeals.this.punishments.update(this.model.punishment(), new PunishmentModel.Partial.Stale() {
-          @Override
-          public @NotNull Boolean stale() {
-            return true;
-          }
-
-          @Override
-          public Instant staleAt() {
-            return Instant.now();
-          }
-
-          @Override
-          public Snowflake staleById() {
-            return AppealFinisher.this.user.getId();
-          }
-
-          @Override
-          public String staleByUsername() {
-            return AppealFinisher.this.user.getUsername();
-          }
-
-          @Override
-          public String staleByDiscriminator() {
-            return AppealFinisher.this.user.getDiscriminator();
-          }
-
-          @Override
-          public String staleReason() {
-            return AppealFinisher.this.reason;
-          }
-
-          @Override
-          public Boolean staleAutomatic() {
-            return AppealFinisher.this.automatic;
-          }
-
-          @Override
-          public @Nullable ObjectId staleAppeal() {
-            return AppealFinisher.this.model._id();
-          }
-        });
+        final Mono<PunishmentModel.Complete> updatedPunishment = Appeals.this.punishments.update(this.model.punishment(), PunishmentModel.Partial.Stale.of(this.user, this.reason, this.automatic, this.model._id()));
         return updatedPunishment
           .flatMap(punishment -> switch (punishment.type()) {
             case BAN -> this.client.getGuildById(punishment.guild()).flatMap(guild -> guild.unban(punishment.punishedId(), String.format(
@@ -570,7 +519,6 @@ public class Appeals implements Listener {
               reasonForActionLog
             )
           ),
-          this.client.rest().getChannelById(guildModel.features().punishments().appeals().appealThreadsChannel()).createMessage(embedForStaff),
           this.client.rest().getChannelById(this.model.appealThread()).createMessage(embedForStaff).then(
             this.client.rest().getChannelService().modifyThread(
               this.model.appealThread().asLong(),
@@ -596,7 +544,7 @@ public class Appeals implements Listener {
 
     private EmbedCreateSpec createEmbedForPunished(final EmbedCreateSpec.Builder embed) {
       embed.description(switch (this.result) {
-        case ACCEPTED -> "Your appeal has been approved. Please be sure you are up to date with the rules in our community prior to re-joining.";
+        case ACCEPTED -> "Your appeal has been accepted. Please be sure you are up to date with the rules in our community prior to re-joining.";
         case DENIED -> "Your appeal has been denied at this time." + this.nextAttemptMayBeMadeAt("Your");
         case CANCELLED -> "Your appeal has been cancelled. You may make another attempt at the appeal process if you wish.";
       });
@@ -608,7 +556,7 @@ public class Appeals implements Listener {
 
     private EmbedCreateSpec createEmbedForStaff(final EmbedCreateSpec.Builder embed) {
       embed.description(switch (this.result) {
-        case ACCEPTED -> "The appeal was approved, and the user has been provided with information about re-joining the community.";
+        case ACCEPTED -> "The appeal was accepted, and the user has been provided with information about re-joining the community.";
         case DENIED -> "The appeal was denied." + this.nextAttemptMayBeMadeAt("The");
         case CANCELLED -> "The appeal was cancelled.";
       });
@@ -617,7 +565,7 @@ public class Appeals implements Listener {
         embed.addField("Reason", this.reason, false);
       }
       if (this.automatic) {
-        embed.addField("Automatic Decision", Emoji.toString(Emoji.YES), false);
+        embed.addField("Automatic Decision", Emoji.YES.asFormat(), false);
       }
       return embed.build();
     }

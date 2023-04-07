@@ -18,9 +18,9 @@ public final class PunishmentDisplay {
   public static EmbedCreateSpec punishment(final PunishmentModel.Complete punishment, final PunishmentDisplayStyle display) {
     final EmbedCreateSpec.Builder embed = EmbedCreateSpec.builder();
     embed.color(Color.of(punishment.type().color()));
-    if (display.type) embed.addField("Type", String.format("%s %s%s", Emoji.toString(punishment.type().emoji()), punishment.type().words().name(), automaticSuffix(punishment.automatic())), true);
-    if (display.stale) embed.addField("Stale", Emoji.toString(Emoji.emoji(punishment.stale())) + automaticSuffix(punishment.staleAutomatic()), true);
-    if (display.expunged) embed.addField("Expunged", Emoji.toString(Emoji.emoji(punishment.expunged())), true);
+    if (display.type) embed.addField("Type", String.format("%s %s%s", punishment.type().emoji().asFormat(), punishment.type().words().name(), automaticSuffix(punishment.automatic())), true);
+    if (display.stale) embed.addField("Stale", Emoji.emoji(punishment.stale()).asFormat() + automaticSuffix(punishment.staleAutomatic()), true);
+    if (display.expunged) embed.addField("Expunged", Emoji.emoji(punishment.expunged()).asFormat(), true);
     if (display.time) embed.addField("Time", TimestampFormat.LONG_DATE_TIME.format(punishment.date()), false);
     if (display.issuedBy) embed.addField("Issued by", Mention.userWithId(punishment.punisherId(), punishment.punisherUsername(), punishment.punisherDiscriminator()), false);
     if (display.issuedTo) embed.addField("Issued to", Mention.userWithId(punishment.punishedId(), punishment.punisherUsername(), punishment.punishedDiscriminator()), false);

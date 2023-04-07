@@ -25,10 +25,4 @@ public interface Emoji {
     if (value == null) return NO;
     return value ? YES : NO;
   }
-
-  static String toString(final ReactionEmoji emoji) {
-    if (emoji instanceof ReactionEmoji.Unicode unicode) return unicode.getRaw();
-    if (emoji instanceof ReactionEmoji.Custom custom) return custom.asFormat();
-    throw new IllegalArgumentException(emoji.toString());
-  }
 }

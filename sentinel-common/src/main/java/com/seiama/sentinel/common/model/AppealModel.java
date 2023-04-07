@@ -11,14 +11,29 @@ import com.seiama.sentinel.common.discord.Emoji;
 import discord4j.common.util.Snowflake;
 import discord4j.core.object.reaction.ReactionEmoji;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 import org.bson.types.ObjectId;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.query.Update;
 
 public interface AppealModel {
   String COLLECTION = "appeals";
+
+  @SuppressWarnings("MethodName")
+  static Update setVote(final Snowflake user, final Vote vote) {
+    final Update updates = new Update();
+    for (final Vote value : Vote.VALUES) {
+      if (value != vote) {
+        updates.pull(Fields.votes(value), user);
+      }
+    }
+    updates.push(Fields.votes(vote), user);
+    return updates;
+  }
 
   interface Fields {
     String VOTES = "votes";
@@ -70,12 +85,18 @@ public interface AppealModel {
     LATER(Emoji.CLOCK1, new Words("later", "Later")),
     VETO(Emoji.HAMMER, new Words("veto", "Veto"));
 
+    static final Vote[] VALUES = values();
+
     private final ReactionEmoji emoji;
     private final Words words;
 
     Vote(final ReactionEmoji emoji, final Words words) {
       this.emoji = emoji;
       this.words = words;
+    }
+
+    public static Stream<Vote> all() {
+      return Arrays.stream(VALUES);
     }
 
     public VoteResult asResult() {

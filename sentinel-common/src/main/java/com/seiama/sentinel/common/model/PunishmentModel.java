@@ -37,6 +37,50 @@ public interface PunishmentModel {
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     @SuppressWarnings("EmptyLineSeparator")
     interface Stale extends Partial {
+      static @NotNull Stale of(final @NotNull User by, final @Nullable String reason, final boolean automatic, final @Nullable ObjectId appeal) {
+        return new Stale() {
+          @Override
+          public @NotNull Boolean stale() {
+            return true;
+          }
+
+          @Override
+          public Instant staleAt() {
+            return Instant.now();
+          }
+
+          @Override
+          public Snowflake staleById() {
+            return by.getId();
+          }
+
+          @Override
+          public String staleByUsername() {
+            return by.getUsername();
+          }
+
+          @Override
+          public String staleByDiscriminator() {
+            return by.getDiscriminator();
+          }
+
+          @Override
+          public String staleReason() {
+            return reason;
+          }
+
+          @Override
+          public Boolean staleAutomatic() {
+            return automatic;
+          }
+
+          @Override
+          public @Nullable ObjectId staleAppeal() {
+            return appeal;
+          }
+        };
+      }
+
       @JsonProperty @Nullable Boolean stale();
       @JsonProperty Instant staleAt();
       @JsonProperty Snowflake staleById();
