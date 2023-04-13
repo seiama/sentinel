@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.google.common.base.MoreObjects;
 import com.seiama.sentinel.common.jackson.InstantExtendedJsonSerializer;
 import java.time.Instant;
@@ -53,13 +54,16 @@ public final class ImporterPunishment {
     "importBy", "importId", "importAt"
   })
   public static final class Values {
+    @JsonSerialize(using = ToStringSerializer.class)
     public @Nullable Long guild;
     public @Nullable Type type;
     @JsonSerialize(using = InstantExtendedJsonSerializer.class)
     public @Nullable Instant date;
+    @JsonSerialize(using = ToStringSerializer.class)
     public @Nullable Long punisherId;
     public @Nullable String punisherUsername;
     public @Nullable String punisherDiscriminator;
+    @JsonSerialize(using = ToStringSerializer.class)
     public @Nullable Long punishedId;
     public @Nullable String punishedUsername;
     public @Nullable String punishedDiscriminator;
@@ -69,6 +73,7 @@ public final class ImporterPunishment {
     public @Nullable Boolean stale;
     @JsonSerialize(using = InstantExtendedJsonSerializer.class)
     public @Nullable Instant staleAt;
+    @JsonSerialize(using = ToStringSerializer.class)
     public @Nullable Long staleById;
     public @Nullable String staleByUsername;
     public @Nullable String staleByDiscriminator;
