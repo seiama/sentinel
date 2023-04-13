@@ -4,10 +4,12 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.seiama.sentinel.common.annotation.MongoDate;
 import com.seiama.sentinel.common.annotation.MongoId;
 import com.seiama.sentinel.common.annotation.MongoPrimaryId;
 import com.seiama.sentinel.common.discord.Emoji;
+import com.seiama.sentinel.common.jackson.InstantExtendedJsonSerializer;
 import discord4j.common.util.Snowflake;
 import discord4j.core.object.reaction.ReactionEmoji;
 import java.time.Instant;
@@ -50,7 +52,8 @@ public interface AppealModel {
     interface Close extends Partial {
       @JsonProperty Result result();
       @JsonProperty @Nullable String reason();
-      @JsonProperty @Nullable Instant nextAttemptMayBeMadeAt();
+      @JsonSerialize(using = InstantExtendedJsonSerializer.class)
+      @JsonProperty @MongoDate @Nullable Instant nextAttemptMayBeMadeAt();
     }
 
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
