@@ -1,9 +1,10 @@
+import { fileURLToPath } from 'node:url'
+import * as childProcess from 'node:child_process'
 import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import DefineOptions from 'unplugin-vue-define-options/vite'
-import { fileURLToPath } from 'url'
 import { defineConfig } from 'vite'
 import Pages from 'vite-plugin-pages'
 import Layouts from 'vite-plugin-vue-layouts'
@@ -33,7 +34,11 @@ export default defineConfig({
     }),
     DefineOptions(),
   ],
-  define: { 'process.env': {} },
+  define: {
+    __GIT_BRANCH__: JSON.stringify(childProcess.execSync('git rev-parse --abbrev-ref HEAD').toString().trimEnd()),
+    __GIT_COMMIT__: JSON.stringify(childProcess.execSync('git rev-parse HEAD').toString().trimEnd()),
+    __GIT_COMMIT_SHORT__: JSON.stringify(childProcess.execSync('git rev-parse --short HEAD').toString().trimEnd()),
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
