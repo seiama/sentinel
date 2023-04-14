@@ -23,7 +23,7 @@ public final class PunishmentDisplay {
     if (display.expunged) embed.addField("Expunged", Emoji.emoji(punishment.expunged()).asFormat(), true);
     if (display.time) embed.addField("Time", TimestampFormat.LONG_DATE_TIME.format(punishment.date()), false);
     if (display.issuedBy) embed.addField("Issued by", Mention.userWithId(punishment.punisherId(), punishment.punisherUsername(), punishment.punisherDiscriminator()), false);
-    if (display.issuedTo) embed.addField("Issued to", Mention.userWithId(punishment.punishedId(), punishment.punisherUsername(), punishment.punishedDiscriminator()), false);
+    if (display.issuedTo) embed.addField("Issued to", Mention.userWithId(punishment.punishedId(), punishment.punishedUsername(), punishment.punishedDiscriminator()), false);
     if (display.reason) ifPresent(punishment.reason(), reason -> embed.addField("Reason", reason, false));
     if (display.stale && Boolean.TRUE.equals(punishment.stale())) {
       ifPresent(punishment.staleAt(), at -> embed.addField("Stale time", TimestampFormat.LONG_DATE_TIME.format(at), false));
