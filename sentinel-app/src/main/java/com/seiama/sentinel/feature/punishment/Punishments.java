@@ -4,6 +4,8 @@ import com.seiama.sentinel.command.Options;
 import com.seiama.sentinel.common.model.GuildRepository;
 import com.seiama.sentinel.common.model.PunishmentModel;
 import com.seiama.sentinel.common.model.PunishmentRepository;
+import com.seiama.sentinel.feature.punishment.display.PunishmentDisplay;
+import com.seiama.sentinel.feature.punishment.display.PunishmentDisplayStyle;
 import com.seiama.sentinel.feature.punishment.display.PunishmentMessages;
 import com.seiama.sentinel.feature.punishment.predicate.CanPunish;
 import com.seiama.sentinel.reactive.Reactive;
@@ -13,9 +15,11 @@ import discord4j.core.object.command.Interaction;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.User;
+import discord4j.core.object.entity.channel.TextChannel;
 import discord4j.discordjson.possible.Possible;
 import java.time.Instant;
 import java.util.Optional;
+import java.util.function.Supplier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,7 +83,8 @@ public final class Punishments {
         automatic
       ))
       .flatMap(punishment -> Mono.when(
-        this.sendNotification(guild, punished, punishment),
+        this.sendNotification(guild, punished, punishment)
+          .then(this.logToChannel(guild, () -> this.punishments.refresh(punishment))),
         this.applyPunishment(guild, punished, punishment, action)
       ).thenReturn(punishment));
   }
@@ -102,6 +107,14 @@ public final class Punishments {
         .onErrorResume(Reactive.ignoringException()); // avoid possible 50007
     }
     return Mono.empty();
+  }
+
+  private Mono<?> logToChannel(final Guild guild, final Supplier<Mono<PunishmentModel.Complete>> freshPunishmentSource) {
+    return this.guilds.findByGuild(guild.getId())
+      .mapNotNull(guildModel -> guildModel.features().punishments().logChannel())
+      .flatMap(guild::getChannelById)
+      .cast(TextChannel.class)
+      .flatMap(channel -> freshPunishmentSource.get().flatMap(punishment -> channel.createMessage(PunishmentDisplay.punishment(punishment, PunishmentDisplayStyle.LOG))));
   }
 
   private @NotNull Mono<Void> applyPunishment(

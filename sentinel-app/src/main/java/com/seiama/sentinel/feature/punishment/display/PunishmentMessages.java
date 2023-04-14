@@ -29,7 +29,7 @@ public final class PunishmentMessages {
         EmbedCreateSpec.builder()
           .color(Color.of(punishment.type().color()))
           .author(Discord.author(guild).orElse(null))
-          .title("You've been " + punishment.type().words().actioned())
+          .title("You've been " + punishment.type().words().actioned() + ".")
           .addField("Reason", Objects.requireNonNullElse(punishment.reason(), REASON_NOT_SPECIFIED), false)
           .footer("Punishment: " + punishment._id(), null)
           .build()
