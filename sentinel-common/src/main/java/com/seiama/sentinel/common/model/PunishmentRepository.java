@@ -12,6 +12,8 @@ import reactor.core.publisher.Mono;
 public interface PunishmentRepository extends ReactiveMongoRepository<PunishmentModel.Complete, ObjectId>, PunishmentRepositoryCustom {
   Mono<PunishmentModel.Complete> findByPunishedIdAndTypeAndStaleIsNotOrderByDateDesc(final Snowflake punishedId, final PunishmentModel.Type type, final @Nullable Boolean stale);
 
+  Flux<PunishmentModel.Complete> findAllByGuild(final Snowflake guild);
+
   Flux<PunishmentModel.Complete> findAllByPunishedId(final Snowflake punishedId);
 
   Flux<PunishmentModel.Complete> findAllByPunisherId(final Snowflake punisherId);
