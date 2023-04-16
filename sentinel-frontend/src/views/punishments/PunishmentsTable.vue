@@ -60,13 +60,18 @@
       ></v-switch>
     </template>
     <template v-slot:item.punisher_username="{ item }">
-      {{ item.raw.punisher_username }}#{{ item.raw.punisher_discriminator }}
-      <v-tooltip :text="`Include only punishments issued by ${item.raw.punisher_username}#${item.raw.punisher_discriminator}`" location="start">
-        <template v-slot:activator="{ props }">
-          <v-icon v-bind="props" class='float-end' @click='filter("punisher_id", item.raw.punisher_id)' icon="mdi-search-web">
-          </v-icon>
-        </template>
-      </v-tooltip>
+      <template v-if="item.raw.punisher_id !== undefined">
+        {{ item.raw.punisher_username }}#{{ item.raw.punisher_discriminator }}
+        <v-tooltip :text="`Include only punishments issued by ${item.raw.punisher_username}#${item.raw.punisher_discriminator}`" location="start">
+          <template v-slot:activator="{ props }">
+            <v-icon v-bind="props" class='float-end' @click='filter("punisher_id", item.raw.punisher_id)' icon="mdi-search-web">
+            </v-icon>
+          </template>
+        </v-tooltip>
+      </template>
+      <template v-else>
+        (unavailable)
+      </template>
     </template>
     <template v-slot:expanded-row='{ columns, item }'>
       <td :colspan='columns.length'>
