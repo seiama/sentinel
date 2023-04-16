@@ -4,7 +4,6 @@ import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
-import DefineOptions from 'unplugin-vue-define-options/vite'
 import { defineConfig } from 'vite'
 import Pages from 'vite-plugin-pages'
 import Layouts from 'vite-plugin-vue-layouts'
@@ -32,7 +31,6 @@ export default defineConfig({
       imports: ['vue', 'vue-router', '@vueuse/core', 'vue-i18n', 'pinia'],
       vueTemplate: true,
     }),
-    DefineOptions(),
   ],
   define: {
     __GIT_BRANCH__: JSON.stringify(childProcess.execSync('git rev-parse --abbrev-ref HEAD').toString().trimEnd()),
