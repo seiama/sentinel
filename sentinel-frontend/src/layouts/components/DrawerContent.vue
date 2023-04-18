@@ -45,6 +45,13 @@ import { useTheme } from 'vuetify'
         icon: { icon: 'mdi-gavel' }
       }"
     />
+    <VerticalNavLink
+      :item="{
+        title: 'Factoids',
+        to: 'factoids',
+        icon: { icon: 'mdi-message-question' }
+      }"
+    />
   </ul>
 </template>
 

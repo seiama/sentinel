@@ -10,7 +10,8 @@
         "moduleResolution": "node",
         "esModuleInterop": true,
         "forceConsistentCasingInFileNames": true,
-        "importsNotUsedAsValues": "error"
+        "importsNotUsedAsValues": "error",
+        "ignoreDeprecations": "5.0"
     },
     "exclude": [
         "./*.js"
