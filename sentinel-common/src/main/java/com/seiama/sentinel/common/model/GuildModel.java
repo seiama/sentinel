@@ -36,7 +36,8 @@ public interface GuildModel {
       ) {
         @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
         public record Permissions(
-          Set<Snowflake> punish
+          Set<Snowflake> punish,
+          Set<Snowflake> exempt
         ) {
         }
 

@@ -1,6 +1,7 @@
 package com.seiama.sentinel.feature.punishment;
 
 import com.seiama.sentinel.command.Options;
+import com.seiama.sentinel.common.Listener;
 import com.seiama.sentinel.common.model.GuildRepository;
 import com.seiama.sentinel.common.model.PunishmentModel;
 import com.seiama.sentinel.common.model.PunishmentRepository;
@@ -10,13 +11,17 @@ import com.seiama.sentinel.feature.punishment.display.PunishmentMessages;
 import com.seiama.sentinel.feature.punishment.predicate.CanPunish;
 import com.seiama.sentinel.reactive.Reactive;
 import discord4j.common.util.Snowflake;
+import discord4j.core.GatewayDiscordClient;
+import discord4j.core.event.domain.guild.MemberJoinEvent;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.core.object.command.Interaction;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.User;
 import discord4j.core.object.entity.channel.TextChannel;
+import discord4j.core.spec.BanQuerySpec;
 import discord4j.discordjson.possible.Possible;
+import discord4j.rest.http.client.ClientException;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -27,7 +32,7 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 @Component
-public final class Punishments {
+public final class Punishments implements Listener {
   private static final boolean ACTUALLY_APPLY_PUNISHMENT = true;
   private final GuildRepository guilds;
   private final PunishmentRepository punishments;
@@ -36,6 +41,20 @@ public final class Punishments {
   private Punishments(final GuildRepository guilds, final PunishmentRepository punishments) {
     this.guilds = guilds;
     this.punishments = punishments;
+  }
+
+  @Override
+  public @NotNull Mono<Void> listen(final @NotNull GatewayDiscordClient client) {
+    return client.on(MemberJoinEvent.class, event -> {
+      final Member member = event.getMember();
+      return this.punishments.findAllByGuildAndPunishedIdAndTypeAndStaleIsNotOrderByDateDesc(event.getGuildId(), member.getId(), PunishmentModel.Type.BAN, false)
+        .next()
+        .flatMap(punishment -> member.ban(
+          BanQuerySpec.builder()
+            .reason("Enforcing punishment %s".formatted(punishment._id()))
+            .build()
+        ).onErrorResume(ClientException.class, e -> member.kick("Enforcing punishment %s".formatted(punishment._id()))));
+    }).then();
   }
 
   public @NotNull Mono<?> command(
@@ -50,6 +69,7 @@ public final class Punishments {
       Options.user(event, Options.MEMBER)
         .orElse(Mono.empty())
         .filterWhen(new CanPunish<>(this.guilds, guild, punisher))
+        .switchIfEmpty(event.editReply().withContentOrNull(PunishmentMessages.mayNotPunish()).then(Mono.empty()))
         .flatMap(punished -> this.create(
           guild,
           punisher,
