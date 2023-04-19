@@ -1,8 +1,8 @@
 package com.seiama.sentinel.feature.punishment.display;
 
 public enum PunishmentDisplayStyle {
-  FULL(true, true, true, true, true, true, true, true),
-  LOG(true, false, false, true, true, true, true, true),
+  FULL(true, true, true, true, true, true, true, true, true),
+  LOG(true, false, false, true, true, true, true, true, true),
   APPEAL(
     true,
     true,
@@ -31,6 +31,7 @@ public enum PunishmentDisplayStyle {
     // Note that the punished user may have the punishment reason (either original or current)
     // available to them if it was provided in the past.
     false,
+    true,
     false
   );
 
@@ -41,9 +42,10 @@ public enum PunishmentDisplayStyle {
   public final boolean issuedBy;
   public final boolean issuedTo;
   public final boolean reason;
+  public final boolean duration;
   public final boolean notified;
 
-  PunishmentDisplayStyle(final boolean type, final boolean stale, final boolean expunged, final boolean time, final boolean issuedBy, final boolean issuedTo, final boolean reason, final boolean notified) {
+  PunishmentDisplayStyle(final boolean type, final boolean stale, final boolean expunged, final boolean time, final boolean issuedBy, final boolean issuedTo, final boolean reason, final boolean duration, final boolean notified) {
     this.type = type;
     this.stale = stale;
     this.expunged = expunged;
@@ -51,6 +53,7 @@ public enum PunishmentDisplayStyle {
     this.issuedBy = issuedBy;
     this.issuedTo = issuedTo;
     this.reason = reason;
+    this.duration = duration;
     this.notified = notified;
   }
 }

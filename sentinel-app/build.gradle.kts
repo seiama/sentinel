@@ -16,6 +16,7 @@ dependencies {
   implementation("com.seiama:commons:1.0.0-SNAPSHOT")
   implementation("io.r2dbc:r2dbc-h2")
   implementation("it.unimi.dsi:fastutil:8.5.12")
+  implementation("net.time4j:time4j-base:5.9.2")
   implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
   implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
   implementation("org.springframework.boot:spring-boot-starter-web")

@@ -153,7 +153,7 @@ public class Appeals implements Listener {
             final ObjectId appealId = new ObjectId();
             final GuildModel.Complete.Features.Punishments.Appeals config = guildModel.features().punishments().appeals();
             final Member member = event.getMember();
-            final Flux<PunishmentModel.Complete> getActiveBans = this.punishments.findAllByGuildAndPunishedIdAndTypeAndStaleIsNotOrderByDateDesc(guildModel.guild(), member.getId(), PunishmentModel.Type.BAN, true);
+            final Flux<PunishmentModel.Complete> getActiveBans = this.punishmentOps.findActive(guildModel.guild(), member.getId(), PunishmentModel.Type.BAN);
             final Mono<PunishmentModel.Complete> kickUserForNoActivePunishment = event.getGuild()
               .flatMap(guild -> guild.kick(member.getId(), "Could not find an active ban."))
               .then(Mono.empty());
@@ -532,7 +532,7 @@ public class Appeals implements Listener {
 
     private Mono<Void> unenforce() {
       if (this.result == AppealModel.Result.ACCEPTED) {
-        final Mono<PunishmentModel.Complete> updatedPunishment = Appeals.this.punishments.update(this.model.punishment(), PunishmentModel.Partial.Stale.of(this.user, this.reason, this.automatic, this.model._id()));
+        final Mono<PunishmentModel.Complete> updatedPunishment = Appeals.this.punishments.update(this.model.punishment(), PunishmentModel.Partial.Stale.of(Optional.of(this.user), this.reason, this.automatic, this.model._id()));
         return updatedPunishment
           .flatMap(punishment -> {
             return this.client.getGuildById(punishment.guild())

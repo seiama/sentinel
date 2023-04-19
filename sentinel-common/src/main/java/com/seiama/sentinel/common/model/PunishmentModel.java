@@ -14,7 +14,9 @@ import com.seiama.sentinel.common.jackson.ObjectIdExtendedJsonSerializer;
 import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.User;
 import discord4j.core.object.reaction.ReactionEmoji;
+import java.time.Duration;
 import java.time.Instant;
+import java.util.Optional;
 import org.bson.types.ObjectId;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -40,7 +42,31 @@ public interface PunishmentModel {
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     @SuppressWarnings("EmptyLineSeparator")
     interface Stale extends Partial {
-      static @NotNull Stale of(final @NotNull User by, final @Nullable String reason, final boolean automatic, final @Nullable ObjectId appeal) {
+      static @NotNull Stale of(
+        final @NotNull Optional<User> by,
+        final @Nullable String reason,
+        final boolean automatic,
+        final @Nullable ObjectId appeal
+      ) {
+        return of(
+          by.map(User::getId),
+          by.map(User::getUsername),
+          by.map(User::getDiscriminator)
+            .map(Discriminator::new),
+          reason,
+          automatic,
+          appeal
+        );
+      }
+
+      static @NotNull Stale of(
+        final @NotNull Optional<Snowflake> byId,
+        final @NotNull Optional<String> byUsername,
+        final @NotNull Optional<Discriminator> byDiscriminator,
+        final @Nullable String reason,
+        final boolean automatic,
+        final @Nullable ObjectId appeal
+      ) {
         return new Stale() {
           @Override
           public @NotNull Boolean stale() {
@@ -54,17 +80,17 @@ public interface PunishmentModel {
 
           @Override
           public Snowflake staleById() {
-            return by.getId();
+            return byId.orElse(null);
           }
 
           @Override
           public String staleByUsername() {
-            return by.getUsername();
+            return byUsername.orElse(null);
           }
 
           @Override
           public Discriminator staleByDiscriminator() {
-            return new Discriminator(by.getDiscriminator());
+            return byDiscriminator.orElse(null);
           }
 
           @Override
@@ -118,6 +144,7 @@ public interface PunishmentModel {
     @Deprecated
     @Nullable Discriminator punishedDiscriminator,
     @Nullable String reason,
+    @Nullable Duration duration,
     // an automatic punishment is one created without any intervention from a moderator
     @Nullable Boolean automatic,
     @Nullable Boolean expunged,
@@ -142,9 +169,10 @@ public interface PunishmentModel {
       final @NotNull Snowflake guild,
       final @NotNull Type type,
       final @NotNull Instant date,
-      final @NotNull User punisher,
+      final @NotNull Optional<User> punisher,
       final @NotNull User punished,
       final @Nullable String reason,
+      final @Nullable Duration duration,
       final boolean automatic
     ) {
       return new Complete(
@@ -152,13 +180,21 @@ public interface PunishmentModel {
         guild,
         type,
         date,
-        punisher.getId(),
-        punisher.getUsername(),
-        new Discriminator(punisher.getDiscriminator()),
+        punisher
+          .map(User::getId)
+          .orElse(null),
+        punisher
+          .map(User::getUsername)
+          .orElse(null),
+        punisher
+          .map(User::getDiscriminator)
+          .map(Discriminator::new)
+          .orElse(null),
         punished.getId(),
         punished.getUsername(),
         new Discriminator(punished.getDiscriminator()),
         reason,
+        duration,
         automatic,
         false,
         false,

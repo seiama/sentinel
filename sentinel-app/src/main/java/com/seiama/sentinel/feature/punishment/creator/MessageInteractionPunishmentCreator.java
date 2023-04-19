@@ -13,6 +13,7 @@ import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.User;
 import java.time.Instant;
+import java.util.Optional;
 import org.jetbrains.annotations.Nullable;
 import reactor.core.publisher.Mono;
 
@@ -55,9 +56,10 @@ public final class MessageInteractionPunishmentCreator implements Punishments.Cr
           this.guild.getId(),
           this.type,
           Instant.now(),
-          punisher,
+          Optional.of(punisher),
           punished,
           this.reason,
+          null,
           false
         ),
         punished,
