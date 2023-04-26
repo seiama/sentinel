@@ -143,7 +143,7 @@ public final class Punishments implements Listener {
     final Guild guild,
     final User user,
     final PunishmentModel.Complete punishment,
-    final PunishmentAction action
+    final PunishmentAction<User, PunishmentModel.Complete> action
   ) {
     return ACTUALLY_APPLY_PUNISHMENT
       ? action.apply(guild, user, punishment)
