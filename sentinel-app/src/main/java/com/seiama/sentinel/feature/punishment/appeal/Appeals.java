@@ -141,7 +141,7 @@ public class Appeals implements Listener {
             final ObjectId appealId = new ObjectId();
             final GuildModel.Complete.Features.Punishments.Appeals config = guildModel.features().punishments().appeals();
             final Member member = event.getMember();
-            final Flux<PunishmentModel.Complete> getActiveBans = this.punishments.findAllByGuildAndPunishedIdAndTypeAndStaleIsNotOrderByDateDesc(event.getGuildId(), member.getId(), PunishmentModel.Type.BAN, false);
+            final Flux<PunishmentModel.Complete> getActiveBans = this.punishments.findAllByGuildAndPunishedIdAndTypeAndStaleIsNotOrderByDateDesc(event.getGuildId(), member.getId(), PunishmentModel.Type.BAN, true);
             final Mono<PunishmentModel.Complete> kickUserForNoActivePunishment = event.getGuild()
               .flatMap(guild -> guild.kick(member.getId(), null))
               .then(Mono.empty());
