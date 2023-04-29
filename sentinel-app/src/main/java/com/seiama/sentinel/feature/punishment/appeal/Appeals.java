@@ -13,6 +13,7 @@ import com.seiama.sentinel.common.model.GuildRepository;
 import com.seiama.sentinel.common.model.PunishmentModel;
 import com.seiama.sentinel.common.model.PunishmentRepository;
 import com.seiama.sentinel.feature.punishment.PunishmentAction;
+import com.seiama.sentinel.feature.punishment.Punishments;
 import com.seiama.sentinel.feature.punishment.display.PunishmentDisplay;
 import com.seiama.sentinel.feature.punishment.display.PunishmentDisplayStyle;
 import com.seiama.sentinel.model.TemporaryMessageLink;
@@ -109,13 +110,15 @@ public class Appeals implements Listener {
 
   private final GuildRepository guilds;
   private final PunishmentRepository punishments;
+  private final Punishments punishmentOps;
   private final AppealRepository appeals;
   private final TemporaryMessageLinkRepository messageLinks;
 
   @Autowired
-  private Appeals(final GuildRepository guilds, final PunishmentRepository punishments, final AppealRepository appeals, final TemporaryMessageLinkRepository messageLinks) {
+  private Appeals(final GuildRepository guilds, final PunishmentRepository punishments, final Punishments punishmentOps, final AppealRepository appeals, final TemporaryMessageLinkRepository messageLinks) {
     this.guilds = guilds;
     this.punishments = punishments;
+    this.punishmentOps = punishmentOps;
     this.appeals = appeals;
     this.messageLinks = messageLinks;
   }
@@ -475,13 +478,13 @@ public class Appeals implements Listener {
       if (this.result == AppealModel.Result.ACCEPTED) {
         final Mono<PunishmentModel.Complete> updatedPunishment = Appeals.this.punishments.update(this.model.punishment(), PunishmentModel.Partial.Stale.of(this.user, this.reason, this.automatic, this.model._id()));
         return updatedPunishment
-          .flatMap(punishment -> switch (punishment.type()) {
-            case BAN -> this.client.getGuildById(punishment.guild()).flatMap(guild -> PunishmentAction.unban().apply(guild, punishment.punishedId(), String.format(
-              "Punishment (%s) has been appealed (%s).",
-              punishment._id(),
-              this.model._id()
-            ))).onErrorResume(ClientException.class, Reactive.<Void>ignoringException()); // avoid possible 10026
-            default -> Mono.empty();
+          .flatMap(punishment -> {
+            return this.client.getGuildById(punishment.guild())
+              .flatMap(guild -> Appeals.this.punishmentOps.unenforce(guild, punishment, String.format(
+                "Punishment (%s) has been appealed (%s).",
+                punishment._id(),
+                this.model._id()
+              )));
           });
       }
       return Mono.empty();
