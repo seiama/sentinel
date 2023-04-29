@@ -153,7 +153,7 @@ public final class Punishments implements Listener {
   public Mono<Void> unenforce(final Guild guild, final PunishmentModel.Complete punishment, final String reason) {
     return switch (punishment.type()) {
       case BAN -> PunishmentAction.unban().apply(guild, punishment.punishedId(), reason)
-        .onErrorResume(ClientException.class, Reactive.ignoringException()); // avoid possible 10026
+        .onErrorResume(ClientException.class, Reactive.<Void>ignoringException()); // avoid possible 10026
       case MUTE -> PunishmentAction.unmute().apply(guild, punishment.punishedId(), reason);
       default -> Mono.empty();
     };
