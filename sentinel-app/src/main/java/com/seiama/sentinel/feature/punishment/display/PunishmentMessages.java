@@ -23,6 +23,10 @@ public final class PunishmentMessages {
   private PunishmentMessages() {
   }
 
+  public static String enforcingExisting(final PunishmentModel.Complete punishment) {
+    return "Enforcing punishment %s".formatted(punishment._id());
+  }
+
   public static MessageCreateSpec punishmentPunishedDirectMessageEmbed(final PunishmentModel.Complete punishment, final @Nullable Guild guild) {
     return MessageCreateSpec.builder()
       .addEmbed(

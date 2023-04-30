@@ -3,10 +3,10 @@ package com.seiama.sentinel.feature.punishment.command;
 import com.seiama.sentinel.command.GuildCommand;
 import com.seiama.sentinel.command.Options;
 import com.seiama.sentinel.common.model.Feature;
-import com.seiama.sentinel.common.model.GuildRepository;
 import com.seiama.sentinel.common.model.PunishmentModel;
 import com.seiama.sentinel.feature.punishment.PunishmentAction;
 import com.seiama.sentinel.feature.punishment.Punishments;
+import com.seiama.sentinel.feature.punishment.creator.ChatInteractionPunishmentCreator;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.core.object.command.ApplicationCommandOption;
@@ -21,11 +21,10 @@ import reactor.core.publisher.Mono;
 @Component
 public final class WarnCommand implements GuildCommand {
   private static final String NAME = "warn";
-
   private final Punishments punishments;
 
   @Autowired
-  private WarnCommand(final GuildRepository guilds, final Punishments punishments) {
+  private WarnCommand(final Punishments punishments) {
     this.punishments = punishments;
   }
 
@@ -66,11 +65,6 @@ public final class WarnCommand implements GuildCommand {
 
   @Override
   public @NotNull Mono<?> on(final @NotNull GatewayDiscordClient client, final @NotNull ChatInputInteractionEvent event, final @NotNull Guild guild) {
-    return this.punishments.command(
-      event,
-      guild,
-      PunishmentModel.Type.WARN,
-      PunishmentAction.warn()
-    );
+    return this.punishments.createUsing(new ChatInteractionPunishmentCreator(event, guild, PunishmentModel.Type.WARN, PunishmentAction.warn()));
   }
 }
