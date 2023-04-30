@@ -5,22 +5,46 @@ import com.seiama.sentinel.feature.punishment.display.PunishmentMessages;
 import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.User;
-import discord4j.core.spec.BanQuerySpec;
 import discord4j.core.spec.GuildMemberEditSpec;
 import discord4j.discordjson.possible.Possible;
+import java.time.Duration;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalInt;
 import reactor.core.publisher.Mono;
 import reactor.function.Function3;
 
 public interface PunishmentAction<U, M> extends Function3<Guild, U, M, Mono<Void>> {
-  static PunishmentAction<User, PunishmentModel.Complete> ban() {
-    return (guild, user, punishment) -> guild.ban(
-      user.getId(),
-      BanQuerySpec.builder()
-        .reason(PunishmentMessages.punishmentPunishedReason(punishment))
-        .build()
+  Duration DELETE_MESSAGE_LENGTH = Duration.ofHours(1);
+
+  static PunishmentAction<User, PunishmentModel.Complete> ban(final Boolean deleteMessages) {
+    return ban(
+      Boolean.TRUE.equals(deleteMessages)
+        ? OptionalInt.of((int) DELETE_MESSAGE_LENGTH.toSeconds())
+        : OptionalInt.empty()
     );
+  }
+
+  @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+  static PunishmentAction<User, PunishmentModel.Complete> ban(final OptionalInt deleteMessageSeconds) {
+    return (guild, user, punishment) -> {
+      final String reason = PunishmentMessages.punishmentPunishedReason(punishment);
+      final Map<String, Object> request = new HashMap<>(2);
+      request.put("reason", reason);
+      if (deleteMessageSeconds.isPresent()) {
+        request.put("delete_message_seconds", deleteMessageSeconds.getAsInt());
+      }
+      return Mono.defer(
+        () -> guild.getClient().getRestClient().getGuildService()
+          .createGuildBan(
+            guild.getId().asLong(),
+            user.getId().asLong(),
+            request,
+            reason
+          ));
+    };
   }
 
   @SuppressWarnings("Convert2MethodRef")

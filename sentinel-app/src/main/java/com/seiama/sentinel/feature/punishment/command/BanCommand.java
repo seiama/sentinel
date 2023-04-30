@@ -55,6 +55,14 @@ public final class BanCommand implements GuildCommand {
           .required(false)
           .build()
       )
+      .addOption(
+        ApplicationCommandOptionData.builder()
+          .name(Options.DELETE_MESSAGES)
+          .description("If recent messages should be deleted - defaults to true")
+          .type(ApplicationCommandOption.Type.BOOLEAN.getValue())
+          .required(false)
+          .build()
+      )
       .build();
   }
 
@@ -65,6 +73,8 @@ public final class BanCommand implements GuildCommand {
 
   @Override
   public @NotNull Mono<?> on(final @NotNull GatewayDiscordClient client, final @NotNull ChatInputInteractionEvent event, final @NotNull Guild guild) {
-    return this.punishments.createUsing(new ChatInteractionPunishmentCreator(event, guild, PunishmentModel.Type.BAN, PunishmentAction.ban()));
+    return this.punishments.createUsing(new ChatInteractionPunishmentCreator(event, guild, PunishmentModel.Type.BAN, PunishmentAction.ban(
+      Options.bool(event, Options.DELETE_MESSAGES).orElse(true)
+    )));
   }
 }
