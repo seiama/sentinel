@@ -44,8 +44,8 @@
       </v-tooltip>
     </template>
     <template v-slot:item.punished_username="{ item }">
-      {{ item.raw.punished_username }}#{{ item.raw.punished_discriminator }}
-      <v-tooltip :text="`Include only punishments issued to ${item.raw.punished_username}#${item.raw.punished_discriminator}`" location="start">
+      {{ formatUsername(item.raw.punished_username, item.raw.punished_discriminator) }}
+      <v-tooltip :text="`Include only punishments issued to ${formatUsername(item.raw.punished_username, item.raw.punished_discriminator)}`" location="start">
         <template v-slot:activator="{ props }">
           <v-icon v-bind="props" class='float-end' @click='filter("punished_id", item.raw.punished_id)' icon="mdi-search-web">
           </v-icon>
@@ -61,8 +61,8 @@
     </template>
     <template v-slot:item.punisher_username="{ item }">
       <template v-if="item.raw.punisher_id !== undefined">
-        {{ item.raw.punisher_username }}#{{ item.raw.punisher_discriminator }}
-        <v-tooltip :text="`Include only punishments issued by ${item.raw.punisher_username}#${item.raw.punisher_discriminator}`" location="start">
+        {{ formatUsername(item.raw.punisher_username, item.raw.punisher_discriminator) }}
+        <v-tooltip :text="`Include only punishments issued by ${formatUsername(item.raw.punisher_username, item.raw.punisher_discriminator)}`" location="start">
           <template v-slot:activator="{ props }">
             <v-icon v-bind="props" class='float-end' @click='filter("punisher_id", item.raw.punisher_id)' icon="mdi-search-web">
             </v-icon>
@@ -141,6 +141,9 @@ export default {
     }
   },
   methods: {
+    formatUsername(username, discriminator) {
+      return discriminator !== null ? `${username}#${discriminator}` : username
+    },
     formatDate(date) {
       const dt = new Date(date)
       return dt.toLocaleDateString("en-SE") + " " + dt.toLocaleTimeString()

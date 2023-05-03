@@ -3,8 +3,7 @@ package com.seiama.sentinel.configuration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.seiama.sentinel.common.jackson.InstantExtendedJsonSerializer;
-import com.seiama.sentinel.common.jackson.ObjectIdExtendedJsonSerializer;
+import com.seiama.sentinel.common.jackson.DiscriminatorSerializer;
 import com.seiama.sentinel.common.jackson.ObjectIdSerializer;
 import com.seiama.sentinel.common.jackson.SnowflakeSerializer;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
@@ -20,6 +19,7 @@ public class JacksonConfiguration {
     return builder -> builder.modules(
       new JavaTimeModule(),
       new SimpleModule()
+        .addSerializer(new DiscriminatorSerializer())
         .addSerializer(new ObjectIdSerializer())
         .addSerializer(new SnowflakeSerializer())
     );
@@ -29,17 +29,5 @@ public class JacksonConfiguration {
   @Primary
   ObjectMapper defaultObjectMapper(final Jackson2ObjectMapperBuilder builder) {
     return builder.createXmlMapper(false).build();
-  }
-
-  @Bean("extendedJsonMapper")
-  ObjectMapper mapperForExtendedJson() {
-    return new ObjectMapper()
-      .registerModule(new JavaTimeModule())
-      .registerModule(
-        new SimpleModule()
-          .addSerializer(new InstantExtendedJsonSerializer())
-          .addSerializer(new ObjectIdExtendedJsonSerializer())
-          .addSerializer(new SnowflakeSerializer())
-      );
   }
 }

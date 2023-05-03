@@ -1,14 +1,23 @@
 package com.seiama.sentinel.common.discord;
 
+import com.seiama.sentinel.common.model.Discriminator;
 import discord4j.common.util.Snowflake;
 import org.jetbrains.annotations.Nullable;
 
 public interface Mention {
+  static String userWithId(final Snowflake id, final @Nullable String username, final @Nullable Discriminator discriminator) {
+    return userWithId(id, username, Discriminator.unbox(discriminator));
+  }
+
   static String userWithId(final Snowflake id, final @Nullable String username, final @Nullable String discriminator) {
     final StringBuilder sb = new StringBuilder();
     sb.append("<@").append(id.asLong()).append("> (");
-    if (username != null && discriminator != null) {
-      sb.append("`").append(username).append("#").append(discriminator).append("` / ");
+    if (username != null) {
+      sb.append("`").append(username);
+      if (discriminator != null) {
+        sb.append("#").append(discriminator);
+      }
+      sb.append("` / ");
     }
     sb.append("`").append(id.asLong()).append("`)");
     return sb.toString();

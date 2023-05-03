@@ -62,8 +62,8 @@ public interface PunishmentModel {
           }
 
           @Override
-          public String staleByDiscriminator() {
-            return by.getDiscriminator();
+          public Discriminator staleByDiscriminator() {
+            return new Discriminator(by.getDiscriminator());
           }
 
           @Override
@@ -87,7 +87,7 @@ public interface PunishmentModel {
       @JsonProperty Instant staleAt();
       @JsonProperty Snowflake staleById();
       @JsonProperty String staleByUsername();
-      @JsonProperty String staleByDiscriminator();
+      @JsonProperty Discriminator staleByDiscriminator();
       @JsonProperty @Nullable String staleReason();
       @JsonProperty @Nullable Boolean staleAutomatic();
       @JsonSerialize(using = ObjectIdExtendedJsonSerializer.class)
@@ -110,10 +110,12 @@ public interface PunishmentModel {
     @MongoDate Instant date,
     Snowflake punisherId,
     String punisherUsername,
-    String punisherDiscriminator,
+    @Deprecated
+    Discriminator punisherDiscriminator,
     Snowflake punishedId,
     @Nullable String punishedUsername,
-    @Nullable String punishedDiscriminator,
+    @Deprecated
+    @Nullable Discriminator punishedDiscriminator,
     @Nullable String reason,
     // an automatic punishment is one created without any intervention from a moderator
     @Nullable Boolean automatic,
@@ -124,7 +126,8 @@ public interface PunishmentModel {
     @MongoDate @Nullable Instant staleAt,
     @Nullable Snowflake staleById,
     @Nullable String staleByUsername,
-    @Nullable String staleByDiscriminator,
+    @Deprecated
+    @Nullable Discriminator staleByDiscriminator,
     @Nullable String staleReason,
     @Nullable Boolean staleAutomatic,
     // only non-null if the punishment was appealed
@@ -150,10 +153,10 @@ public interface PunishmentModel {
         date,
         punisher.getId(),
         punisher.getUsername(),
-        punisher.getDiscriminator(),
+        new Discriminator(punisher.getDiscriminator()),
         punished.getId(),
         punished.getUsername(),
-        punished.getDiscriminator(),
+        new Discriminator(punished.getDiscriminator()),
         reason,
         automatic,
         false,
