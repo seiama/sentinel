@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 @Component
-public class QuickBanMessageCommand implements MessageCommand {
+public final class QuickBanMessageCommand implements MessageCommand {
   private static final String NAME = "Quick Ban";
   private final Punishments punishments;
 

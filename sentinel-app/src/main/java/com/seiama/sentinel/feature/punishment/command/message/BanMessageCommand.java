@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 @Component
-public class BanMessageCommand implements MessageCommand {
+public final class BanMessageCommand implements MessageCommand {
   private static final String NAME = "Ban";
   private final Punishments punishments;
 
