@@ -48,6 +48,6 @@ public final class QuickKickMessageCommand implements MessageCommand {
   @Override
   public @NotNull Mono<?> on(final @NotNull GatewayDiscordClient client, final @NotNull MessageInteractionEvent event, final @NotNull Guild guild) {
     final String reason = "Quick-kicked for sending a message in " + MentionUtil.forChannel(event.getResolvedMessage().getChannelId());
-    return this.punishments.createUsing(new MessageInteractionPunishmentCreator(event, guild, PunishmentModel.Type.KICK, PunishmentAction.kick(), reason));
+    return this.punishments.createUsing(new MessageInteractionPunishmentCreator(event, event.getResolvedMessage(), guild, PunishmentModel.Type.KICK, PunishmentAction.kick(), reason));
   }
 }

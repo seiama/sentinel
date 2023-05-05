@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeoutException;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 import reactor.core.publisher.Mono;
 
 public final class Modals {
@@ -22,7 +22,7 @@ public final class Modals {
     final String modalTitle,
     final String inputTitle,
     final boolean inputRequired,
-    final Function<Optional<String>, Mono<T>> onText
+    final BiFunction<ModalSubmitInteractionEvent, Optional<String>, Mono<T>> onText
   ) {
     final String modalId = createRandomId();
     final String inputId = createRandomId();
@@ -36,7 +36,7 @@ public final class Modals {
             if (modalId.equals(modal.getCustomId())) {
               for (final TextInput component : modal.getComponents(TextInput.class)) {
                 if (inputId.equals(component.getCustomId())) {
-                  return onText.apply(component.getValue());
+                  return onText.apply(modal, component.getValue());
                 }
               }
             }
