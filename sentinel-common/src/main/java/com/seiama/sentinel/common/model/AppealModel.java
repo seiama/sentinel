@@ -33,7 +33,7 @@ public interface AppealModel {
         updates.pull(Fields.votes(value), user);
       }
     }
-    updates.push(Fields.votes(vote), user);
+    updates.addToSet(Fields.votes(vote), user);
     return updates;
   }
 
