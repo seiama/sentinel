@@ -143,7 +143,7 @@ public class Appeals implements Listener {
             final Member member = event.getMember();
             final Flux<PunishmentModel.Complete> getActiveBans = this.punishments.findAllByGuildAndPunishedIdAndTypeAndStaleIsNotOrderByDateDesc(guildModel.guild(), member.getId(), PunishmentModel.Type.BAN, true);
             final Mono<PunishmentModel.Complete> kickUserForNoActivePunishment = event.getGuild()
-              .flatMap(guild -> guild.kick(member.getId(), null))
+              .flatMap(guild -> guild.kick(member.getId(), "Could not find an active ban."))
               .then(Mono.empty());
             final Mono<TextChannel> createAppealChannel = event.getGuild()
               .flatMap(guild -> guild.createTextChannel(createChannelName(member, appealId))
