@@ -2,6 +2,7 @@ package com.seiama.sentinel.feature.punishment.appeal;
 
 import com.seiama.common.Comparables;
 import com.seiama.sentinel.common.Listener;
+import com.seiama.sentinel.common.SharedConstants;
 import com.seiama.sentinel.common.discord.Discord;
 import com.seiama.sentinel.common.discord.Emoji;
 import com.seiama.sentinel.common.discord.Mention;
@@ -205,11 +206,16 @@ public class Appeals implements Listener {
                   channel.createMessage(PunishmentDisplay.punishment(punishment, PunishmentDisplayStyle.APPEAL)),
                   channel.createMessage(String.format("Hey, %s! This appeal is now active. Please explain why you think this punishment should be appealed.", member.getMention())),
                   appealThreadChannel.createMessage(PunishmentDisplay.punishment(punishment, PunishmentDisplayStyle.FULL).asRequest()),
-                  appealThreadChannel.createMessage(String.format(
-                    "%s Please note that any messages sent in this channel will be shared with the user who is appealing. For staff discussion, please use %s",
-                    Emoji.WARNING.asFormat(),
-                    MentionUtil.forChannel(Snowflake.of(appealDiscussionThread.id()))
-                  )),
+                  appealThreadChannel.createMessage(
+                    EmbedCreateSpec.builder()
+                      .color(Color.of(SharedConstants.COLOR_YELLOW))
+                      .title("%1$s WARNING %1$s".formatted(Emoji.WARNING.asFormat()))
+                      .description("Please note that any messages sent in this channel will be shared with the user who is appealing. For staff discussion, please use %s.".formatted(
+                        MentionUtil.forChannel(Snowflake.of(appealDiscussionThread.id()))
+                      ))
+                      .build()
+                      .asRequest()
+                  ),
                   appealDiscussionThreadChannel.createMessage(
                     MessageCreateSpec.builder()
                       .addEmbed(
