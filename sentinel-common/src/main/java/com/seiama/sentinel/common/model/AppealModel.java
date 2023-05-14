@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.seiama.sentinel.common.SharedConstants;
 import com.seiama.sentinel.common.annotation.MongoDate;
 import com.seiama.sentinel.common.annotation.MongoId;
 import com.seiama.sentinel.common.annotation.MongoPrimaryId;
@@ -136,9 +137,9 @@ public interface AppealModel {
   }
 
   enum Result {
-    ACCEPTED(0x17a878, new Words("accepted", "Accepted")),
-    DENIED(0xa81747, new Words("denied", "Denied")),
-    CANCELLED(0xbb9039, new Words("cancelled", "Cancelled"));
+    ACCEPTED(SharedConstants.COLOR_GREEN, new Words("accepted", "Accepted")),
+    DENIED(SharedConstants.COLOR_RED, new Words("denied", "Denied")),
+    CANCELLED(SharedConstants.COLOR_ORANGE, new Words("cancelled", "Cancelled"));
 
     private final int color;
     private final Words words;

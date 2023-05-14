@@ -231,6 +231,14 @@ public class Appeals implements Listener {
                     client.rest().getChannelService().addPinnedMessage(appealDiscussionThread.id().asLong(), voteMessage.id().asLong()),
                     this.appeals.update(model._id(), (AppealModel.Partial.VoteMessage) () -> Snowflake.of(voteMessage.id()))
                   )),
+                  appealDiscussionThreadChannel.createMessage(
+                    EmbedCreateSpec.builder()
+                      .color(Color.of(SharedConstants.COLOR_BLUE))
+                      .title("Appeal channel")
+                      .description(MentionUtil.forChannel(Snowflake.of(appealThread.id())))
+                      .build()
+                      .asRequest()
+                  ).flatMap(voteMessage -> client.rest().getChannelService().addPinnedMessage(appealDiscussionThread.id().asLong(), voteMessage.id().asLong())),
                   client.rest().getChannelById(config.appealThreadsChannel()).createMessage(
                     EmbedCreateSpec.builder()
                       .color(Color.of(NEW_APPEAL_NOTIFICATION_COLOR))
