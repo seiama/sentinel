@@ -13,7 +13,7 @@ public interface PunishmentRepository extends ReactiveMongoRepository<Punishment
 
   Flux<PunishmentModel.Complete> findAllByGuild(final Snowflake guild);
 
-  Flux<PunishmentModel.Complete> findAllByPunishedId(final Snowflake punishedId);
+  Flux<PunishmentModel.Complete> findAllByPunishedIdOrderByDateDesc(final Snowflake punishedId);
 
   Flux<PunishmentModel.Complete> findAllByPunisherId(final Snowflake punisherId);
 }
