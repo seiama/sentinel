@@ -52,6 +52,6 @@ public final class BanMessageCommand implements MessageCommand {
     final String modalTitle = "Ban" + event.getResolvedMessage().getAuthor().map(User::getTag).map(" "::concat).orElse("");
     return Modals.presentAndCaptureSingleTextInput(event, modalTitle, "Reason", false, (modal, reason) -> {
       return this.punishments.createUsing(new MessageInteractionPunishmentCreator(modal, event.getResolvedMessage(), guild, PunishmentModel.Type.BAN, PunishmentAction.ban(true), reason.orElse(null)));
-    });
+    }, null);
   }
 }

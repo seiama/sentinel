@@ -27,7 +27,7 @@ public interface AppealModel {
   String COLLECTION = "appeals";
 
   @SuppressWarnings("MethodName")
-  static Update setVote(final Snowflake user, final Vote vote) {
+  static Update setVote(final Snowflake user, final Vote vote, final @Nullable String reason) {
     final Update updates = new Update();
     for (final Vote value : Vote.VALUES) {
       if (value != vote) {
@@ -35,14 +35,20 @@ public interface AppealModel {
       }
     }
     updates.addToSet(Fields.votes(vote), user);
+    updates.set(Fields.voteReasons(vote, user), reason);
     return updates;
   }
 
   interface Fields {
     String VOTES = "votes";
+    String VOTE_REASONS = "vote_reasons";
 
     static String votes(final Vote vote) {
       return VOTES + "." + vote.name();
+    }
+
+    static String voteReasons(final Vote vote, final Snowflake user) {
+      return VOTE_REASONS + "." + vote.name() + "." + user.asString();
     }
   }
 
@@ -83,24 +89,36 @@ public interface AppealModel {
   }
 
   enum Vote {
-    YES(Emoji.YES, new Words("yes", "Yes")),
-    NO(Emoji.NO, new Words("no", "No")),
-    ABSTAIN(Emoji.PERSON_SHRUGGING, new Words("abstain", "Abstain")),
-    LATER(Emoji.CLOCK1, new Words("later", "Later")),
-    VETO(Emoji.HAMMER, new Words("veto", "Veto"));
+    YES(true, false, Emoji.YES, new Words("yes", "Yes")),
+    NO(true, false, Emoji.NO, new Words("no", "No")),
+    ABSTAIN(true, false, Emoji.PERSON_SHRUGGING, new Words("abstain", "Abstain")),
+    LATER(true, false, Emoji.CLOCK1, new Words("later", "Later")),
+    VETO(false, true, Emoji.HAMMER, new Words("veto", "Veto"));
 
     static final Vote[] VALUES = values();
 
+    private final boolean canVoteWithIfPunisher;
+    private final boolean requiresReason;
     private final ReactionEmoji emoji;
     private final Words words;
 
-    Vote(final ReactionEmoji emoji, final Words words) {
+    Vote(final boolean canVoteWithIfPunisher, final boolean requiresReason, final ReactionEmoji emoji, final Words words) {
+      this.canVoteWithIfPunisher = canVoteWithIfPunisher;
+      this.requiresReason = requiresReason;
       this.emoji = emoji;
       this.words = words;
     }
 
     public static Stream<Vote> all() {
       return Arrays.stream(VALUES);
+    }
+
+    public boolean canVoteWithIfPunisher() {
+      return this.canVoteWithIfPunisher;
+    }
+
+    public boolean requiresReason() {
+      return this.requiresReason;
     }
 
     public VoteResult asResult() {
