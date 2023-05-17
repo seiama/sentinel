@@ -65,6 +65,8 @@ public final class PunishmentMessages {
     return "(%s) %s".formatted(
       punishment._id(),
       Objects.requireNonNullElse(punishment.reason(), REASON_NOT_SPECIFIED)
+        .replace("\r\n", " ")
+        .replace("\n", " ")
     );
   }
 
