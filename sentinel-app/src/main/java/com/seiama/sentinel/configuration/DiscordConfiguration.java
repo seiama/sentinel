@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class DiscordConfiguration extends AbstractDiscordConfiguration {
   private static final String DISCORD_TOKEN_FACTOIDS = "DISCORD_TOKEN_FACTOIDS";
+  private static final String DISCORD_TOKEN_RELAY = "DISCORD_TOKEN_RELAY";
 
   @Override
   protected IntentSet intents() {
@@ -33,5 +34,10 @@ public class DiscordConfiguration extends AbstractDiscordConfiguration {
   @Bean("factoidsRest")
   RestClient factoidsRest() {
     return RestClient.create(System.getenv(DISCORD_TOKEN_FACTOIDS));
+  }
+
+  @Bean("relayRest")
+  RestClient relayRest() {
+    return RestClient.create(System.getenv(DISCORD_TOKEN_RELAY));
   }
 }
