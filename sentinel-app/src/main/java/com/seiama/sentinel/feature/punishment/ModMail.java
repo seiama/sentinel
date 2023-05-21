@@ -3,6 +3,7 @@ package com.seiama.sentinel.feature.punishment;
 import com.seiama.sentinel.common.CustomId;
 import com.seiama.sentinel.common.Listener;
 import com.seiama.sentinel.common.discord.Emoji;
+import com.seiama.sentinel.common.discord.Links;
 import com.seiama.sentinel.common.discord.Mention;
 import com.seiama.sentinel.common.model.GuildRepository;
 import com.seiama.sentinel.common.model.ModMailModel;
@@ -80,7 +81,7 @@ public class ModMail implements Listener {
                   MessageEditRequest.builder()
                     .componentsOrNull(
                       ActionRow.of(
-                        Button.link(Mention.channelLink(model.guild(), Snowflake.of(thread.id())), Emoji.PENCIL, "Go To Thread")
+                        Button.link(Links.channel(model.guild(), Snowflake.of(thread.id())), Emoji.PENCIL, "Go To Thread")
                       ).getData()
                     )
                     .build()
@@ -145,7 +146,7 @@ public class ModMail implements Listener {
           message.getAuthor()
             .map(author -> Mention.userWithId(author.getId(), author.getUsername(), author.getDiscriminator()))
             .ifPresent(author -> embed.addField("Author", author, false));
-          embed.addField("Message", Mention.messageLink(guild, message), false);
+          embed.addField("Message", Links.message(guild, message), false);
         }
         return client.rest().getChannelById(guildModel.features().modmail().notificationChannel())
           .createMessage(
