@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.seiama.sentinel.common.annotation.MongoPrimaryId;
 import discord4j.common.util.Snowflake;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -26,7 +28,8 @@ public interface GuildModel {
     public record Features(
       Punishments punishments,
       Factoids factoids,
-      ModMail modmail
+      ModMail modmail,
+      Logging logging
     ) {
       @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
       public record Punishments(
@@ -66,6 +69,17 @@ public interface GuildModel {
         Snowflake notificationChannel,
         Snowflake threadChannel
       ) {
+      }
+
+      @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+      public record Logging(
+        boolean enabled,
+        Map<Snowflake, List<Event>> mapping
+      ) {
+        public enum Event {
+          MEMBER_JOIN,
+          MEMBER_LEAVE,
+        }
       }
     }
   }
