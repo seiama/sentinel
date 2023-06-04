@@ -148,7 +148,7 @@ public class Appeals implements Listener {
       voteTicker,
       client.on(MemberJoinEvent.class, event -> {
         return this.guilds.findByFeaturesPunishmentsAppealsGuild(event.getGuildId())
-          .filter(Feature.PUNISHMENTS_APPEALS.enabledForGuild())
+          .filter(Feature.APPEALS.enabledForGuild())
           .flatMap(guildModel -> {
             final ObjectId appealId = new ObjectId();
             final GuildModel.Complete.Features.Punishments.Appeals config = guildModel.features().punishments().appeals();
@@ -278,7 +278,7 @@ public class Appeals implements Listener {
         }
         return message.getGuild()
           .zipWhen(guild -> this.guilds.findByGuildOrFeaturesPunishmentsAppealsGuild(guild.getId(), guild.getId()))
-          .filter(tuple -> Feature.PUNISHMENTS_APPEALS.enabledForGuild(tuple.getT2()))
+          .filter(tuple -> Feature.APPEALS.enabledForGuild(tuple.getT2()))
           .zipWith(message.getChannel())
           // todo: filter channel by ids
           .flatMap(TupleUtils.function((guild, channel) -> {
