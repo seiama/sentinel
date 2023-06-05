@@ -14,6 +14,6 @@ public class DiscriminatorSerializer extends StdSerializer<Discriminator> {
 
   @Override
   public void serialize(final Discriminator value, final JsonGenerator gen, final SerializerProvider serializers) throws IOException {
-    Discriminator.write(value, gen::writeString, gen::writeNull);
+    Discriminator.write(value, gen::writeNull, gen::writeString);
   }
 }

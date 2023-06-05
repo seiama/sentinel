@@ -2,7 +2,6 @@ package com.seiama.sentinel.common.model;
 
 import com.seiama.common.functional.function.exceptional.Consumer1E;
 import com.seiama.common.functional.function.exceptional.RunnableE;
-import java.io.IOException;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.VisibleForTesting;
 
@@ -19,18 +18,22 @@ public record Discriminator(
   }
 
   public static @Nullable String unbox(final @Nullable Discriminator discriminator) {
-    if (discriminator != null && !discriminator.migrated()) {
-      return discriminator.value();
-    } else {
+    if (discriminator == null || discriminator.migrated()) {
       return null;
+    } else {
+      return discriminator.value();
     }
   }
 
-  public static void write(final @Nullable Discriminator discriminator, final Consumer1E<String, IOException> present, final RunnableE<IOException> absent) throws IOException {
-    if (discriminator != null && !discriminator.migrated()) {
-      present.accept(discriminator.value());
+  public static <E extends Throwable> void write(
+    final @Nullable Discriminator discriminator,
+    final RunnableE<E> migrated,
+    final Consumer1E<String, E> unmigrated
+  ) throws E {
+    if (discriminator == null || discriminator.migrated()) {
+      migrated.run();
     } else {
-      absent.run();
+      unmigrated.accept(discriminator.value());
     }
   }
 }

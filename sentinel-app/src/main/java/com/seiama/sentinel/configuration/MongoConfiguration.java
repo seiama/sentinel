@@ -3,7 +3,9 @@ package com.seiama.sentinel.configuration;
 import com.mongodb.MongoClientSettings;
 import com.seiama.sentinel.common.bson.DiscriminatorCodec;
 import com.seiama.sentinel.common.bson.SnowflakeCodec;
+import com.seiama.sentinel.common.converter.ReadingDiscriminatorConverter;
 import com.seiama.sentinel.common.converter.SnowflakeToStringConverter;
+import com.seiama.sentinel.common.converter.WritingDiscriminatorConverter;
 import java.util.List;
 import org.bson.codecs.configuration.CodecRegistries;
 import org.bson.codecs.pojo.PojoCodecProvider;
@@ -35,6 +37,8 @@ public class MongoConfiguration {
   @Bean
   MongoCustomConversions customConversions() {
     return new MongoCustomConversions(List.of(
+      new ReadingDiscriminatorConverter(),
+      new WritingDiscriminatorConverter(),
       new SnowflakeToStringConverter()
     ));
   }
