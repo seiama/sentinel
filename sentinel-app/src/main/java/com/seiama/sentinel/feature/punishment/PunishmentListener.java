@@ -70,7 +70,7 @@ public class PunishmentListener implements Listener {
             this.tryGetUser(client, entry)
           ).flatMap(TupleUtils.function((guild, punished, punisher) -> {
             final String reason = entry.getReason().orElse(null);
-            final boolean automatic = false;
+            final boolean automatic = this.punishments.shouldBeAssumedAsAutomatic(punisher);
             final ActionType action = entry.getActionType();
             return switch (action) {
               case MEMBER_KICK, MEMBER_BAN_ADD, MEMBER_UPDATE -> {
