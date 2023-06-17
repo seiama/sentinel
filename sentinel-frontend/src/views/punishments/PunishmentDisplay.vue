@@ -36,7 +36,7 @@
                 color="primary"
                 icon="mdi-account"
               />
-              <span class="ms-3"><b>User:</b> {{ punishment.punished_username }}#{{ punishment.punished_discriminator }} ({{ punishment.punished_id }})</span>
+              <span class="ms-3"><b>User:</b> {{ punishment.punished_username }}{{ punishment.punished_discriminator ? `#${punishment.punished_discriminator}` }} ({{ punishment.punished_id }})</span>
             </p>
 
             <p class="d-flex align-center mb-6">
