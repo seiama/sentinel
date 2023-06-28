@@ -15,6 +15,7 @@ dependencies {
   implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.12.7")
   implementation("com.google.guava:guava:31.1-jre")
   implementation("com.seiama:commons:1.0.0-SNAPSHOT")
+  implementation("com.seiama:functional:1.0.0-SNAPSHOT")
   implementation("it.unimi.dsi:fastutil:8.5.6")
   implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
   implementation("org.springframework.boot:spring-boot-starter-web")

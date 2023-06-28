@@ -5,8 +5,8 @@ import com.seiama.sentinel.common.Listener;
 import com.seiama.sentinel.common.SharedConstants;
 import com.seiama.sentinel.common.discord.Discord;
 import com.seiama.sentinel.common.discord.Emoji;
-import com.seiama.sentinel.common.discord.Mention;
 import com.seiama.sentinel.common.discord.Modals;
+import com.seiama.sentinel.common.discord.UserDisplay;
 import com.seiama.sentinel.common.model.AppealModel;
 import com.seiama.sentinel.common.model.AppealRepository;
 import com.seiama.sentinel.common.model.Feature;
@@ -14,6 +14,7 @@ import com.seiama.sentinel.common.model.GuildModel;
 import com.seiama.sentinel.common.model.GuildRepository;
 import com.seiama.sentinel.common.model.PunishmentModel;
 import com.seiama.sentinel.common.model.PunishmentRepository;
+import com.seiama.sentinel.common.model.UserIdentity;
 import com.seiama.sentinel.feature.punishment.Punishments;
 import com.seiama.sentinel.feature.punishment.display.PunishmentDisplay;
 import com.seiama.sentinel.feature.punishment.display.PunishmentDisplayStyle;
@@ -256,7 +257,7 @@ public class Appeals implements Listener {
                     EmbedCreateSpec.builder()
                       .color(Color.of(NEW_APPEAL_NOTIFICATION_COLOR))
                       .title("A new appeal has been created")
-                      .description(String.format("A new appeal has been created by %s.", Mention.userWithId(member)))
+                      .description(String.format("A new appeal has been created by %s.", UserDisplay.render(UserDisplay.Renderer.MENTION_WITH_TRAILING_BACKTICK_WRAPPED_USERNAME_AND_ID, new UserIdentity(member))))
                       .addField("Appeal channel", MentionUtil.forChannel(Snowflake.of(appealThread.id())), false)
                       .addField("Discussion channel", MentionUtil.forChannel(Snowflake.of(appealDiscussionThread.id())), false)
                       .build()
@@ -387,7 +388,7 @@ public class Appeals implements Listener {
   }
 
   private static String createThreadName(final Member member) {
-    return member.getUsername() + "#" + member.getDiscriminator();
+    return UserDisplay.render(UserDisplay.Renderer.USERNAME, new UserIdentity(member));
   }
 
   Mono<AppealModel.Complete> findByAppealThread(final Snowflake channel) {
@@ -621,7 +622,7 @@ public class Appeals implements Listener {
         case DENIED -> "The appeal was denied." + this.nextAttemptMayBeMadeAt("The");
         case CANCELLED -> "The appeal was cancelled.";
       });
-      embed.addField(this.result.strings().nameForStartOfSentence() + " by", Mention.userWithId(this.user), false);
+      embed.addField(this.result.strings().nameForStartOfSentence() + " by", UserDisplay.render(UserDisplay.Renderer.MENTION_WITH_TRAILING_BACKTICK_WRAPPED_USERNAME_AND_ID, new UserIdentity(this.user)), false);
       if (this.reason != null) {
         embed.addField("Reason", this.reason, false);
       }

@@ -1,5 +1,6 @@
 package com.seiama.sentinel.common.discord;
 
+import com.seiama.sentinel.common.model.UserIdentity;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.User;
 import discord4j.core.spec.EmbedCreateFields;
@@ -33,7 +34,7 @@ public final class Discord {
   @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
   public static @NotNull EmbedAuthorData author(final @NotNull UserData data, final @NotNull Optional<User> user) {
     return EmbedAuthorData.builder()
-      .name(data.username() + "#" + data.discriminator())
+      .name(UserDisplay.render(UserDisplay.Renderer.USERNAME, new UserIdentity(data)))
       .iconUrl(user.map(User::getAvatarUrl).map(Possible::of).orElse(Possible.absent()))
       .build();
   }

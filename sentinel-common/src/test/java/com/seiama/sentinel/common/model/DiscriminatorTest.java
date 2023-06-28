@@ -1,24 +1,34 @@
 package com.seiama.sentinel.common.model;
 
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 @SuppressWarnings("deprecation")
 class DiscriminatorTest {
   @ParameterizedTest
-  @CsvSource({
+  @CsvSource(value = {
+    "null,true",
     "0,true",
     "0000,false",
     "0001,false",
     "1000,false"
-  })
+  }, nullValues = "null")
   void testMigrated(final String value, final boolean expected) {
     final Discriminator discriminator = new Discriminator(value);
     assertEquals(expected, discriminator.migrated());
+  }
+
+  @Test
+  void testUnbox() {
+    assertNull(Discriminator.unbox(new Discriminator((String) null)));
+    assertNull(Discriminator.unbox(new Discriminator(Discriminator.TEMPORARY_MIGRATION_MARKER)));
+    assertEquals("0001", Discriminator.unbox(new Discriminator("0001")));
   }
 
   @ParameterizedTest

@@ -51,8 +51,7 @@ public interface PunishmentModel {
         return of(
           by.map(User::getId),
           by.map(User::getUsername),
-          by.map(User::getDiscriminator)
-            .map(Discriminator::new),
+          by.map(Discriminator::new),
           reason,
           automatic,
           appeal
@@ -114,7 +113,8 @@ public interface PunishmentModel {
       @JsonProperty Instant staleAt();
       @JsonProperty Snowflake staleById();
       @JsonProperty String staleByUsername();
-      @JsonProperty Discriminator staleByDiscriminator();
+      @JsonProperty
+      Discriminator staleByDiscriminator();
       @JsonProperty @Nullable String staleReason();
       @JsonProperty @Nullable Boolean staleAutomatic();
       @JsonSerialize(using = ObjectIdExtendedJsonSerializer.class)
@@ -138,7 +138,7 @@ public interface PunishmentModel {
     Snowflake punisherId,
     String punisherUsername,
     @Deprecated
-    Discriminator punisherDiscriminator,
+    @Nullable Discriminator punisherDiscriminator,
     Snowflake punishedId,
     @Nullable String punishedUsername,
     @Deprecated
@@ -165,6 +165,14 @@ public interface PunishmentModel {
     @MongoDate @Nullable Instant importAt,
     @Nullable Snowflake dmNotificationMessageId
   ) implements AbstractModel, Partial.Reason, Partial.Expunged, Partial.Stale {
+    public UserIdentity punisher() {
+      return new UserIdentity(this.punisherId, this.punisherUsername, this.punisherDiscriminator);
+    }
+
+    public UserIdentity punished() {
+      return new UserIdentity(this.punishedId, this.punishedUsername, this.punishedDiscriminator);
+    }
+
     public static @NotNull Complete create(
       final @NotNull Snowflake guild,
       final @NotNull Type type,
@@ -187,12 +195,11 @@ public interface PunishmentModel {
           .map(User::getUsername)
           .orElse(null),
         punisher
-          .map(User::getDiscriminator)
           .map(Discriminator::new)
           .orElse(null),
         punished.getId(),
         punished.getUsername(),
-        new Discriminator(punished.getDiscriminator()),
+        new Discriminator(punished),
         reason,
         duration,
         automatic,

@@ -4,10 +4,12 @@ import com.seiama.sentinel.common.CustomId;
 import com.seiama.sentinel.common.Listener;
 import com.seiama.sentinel.common.discord.Emoji;
 import com.seiama.sentinel.common.discord.Links;
-import com.seiama.sentinel.common.discord.Mention;
+import com.seiama.sentinel.common.discord.UserDisplay;
+import com.seiama.sentinel.common.model.Discriminator;
 import com.seiama.sentinel.common.model.GuildRepository;
 import com.seiama.sentinel.common.model.ModMailModel;
 import com.seiama.sentinel.common.model.ModMailRepository;
+import com.seiama.sentinel.common.model.UserIdentity;
 import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.interaction.ButtonInteractionEvent;
@@ -63,7 +65,7 @@ public class ModMail implements Listener {
                       guildModel.features().modmail().threadChannel().asLong(),
                       StartThreadWithoutMessageRequest.builder()
                         .type(Channel.Type.GUILD_PRIVATE_THREAD.getValue())
-                        .name("%s#%s".formatted(model.creatorUsername(), model.creatorDiscriminator()))
+                        .name(UserDisplay.render(UserDisplay.Renderer.USERNAME, model.creator()))
                         .autoArchiveDuration(THREAD_AUTO_ARCHIVE_DURATION)
                         .build()
                     );
@@ -124,7 +126,7 @@ public class ModMail implements Listener {
         type,
         user.getId(),
         user.getUsername(),
-        user.getDiscriminator(),
+        new Discriminator(user),
         message != null ? message.getId() : null,
         content,
         null,
@@ -144,7 +146,8 @@ public class ModMail implements Listener {
         embed.description(description.toString());
         if (message != null) {
           message.getAuthor()
-            .map(Mention::userWithId)
+            .map(UserIdentity::new)
+            .map(identity -> UserDisplay.render(UserDisplay.Renderer.MENTION_WITH_TRAILING_BACKTICK_WRAPPED_USERNAME_AND_ID, identity))
             .ifPresent(author -> embed.addField("Author", author, false));
           embed.addField("Message", Links.message(guild, message), false);
         }
