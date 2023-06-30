@@ -56,6 +56,7 @@ import discord4j.discordjson.json.UserData;
 import discord4j.discordjson.possible.Possible;
 import discord4j.rest.RestClient;
 import discord4j.rest.entity.RestChannel;
+import discord4j.rest.http.client.ClientException;
 import discord4j.rest.util.Color;
 import discord4j.rest.util.Permission;
 import discord4j.rest.util.PermissionSet;
@@ -579,7 +580,7 @@ public class Appeals implements Listener {
                 .deny(PermissionSet.of(Permission.SEND_MESSAGES).getRawValue())
                 .build(),
               reasonForActionLog
-            )
+            ).onErrorResume(ClientException.class, Reactive.<Void>ignoringException()) // avoid possible 10009 if the user has left the guild
           ),
           this.client.rest().getChannelById(this.model.appealThread()).createMessage(embedForStaff).then(
             this.client.rest().getChannelService().modifyThread(
