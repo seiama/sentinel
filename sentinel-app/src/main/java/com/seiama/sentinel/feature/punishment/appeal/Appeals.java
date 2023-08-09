@@ -2,27 +2,22 @@ package com.seiama.sentinel.feature.punishment.appeal;
 
 import com.seiama.common.Comparables;
 import com.seiama.sentinel.common.Listener;
-import com.seiama.sentinel.common.SharedConstants;
 import com.seiama.sentinel.common.discord.Discord;
 import com.seiama.sentinel.common.discord.Emoji;
-import com.seiama.sentinel.common.discord.Modals;
 import com.seiama.sentinel.common.discord.UserDisplay;
 import com.seiama.sentinel.common.model.AppealModel;
 import com.seiama.sentinel.common.model.AppealRepository;
-import com.seiama.sentinel.common.model.Feature;
 import com.seiama.sentinel.common.model.GuildModel;
 import com.seiama.sentinel.common.model.GuildRepository;
 import com.seiama.sentinel.common.model.PunishmentModel;
 import com.seiama.sentinel.common.model.PunishmentRepository;
 import com.seiama.sentinel.common.model.UserIdentity;
 import com.seiama.sentinel.feature.punishment.Punishments;
-import com.seiama.sentinel.feature.punishment.display.PunishmentDisplay;
-import com.seiama.sentinel.feature.punishment.display.PunishmentDisplayStyle;
-import com.seiama.sentinel.model.TemporaryMessageLink;
 import com.seiama.sentinel.model.TemporaryMessageLinkRepository;
 import com.seiama.sentinel.reactive.Reactive;
 import discord4j.common.util.Snowflake;
 import discord4j.common.util.TimestampFormat;
+import discord4j.core.DiscordClient;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.guild.MemberJoinEvent;
 import discord4j.core.event.domain.guild.MemberLeaveEvent;
@@ -35,27 +30,17 @@ import discord4j.core.object.component.ActionRow;
 import discord4j.core.object.component.Button;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Member;
-import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.User;
-import discord4j.core.object.entity.channel.Channel;
-import discord4j.core.object.entity.channel.TextChannel;
 import discord4j.core.object.reaction.ReactionEmoji;
 import discord4j.core.spec.EmbedCreateFields;
 import discord4j.core.spec.EmbedCreateSpec;
-import discord4j.core.spec.InteractionReplyEditMono;
-import discord4j.core.spec.MessageCreateSpec;
-import discord4j.core.util.MentionUtil;
-import discord4j.discordjson.json.ChannelData;
 import discord4j.discordjson.json.EmbedData;
 import discord4j.discordjson.json.MessageData;
 import discord4j.discordjson.json.MessageEditRequest;
 import discord4j.discordjson.json.PermissionsEditRequest;
-import discord4j.discordjson.json.StartThreadWithoutMessageRequest;
 import discord4j.discordjson.json.ThreadModifyRequest;
-import discord4j.discordjson.json.UserData;
 import discord4j.discordjson.possible.Possible;
 import discord4j.rest.RestClient;
-import discord4j.rest.entity.RestChannel;
 import discord4j.rest.http.client.ClientException;
 import discord4j.rest.util.Color;
 import discord4j.rest.util.Permission;
@@ -65,9 +50,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import org.bson.types.ObjectId;
@@ -80,18 +63,15 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import reactor.function.Function3;
-import reactor.function.TupleUtils;
 import reactor.util.function.Tuple2;
-import reactor.util.function.Tuple5;
-import reactor.util.function.Tuples;
 
 @Component
 @SuppressWarnings("FinalClass")
 public class Appeals implements Listener {
-  private static final int CHANNEL_RATE_LIMIT = 5; // in seconds
-  private static final int THREAD_AUTO_ARCHIVE_DURATION = 10080; // 7 days, in minutes
+  static final int CHANNEL_RATE_LIMIT = 5; // in seconds
+  static final int THREAD_AUTO_ARCHIVE_DURATION = 10080; // 7 days, in minutes
 
-  private static final int NEW_APPEAL_NOTIFICATION_COLOR = 0x0089b4;
+  static final int NEW_APPEAL_NOTIFICATION_COLOR = 0x0089b4;
 
   static final String NO_APPEAL_ASSOCIATED_WITH_THIS_CHANNEL = "There is no appeal associated with this channel.";
   static final String NO_ACTIVE_APPEAL = "The appeal associated with this channel is no longer active.";
@@ -105,7 +85,7 @@ public class Appeals implements Listener {
   private static final Duration VOTE_CHECK_INTERVAL = Duration.ofMinutes(30);
 
   private static final String VOTE_BUTTON_PREFIX = "appeal-vote:";
-  private static final Map<String, AppealModel.Vote> VOTE_BUTTONS = AppealModel.Vote.all()
+  static final Map<String, AppealModel.Vote> VOTE_BUTTONS = AppealModel.Vote.all()
     .collect(Collectors.toMap(vote -> VOTE_BUTTON_PREFIX + vote.strings().button(), Function.identity()));
   private static final Map<AppealModel.Vote, Function3<String, ReactionEmoji, String, Button>> VOTE_BUTTON_FACTORY = Map.of(
     AppealModel.Vote.YES, Button::success,
@@ -114,9 +94,6 @@ public class Appeals implements Listener {
     AppealModel.Vote.LATER, Button::secondary,
     AppealModel.Vote.VETO, Button::danger
   );
-  private static final BiFunction<InteractionReplyEditMono, AppealModel.Complete, Mono<?>> VOTE_BUTTON_REFRESHER = (edit, model) -> {
-    return edit.withComponents(Appeals.createVoteButtons(model.votes()));
-  };
 
   private final GuildRepository guilds;
   private final PunishmentRepository punishments;
@@ -148,247 +125,24 @@ public class Appeals implements Listener {
       });
     return Mono.when(
       voteTicker,
-      client.on(MemberJoinEvent.class, event -> {
-        return this.guilds.findByFeaturesPunishmentsAppealsGuild(event.getGuildId())
-          .filter(Feature.APPEALS.enabledForGuild())
-          .flatMap(guildModel -> {
-            final ObjectId appealId = new ObjectId();
-            final GuildModel.Complete.Features.Punishments.Appeals config = guildModel.features().punishments().appeals();
-            final Member member = event.getMember();
-            final Flux<PunishmentModel.Complete> getActiveBans = this.punishmentOps.findActive(guildModel.guild(), member.getId(), PunishmentModel.Type.BAN);
-            final Mono<PunishmentModel.Complete> kickUserForNoActivePunishment = event.getGuild()
-              .flatMap(guild -> guild.kick(member.getId(), "Could not find an active ban."))
-              .then(Mono.empty());
-            final Mono<TextChannel> createAppealChannel = event.getGuild()
-              .flatMap(guild -> guild.createTextChannel(createChannelName(member, appealId))
-                .withParentId(config.appealChannelsCategory())
-                .withPermissionOverwrites(
-                  PermissionOverwrite.forMember(member.getId(), PermissionSet.of(Permission.VIEW_CHANNEL), PermissionSet.none()),
-                  PermissionOverwrite.forRole(config.everyoneRole(), PermissionSet.none(), PermissionSet.of(Permission.VIEW_CHANNEL, Permission.ATTACH_FILES))
-                )
-                .withRateLimitPerUser(CHANNEL_RATE_LIMIT)
-                .withTopic("Appeal channel for %s".formatted(member.getMention()))
-              );
-            final Mono<ChannelData> createAppealThread = client.rest().getChannelService().startThreadWithoutMessage(
-              config.appealThreadsChannel().asLong(),
-              StartThreadWithoutMessageRequest.builder()
-                .type(Channel.Type.GUILD_PRIVATE_THREAD.getValue())
-                .name(createThreadName(member))
-                .autoArchiveDuration(THREAD_AUTO_ARCHIVE_DURATION)
-                .build()
-            );
-            final Mono<ChannelData> createAppealDiscussionThread = client.rest().getChannelService().startThreadWithoutMessage(
-              config.appealDiscussionThreadsChannel().asLong(),
-              StartThreadWithoutMessageRequest.builder()
-                .type(Channel.Type.GUILD_PRIVATE_THREAD.getValue())
-                .name(createThreadName(member))
-                .autoArchiveDuration(THREAD_AUTO_ARCHIVE_DURATION)
-                .build()
-            );
-            return Reactive.zipSequence(
-                getActiveBans
-                  .next()
-                  .switchIfEmpty(kickUserForNoActivePunishment),
-                createAppealChannel,
-                createAppealThread,
-                createAppealDiscussionThread,
-                this.relayRest.getSelf()
-              )
-              .zipWhen(TupleUtils.function((punishment, channel, appealThread, appealDiscussionThread, relayUser) -> this.appeals.insert(new AppealModel.Complete(
-                appealId,
-                punishment.guild(),
-                Instant.now(),
-                member.getId(),
-                punishment._id(),
-                channel.getId(),
-                Snowflake.of(appealThread.id()),
-                Snowflake.of(appealDiscussionThread.id()),
-                null, // we haven't created the message yet
-                Map.of(),
-                null,
-                null,
-                null
-              ))))
-              .map(tuple -> {
-                final Tuple5<PunishmentModel.Complete, TextChannel, ChannelData, ChannelData, UserData> t1 = tuple.getT1();
-                return Tuples.of(t1.getT1(), t1.getT2(), t1.getT3(), t1.getT4(), t1.getT5(), tuple.getT2());
-              })
-              .flatMap(TupleUtils.function((punishment, channel, appealThread, appealDiscussionThread, relayUser, model) -> {
-                final RestChannel appealThreadChannel = client.rest().getChannelById(Snowflake.of(appealThread.id()));
-                final RestChannel appealDiscussionThreadChannel = client.rest().getChannelById(Snowflake.of(appealDiscussionThread.id()));
-                return Mono.when(
-                  client.rest().getChannelService().addThreadMember(appealThread.id().asLong(), relayUser.id().asLong()),
-                  channel.createMessage(PunishmentDisplay.punishment(punishment, PunishmentDisplayStyle.APPEAL)),
-                  channel.createMessage(String.format("Hey, %s! This appeal is now active. Please explain why you think this punishment should be appealed.", member.getMention())),
-                  appealThreadChannel.createMessage(PunishmentDisplay.punishment(punishment, PunishmentDisplayStyle.FULL).asRequest()),
-                  appealThreadChannel.createMessage(
-                    EmbedCreateSpec.builder()
-                      .color(Color.of(SharedConstants.COLOR_YELLOW))
-                      .title("%1$s WARNING %1$s".formatted(Emoji.WARNING.asFormat()))
-                      .description("Please note that any messages sent in this channel will be shared with the user who is appealing. For staff discussion, please use %s.".formatted(
-                        MentionUtil.forChannel(Snowflake.of(appealDiscussionThread.id()))
-                      ))
-                      .build()
-                      .asRequest()
-                  ),
-                  appealDiscussionThreadChannel.createMessage(
-                    MessageCreateSpec.builder()
-                      .addEmbed(
-                        EmbedCreateSpec.builder()
-                          .title("Voting")
-                          .description("Please cast your vote using one of the buttons below. If you wish to change your vote, simply click a different button.")
-                          .build()
-                      )
-                      .addComponent(createVoteButtons(Map.of()))
-                      .build()
-                      .asRequest()
-                  ).flatMap(voteMessage -> Mono.when(
-                    client.rest().getChannelService().addPinnedMessage(appealDiscussionThread.id().asLong(), voteMessage.id().asLong()),
-                    this.appeals.update(model._id(), (AppealModel.Partial.VoteMessage) () -> Snowflake.of(voteMessage.id()))
-                  )),
-                  appealDiscussionThreadChannel.createMessage(
-                    EmbedCreateSpec.builder()
-                      .color(Color.of(SharedConstants.COLOR_BLUE))
-                      .title("Appeal channel")
-                      .description(MentionUtil.forChannel(Snowflake.of(appealThread.id())))
-                      .build()
-                      .asRequest()
-                  ).flatMap(voteMessage -> client.rest().getChannelService().addPinnedMessage(appealDiscussionThread.id().asLong(), voteMessage.id().asLong())),
-                  client.rest().getChannelById(config.appealThreadsChannel()).createMessage(
-                    EmbedCreateSpec.builder()
-                      .color(Color.of(NEW_APPEAL_NOTIFICATION_COLOR))
-                      .title("A new appeal has been created")
-                      .description(String.format("A new appeal has been created by %s.", UserDisplay.render(UserDisplay.Renderer.MENTION_WITH_TRAILING_BACKTICK_WRAPPED_USERNAME_AND_ID, new UserIdentity(member))))
-                      .addField("Appeal channel", MentionUtil.forChannel(Snowflake.of(appealThread.id())), false)
-                      .addField("Discussion channel", MentionUtil.forChannel(Snowflake.of(appealDiscussionThread.id())), false)
-                      .build()
-                      .asRequest()
-                  )
-                );
-              }));
-          });
-      }),
+      client.on(MemberJoinEvent.class, new StartHandler(client, this.guilds, this.punishmentOps, this.appeals, this.relayRest)),
       client.on(MemberLeaveEvent.class, event -> {
         final User user = event.getUser();
         return this.appeals.findByGuildAndUserAndResultIsNull(event.getGuildId(), user.getId())
           .flatMap(model -> this.cancel(client, model, user));
       }),
-      client.on(MessageCreateEvent.class, event -> {
-        final Message message = event.getMessage();
-        if (Discord.isBot(message.getAuthor())) {
-          return Mono.empty();
-        }
-        return message.getGuild()
-          .zipWhen(guild -> this.guilds.findByGuildOrFeaturesPunishmentsAppealsGuild(guild.getId(), guild.getId()))
-          .filter(tuple -> Feature.APPEALS.enabledForGuild(tuple.getT2()))
-          .zipWith(message.getChannel())
-          // todo: filter channel by ids
-          .flatMap(TupleUtils.function((guild, channel) -> {
-            final Channel.Type type = channel.getType();
-            if (type == Channel.Type.GUILD_TEXT) {
-              return Mono.just(Tuples.<Tuple2<Guild, GuildModel.Complete>, Supplier<Mono<AppealModel.Complete>>, Function<AppealModel.Complete, Snowflake>>of(
-                guild,
-                () -> this.appeals.findByAppealChannel(channel.getId()),
-                AppealModel.Complete::appealThread
-              ));
-            } else if (type == Channel.Type.GUILD_PRIVATE_THREAD) {
-              return Mono.just(Tuples.<Tuple2<Guild, GuildModel.Complete>, Supplier<Mono<AppealModel.Complete>>, Function<AppealModel.Complete, Snowflake>>of(
-                guild,
-                () -> this.appeals.findByAppealThread(channel.getId()),
-                AppealModel.Complete::appealChannel
-              ));
-            }
-            return Mono.empty();
-          }))
-          .flatMap(TupleUtils.function((guild, model, targetChannelId) -> {
-            return model.get()
-              .map(targetChannelId)
-              .flatMap(channelId -> this.relayRest.getChannelById(channelId).createMessage(this.createMessage(message.getData(), message.getAuthor(), guild)))
-              .flatMap(newMessage -> this.messageLinks.save(new TemporaryMessageLink(
-                guild.getT2()._id(),
-                message.getChannelId(),
-                message.getId(),
-                Snowflake.of(newMessage.channelId()),
-                Snowflake.of(newMessage.id())
-              )));
-          }));
-      }),
-      client.on(MessageUpdateEvent.class, event -> {
-        return this.messageLinks.findBySourceMessageId(event.getMessageId().asLong())
-          .flatMap(targetIds -> {
-            return event.getGuild()
-              .zipWith(event.getMessage())
-              .flatMap(TupleUtils.function((guild, message) -> {
-                return this.guilds.findById(targetIds.guild())
-                  .flatMap(guildModel -> {
-                    return this.relayRest.getMessageById(targetIds.targetChannelId(), targetIds.targetMessageId()).edit(
-                      MessageEditRequest.builder()
-                        .embeds(Possible.of(Optional.of(List.of(
-                          this.createMessage(message.getData(), message.getAuthor(), Tuples.of(guild, guildModel))
-                        ))))
-                        .build()
-                    );
-                  });
-              }));
-          });
-      }),
-      client.on(MessageDeleteEvent.class, event -> {
-        return this.messageLinks.findBySourceMessageId(event.getMessageId().asLong())
-          .flatMap(targetIds -> {
-            return this.relayRest.getChannelService().deleteMessage(targetIds.targetChannelId().asLong(), targetIds.targetMessageId().asLong(), null);
-          });
-      }),
-      client.on(ButtonInteractionEvent.class, event -> {
-        final AppealModel.Vote vote = VOTE_BUTTONS.get(event.getCustomId());
-        if (vote != null) {
-          final Snowflake user = event.getInteraction().getUser().getId();
-          final Snowflake channelId = event.getInteraction().getChannelId();
-
-          return this.appeals.findByAppealDiscussionThreadAndResultIsNull(channelId)
-            .zipWhen(appeal -> this.punishments.findById(appeal.punishment()))
-            .flatMap(TupleUtils.function((appeal, punishment) -> {
-              if (!vote.canVoteWithIfPunisher() && user.equals(punishment.punisherId())) {
-                return event.deferEdit()
-                  .then(VOTE_BUTTON_REFRESHER.apply(event.editReply(), appeal))
-                  .then(
-                    event.createFollowup()
-                      .withEphemeral(true)
-                      .withContent("%s You can't cast \"%s\" on this vote as you are the one who created this punishment.".formatted(
-                        Emoji.NO.asFormat(),
-                        vote.strings().name()
-                      ))
-                  );
-              }
-              final BiFunction<InteractionReplyEditMono, String, Mono<Void>> updateAndRefresh = (edit, reason) -> {
-                return this.appeals.update(appeal._id(), AppealModel.setVote(user, vote, reason))
-                  .flatMap(newModel -> VOTE_BUTTON_REFRESHER.apply(edit, newModel))
-                  .then();
-              };
-              if (vote.requiresReason()) {
-                return Modals.presentAndCaptureSingleTextInput(event, "Veto Vote", "Reason", true, (modal, reason) -> {
-                  return modal.deferEdit()
-                    .then(updateAndRefresh.apply(modal.editReply(), reason.orElse(null)));
-                }, timeout -> {
-                  return event.createFollowup("You must provide a reason when submitting a veto vote.")
-                    .withEphemeral(true)
-                    .then(Mono.empty());
-                });
-              } else {
-                return event.deferEdit()
-                  .then(updateAndRefresh.apply(event.editReply(), null));
-              }
-            }));
-        }
-        return Mono.empty();
-      })
+      client.on(MessageCreateEvent.class, new MessageLinkCreateHandler(this.guilds, this.appeals, this.messageLinks, this.relayRest)),
+      client.on(MessageUpdateEvent.class, new MessageLinkUpdateHandler(this.guilds, this.messageLinks, this.relayRest)),
+      client.on(MessageDeleteEvent.class, new MessageLinkDeleteHandler(this.messageLinks, this.relayRest)),
+      client.on(ButtonInteractionEvent.class, new VoteButtonHandler(this.punishments, this.appeals))
     );
   }
 
-  private static String createChannelName(final Member member, final ObjectId appealId) {
+  static String createChannelName(final Member member, final ObjectId appealId) {
     return "a-" + member.getId().asLong() + "-" + appealId;
   }
 
-  private static String createThreadName(final Member member) {
+  static String createThreadName(final Member member) {
     return UserDisplay.render(UserDisplay.Renderer.USERNAME, new UserIdentity(member));
   }
 
@@ -397,7 +151,7 @@ public class Appeals implements Listener {
   }
 
   @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-  private EmbedData createMessage(final MessageData message, final Optional<User> author, final Tuple2<Guild, GuildModel.Complete> guild) {
+  static EmbedData createMessage(final MessageData message, final Optional<User> author, final Tuple2<Guild, GuildModel.Complete> guild) {
     return EmbedData.builder()
       .description(message.content())
       .timestamp(message.editedTimestamp().orElse(message.timestamp()))
@@ -409,7 +163,7 @@ public class Appeals implements Listener {
       .build();
   }
 
-  private static ActionRow createVoteButtons(final Map<String, List<Snowflake>> votes) {
+  static ActionRow createVoteButtons(final Map<String, List<Snowflake>> votes) {
     return ActionRow.of(
       AppealModel.Vote.all()
         .map(vote -> VOTE_BUTTON_FACTORY.get(vote).apply(
@@ -549,6 +303,7 @@ public class Appeals implements Listener {
     }
 
     private Mono<Void> sendMessagesToChannelsAndThreadsAndThenArchiveAndClose() {
+      final DiscordClient rest = this.client.rest();
       final UnaryOperator<EmbedCreateSpec.Builder> embedForBoth = embed -> {
         return embed
           .color(Color.of(this.result.color()))
@@ -562,17 +317,17 @@ public class Appeals implements Listener {
           Mono.when(
             Mono.just(this.result)
               .filter(result -> result != AppealModel.Result.CANCELLED)
-              .flatMap(result -> this.client.rest().getChannelById(this.model.appealChannel()).createMessage(embedForPunished)),
+              .flatMap(result -> rest.getChannelById(this.model.appealChannel()).createMessage(embedForPunished)),
             Mono.just(this.result)
               .filter(result -> result == AppealModel.Result.ACCEPTED)
-              .flatMap(accepted -> this.client.rest().getChannelById(this.model.appealChannel()).createMessage(guildModel.invite())),
-            Mono.justOrEmpty(this.model.voteMessage()).flatMap(voteMessage -> this.client.rest().getMessageById(this.model.appealDiscussionThread(), voteMessage).edit(
+              .flatMap(accepted -> rest.getChannelById(this.model.appealChannel()).createMessage(guildModel.invite())),
+            Mono.justOrEmpty(this.model.voteMessage()).flatMap(voteMessage -> rest.getMessageById(this.model.appealDiscussionThread(), voteMessage).edit(
               MessageEditRequest.builder()
                 .components(Possible.of(Optional.empty()))
                 .build()
             ))
           ).then(
-            this.client.rest().getChannelById(this.model.appealChannel()).editChannelPermissions(
+            rest.getChannelById(this.model.appealChannel()).editChannelPermissions(
               this.model.user(),
               PermissionsEditRequest.builder()
                 .type(PermissionOverwrite.Type.MEMBER.getValue())
@@ -582,8 +337,8 @@ public class Appeals implements Listener {
               reasonForActionLog
             ).onErrorResume(ClientException.class, Reactive.<Void>ignoringException()) // avoid possible 10009 if the user has left the guild
           ),
-          this.client.rest().getChannelById(this.model.appealThread()).createMessage(embedForStaff).then(
-            this.client.rest().getChannelService().modifyThread(
+          rest.getChannelById(this.model.appealThread()).createMessage(embedForStaff).then(
+            rest.getChannelService().modifyThread(
               this.model.appealThread().asLong(),
               ThreadModifyRequest.builder()
                 .archived(true)
@@ -592,8 +347,8 @@ public class Appeals implements Listener {
               reasonForActionLog
             )
           ),
-          this.client.rest().getChannelById(this.model.appealDiscussionThread()).createMessage(embedForStaff).then(
-            this.client.rest().getChannelService().modifyThread(
+          rest.getChannelById(this.model.appealDiscussionThread()).createMessage(embedForStaff).then(
+            rest.getChannelService().modifyThread(
               this.model.appealDiscussionThread().asLong(),
               ThreadModifyRequest.builder()
                 .archived(true)
