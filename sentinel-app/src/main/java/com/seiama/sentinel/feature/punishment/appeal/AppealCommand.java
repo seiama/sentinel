@@ -2,6 +2,7 @@ package com.seiama.sentinel.feature.punishment.appeal;
 
 import com.seiama.sentinel.command.Command;
 import com.seiama.sentinel.command.GuildCommand;
+import com.seiama.sentinel.command.OptionNames;
 import com.seiama.sentinel.command.Options;
 import com.seiama.sentinel.common.discord.Emoji;
 import com.seiama.sentinel.common.model.Feature;
@@ -63,7 +64,7 @@ public final class AppealCommand implements GuildCommand {
           .type(ApplicationCommandOption.Type.SUB_COMMAND.getValue())
           .addOption(
             ApplicationCommandOptionData.builder()
-              .name(Options.REASON)
+              .name(OptionNames.REASON)
               .description("The reason for denying the punishment appeal")
               .required(false)
               .type(ApplicationCommandOption.Type.STRING.getValue())
@@ -96,7 +97,7 @@ public final class AppealCommand implements GuildCommand {
           });
       },
       DENY, option -> {
-        return Mono.just(Options.string(option, Options.REASON))
+        return Mono.just(Options.string(option, OptionNames.REASON))
           .filterWhen(new CanQueryAndMutate<>(this.guilds, guild, member))
           .zipWith(this.appeals.findByAppealThread(interaction.getChannelId()))
           .switchIfEmpty(event.editReply().withContentOrNull(Appeals.NO_APPEAL_ASSOCIATED_WITH_THIS_CHANNEL).then(Mono.empty()))

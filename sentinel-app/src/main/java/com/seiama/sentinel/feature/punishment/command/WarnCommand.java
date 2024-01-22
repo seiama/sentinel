@@ -1,7 +1,7 @@
 package com.seiama.sentinel.feature.punishment.command;
 
 import com.seiama.sentinel.command.GuildCommand;
-import com.seiama.sentinel.command.Options;
+import com.seiama.sentinel.command.OptionNames;
 import com.seiama.sentinel.common.model.Feature;
 import com.seiama.sentinel.common.model.PunishmentModel;
 import com.seiama.sentinel.feature.punishment.PunishmentAction;
@@ -41,7 +41,7 @@ public final class WarnCommand implements GuildCommand {
       .defaultPermission(false)
       .addOption(
         ApplicationCommandOptionData.builder()
-          .name(Options.MEMBER)
+          .name(OptionNames.MEMBER)
           .description("The member to warn")
           .type(ApplicationCommandOption.Type.USER.getValue())
           .required(true)
@@ -49,7 +49,7 @@ public final class WarnCommand implements GuildCommand {
       )
       .addOption(
         ApplicationCommandOptionData.builder()
-          .name(Options.REASON)
+          .name(OptionNames.REASON)
           .description("The reason for warning the member")
           .type(ApplicationCommandOption.Type.STRING.getValue())
           .required(true)

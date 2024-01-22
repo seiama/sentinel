@@ -3,7 +3,7 @@ package com.seiama.sentinel.common.model;
 import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.User;
 import discord4j.discordjson.json.UserData;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import static java.util.Objects.requireNonNull;
 
@@ -13,13 +13,6 @@ public record UserIdentity(
   @Deprecated
   @Nullable Discriminator discriminator
 ) {
-  /**
-   * {@link Snowflake} for {@code Beemo#4570}.
-   *
-   * @see <a href="https://beemo.gg/">https://beemo.gg/</a>
-   */
-  public static final Snowflake BEEMO_ID = Snowflake.of("515067662028636170");
-
   public UserIdentity {
     requireNonNull(id, "id");
     requireNonNull(username, "username");

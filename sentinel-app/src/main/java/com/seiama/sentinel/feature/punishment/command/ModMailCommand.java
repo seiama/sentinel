@@ -1,6 +1,7 @@
 package com.seiama.sentinel.feature.punishment.command;
 
 import com.seiama.sentinel.command.GuildCommand;
+import com.seiama.sentinel.command.OptionNames;
 import com.seiama.sentinel.command.Options;
 import com.seiama.sentinel.common.model.Feature;
 import com.seiama.sentinel.common.model.ModMailModel;
@@ -39,7 +40,7 @@ public class ModMailCommand implements GuildCommand {
       .defaultPermission(false)
       .addOption(
         ApplicationCommandOptionData.builder()
-          .name(Options.MESSAGE)
+          .name(OptionNames.MESSAGE)
           .description("The message to send the moderators")
           .required(true)
           .type(ApplicationCommandOption.Type.STRING.getValue())
@@ -63,7 +64,7 @@ public class ModMailCommand implements GuildCommand {
         event.getInteraction().getUser(),
         ModMailModel.Type.MODMAIL,
         null,
-        Options.string(event.getOption(Options.MESSAGE)).orElseThrow()
+        Options.string(event.getOption(OptionNames.MESSAGE)).orElseThrow()
       ))
       .then(event.editReply().withContentOrNull("Your message has been successfully sent."));
   }

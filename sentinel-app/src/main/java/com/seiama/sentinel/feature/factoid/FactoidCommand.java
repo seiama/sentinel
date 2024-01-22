@@ -2,6 +2,7 @@ package com.seiama.sentinel.feature.factoid;
 
 import com.seiama.sentinel.command.Command;
 import com.seiama.sentinel.command.GuildCommand;
+import com.seiama.sentinel.command.OptionNames;
 import com.seiama.sentinel.command.Options;
 import com.seiama.sentinel.common.discord.Emoji;
 import com.seiama.sentinel.common.model.FactoidModel;
@@ -67,7 +68,7 @@ public final class FactoidCommand implements GuildCommand {
           .type(ApplicationCommandOption.Type.SUB_COMMAND.getValue())
           .addOption(
             ApplicationCommandOptionData.builder()
-              .name(Options.NAME)
+              .name(OptionNames.NAME)
               .description("The name of the factoid to set")
               .required(true)
               .type(ApplicationCommandOption.Type.STRING.getValue())
@@ -76,7 +77,7 @@ public final class FactoidCommand implements GuildCommand {
           )
           .addOption(
             ApplicationCommandOptionData.builder()
-              .name(Options.DESCRIPTION)
+              .name(OptionNames.DESCRIPTION)
               .description("The description for the factoid")
               .required(false)
               .type(ApplicationCommandOption.Type.STRING.getValue())
@@ -84,7 +85,7 @@ public final class FactoidCommand implements GuildCommand {
           )
           .addOption(
             ApplicationCommandOptionData.builder()
-              .name(Options.CONTENT)
+              .name(OptionNames.CONTENT)
               .description("The content for the factoid")
               .required(false)
               .type(ApplicationCommandOption.Type.STRING.getValue())
@@ -99,7 +100,7 @@ public final class FactoidCommand implements GuildCommand {
           .type(ApplicationCommandOption.Type.SUB_COMMAND.getValue())
           .addOption(
             ApplicationCommandOptionData.builder()
-              .name(Options.NAME)
+              .name(OptionNames.NAME)
               .description("The name of the factoid to remove")
               .required(true)
               .type(ApplicationCommandOption.Type.STRING.getValue())
@@ -122,10 +123,10 @@ public final class FactoidCommand implements GuildCommand {
       .withEphemeral(true)
       .then(Command.executeOne(event, Map.of(
         SET, option -> {
-          return Mono.justOrEmpty(Options.string(option, Options.NAME))
+          return Mono.justOrEmpty(Options.string(option, OptionNames.NAME))
             .flatMap(name -> {
-              final Optional<String> description = Options.string(option, Options.DESCRIPTION);
-              final Optional<String> content = Options.string(option, Options.CONTENT);
+              final Optional<String> description = Options.string(option, OptionNames.DESCRIPTION);
+              final Optional<String> content = Options.string(option, OptionNames.CONTENT);
               final Response response;
               if (content.isPresent()) {
                 response = new Response(
@@ -177,7 +178,7 @@ public final class FactoidCommand implements GuildCommand {
             });
         },
         REMOVE, option -> {
-          return Mono.justOrEmpty(Options.string(option, Options.NAME))
+          return Mono.justOrEmpty(Options.string(option, OptionNames.NAME))
             .flatMap(name -> {
               return this.factoids.findByGuildAndName(guild.getId(), name)
                 .switchIfEmpty(event.editReply().withContentOrNull("%s Could not find a factoid with name `%s`.".formatted(Emoji.NO.asFormat(), name)).then(Mono.empty()))
@@ -194,7 +195,7 @@ public final class FactoidCommand implements GuildCommand {
     final ApplicationCommandInteractionOption option = event.getFocusedOption();
     final Optional<ApplicationCommandInteractionOptionValue> value = option.getValue();
     if (value.isPresent()) {
-      if (Options.NAME.equals(option.getName())) {
+      if (OptionNames.NAME.equals(option.getName())) {
         return this.factoids.findAllByGuild(guild.getId())
           .filter(model -> model.name().startsWith(value.orElseThrow().asString()))
           .map(model -> {

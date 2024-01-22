@@ -1,6 +1,7 @@
 package com.seiama.sentinel.feature.punishment.command;
 
 import com.seiama.sentinel.command.GuildCommand;
+import com.seiama.sentinel.command.OptionNames;
 import com.seiama.sentinel.command.Options;
 import com.seiama.sentinel.common.model.Feature;
 import com.seiama.sentinel.common.model.PunishmentModel;
@@ -41,7 +42,7 @@ public final class BanCommand implements GuildCommand {
       .defaultPermission(false)
       .addOption(
         ApplicationCommandOptionData.builder()
-          .name(Options.MEMBER)
+          .name(OptionNames.MEMBER)
           .description("The member to ban")
           .type(ApplicationCommandOption.Type.USER.getValue())
           .required(true)
@@ -49,7 +50,7 @@ public final class BanCommand implements GuildCommand {
       )
       .addOption(
         ApplicationCommandOptionData.builder()
-          .name(Options.REASON)
+          .name(OptionNames.REASON)
           .description("The reason for banning the member")
           .type(ApplicationCommandOption.Type.STRING.getValue())
           .required(false)
@@ -57,7 +58,7 @@ public final class BanCommand implements GuildCommand {
       )
       .addOption(
         ApplicationCommandOptionData.builder()
-          .name(Options.DELETE_MESSAGES)
+          .name(OptionNames.DELETE_MESSAGES)
           .description("If recent messages should be deleted - defaults to true")
           .type(ApplicationCommandOption.Type.BOOLEAN.getValue())
           .required(false)
@@ -74,7 +75,7 @@ public final class BanCommand implements GuildCommand {
   @Override
   public @NotNull Mono<?> on(final @NotNull GatewayDiscordClient client, final @NotNull ChatInputInteractionEvent event, final @NotNull Guild guild) {
     return this.punishments.createUsing(new ChatInteractionPunishmentCreator(event, guild, PunishmentModel.Type.BAN, PunishmentAction.ban(
-      Options.bool(event, Options.DELETE_MESSAGES).orElse(true)
+      Options.bool(event, OptionNames.DELETE_MESSAGES).orElse(true)
     )));
   }
 }
