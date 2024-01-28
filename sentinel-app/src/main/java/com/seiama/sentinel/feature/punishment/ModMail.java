@@ -24,6 +24,7 @@ import discord4j.core.spec.MessageCreateSpec;
 import discord4j.discordjson.json.MessageEditRequest;
 import discord4j.discordjson.json.StartThreadWithoutMessageRequest;
 import java.time.Instant;
+import java.util.Optional;
 import org.bson.types.ObjectId;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -133,9 +134,10 @@ public class ModMail implements Listener {
       )))
       .flatMap(TupleUtils.function((guildModel, model) -> {
         final CustomId createThreadButton = new CustomId(BUTTON_CREATE_THREAD, model._id().toString());
+        final Optional<User> messageAuthor = message != null ? message.getAuthor() : Optional.empty();
         final EmbedCreateSpec.Builder embed = EmbedCreateSpec.builder()
           .footer(String.format("%s (%s)", user.getTag(), user.getId().asString()), user.getAvatarUrl())
-          .title(type.strings().submitted())
+          .title(type.strings().submitted().apply(messageAuthor))
           .timestamp(Instant.now());
         final StringBuilder description = new StringBuilder();
         if (type == ModMailModel.Type.REPORT) {
@@ -144,7 +146,7 @@ public class ModMail implements Listener {
         description.append(content);
         embed.description(description.toString());
         if (message != null) {
-          message.getAuthor()
+          messageAuthor
             .ifPresent(author -> embed.author(String.format("%s (%s)", author.getTag(), author.getId().asString()), null, author.getAvatarUrl()));
           embed.addField("Message", Links.message(guild, message), false);
         }
