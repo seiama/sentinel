@@ -6,13 +6,9 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.seiama.sentinel.common.annotation.MongoDate;
-import com.seiama.sentinel.common.discord.UserDisplay;
 import com.seiama.sentinel.common.jackson.InstantExtendedJsonSerializer;
 import discord4j.common.util.Snowflake;
-import discord4j.core.object.entity.User;
 import java.time.Instant;
-import java.util.Optional;
-import java.util.function.Function;
 import org.bson.types.ObjectId;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.data.annotation.Id;
@@ -63,16 +59,10 @@ public interface ModMailModel {
 
   enum Type {
     MODMAIL(new Strings(
-      author -> "A new modmail message has been submitted"
+      "A new modmail message has been submitted"
     )),
     REPORT(new Strings(
-      author -> {
-        if (author.isPresent()) {
-          return "A message from %s has been reported".formatted(UserDisplay.render(UserDisplay.Renderer.MENTION, new UserIdentity(author.get())));
-        } else {
-          return "A message has been reported";
-        }
-      }
+      "A message has been reported"
     ));
 
     private final Strings strings;
@@ -86,7 +76,7 @@ public interface ModMailModel {
     }
 
     public record Strings(
-      Function<Optional<User>, String> submitted
+      String submitted
     ) {
     }
   }
