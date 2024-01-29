@@ -2,8 +2,10 @@ package com.seiama.sentinel.common.discord;
 
 import discord4j.common.util.Snowflake;
 import discord4j.core.object.reaction.ReactionEmoji;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public interface Emoji {
   ReactionEmoji.Unicode CLOCK1 = ReactionEmoji.unicode("🕐");
   ReactionEmoji.Unicode HAMMER = ReactionEmoji.unicode("🔨");

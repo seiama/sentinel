@@ -17,13 +17,14 @@ import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.channel.TextChannel;
 import java.time.Duration;
 import java.time.Instant;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Component
+@NullMarked
 public class Logging implements Listener {
   private static final Duration NEW_THRESHOLD = Duration.ofDays(7);
   private final GuildRepository guilds;
@@ -34,7 +35,7 @@ public class Logging implements Listener {
   }
 
   @Override
-  public @NotNull Mono<Void> listen(final @NotNull GatewayDiscordClient client) {
+  public Mono<Void> listen(final GatewayDiscordClient client) {
     return Mono.when(
       client.on(MemberJoinEvent.class, event -> {
         return event.getGuild()

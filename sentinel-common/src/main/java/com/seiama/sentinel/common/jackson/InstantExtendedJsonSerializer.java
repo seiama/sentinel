@@ -5,7 +5,9 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import java.io.IOException;
 import java.time.Instant;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class InstantExtendedJsonSerializer extends StdSerializer<Instant> {
   public InstantExtendedJsonSerializer() {
     super(Instant.class);

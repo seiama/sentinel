@@ -20,14 +20,15 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.Set;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import reactor.function.TupleUtils;
 
 @Component
+@NullMarked
 public class PunishmentListener implements Listener {
   private static final Set<ActionType> AUDIT_LOG_EVENTS = Set.of(
     ActionType.MEMBER_KICK,
@@ -43,7 +44,7 @@ public class PunishmentListener implements Listener {
   }
 
   @Override
-  public @NotNull Mono<Void> listen(final @NotNull GatewayDiscordClient client) {
+  public Mono<Void> listen(final GatewayDiscordClient client) {
     return Mono.when(
       client.on(MemberJoinEvent.class, event -> {
         final Member member = event.getMember();
@@ -159,7 +160,7 @@ public class PunishmentListener implements Listener {
     return Mono.just(Optional.empty());
   }
 
-  private @Nullable Duration resolveDurationFrom(final AuditLogChange<Instant> change) {
+  private @Nullable Duration resolveDurationFrom(final @Nullable AuditLogChange<Instant> change) {
     if (change != null) {
       final Optional<Instant> value = change.getCurrentValue();
       if (value.isPresent()) {

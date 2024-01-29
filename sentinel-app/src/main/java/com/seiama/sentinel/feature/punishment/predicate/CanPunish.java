@@ -9,11 +9,13 @@ import discord4j.rest.http.client.ClientException;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.function.Function;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Mono;
 import reactor.function.TupleUtils;
 
+@NullMarked
 public final class CanPunish<T> implements Function<User, Publisher<Boolean>> {
   private final GuildRepository guilds;
   private final Guild guild;

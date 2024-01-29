@@ -24,14 +24,15 @@ import discord4j.discordjson.json.ApplicationCommandOptionData;
 import discord4j.discordjson.json.ApplicationCommandRequest;
 import java.util.Map;
 import java.util.Optional;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import reactor.function.TupleUtils;
 
 @Component
+@NullMarked
 public final class PunishmentCommand implements GuildCommand {
   private static final String NAME = "punishment";
 
@@ -53,12 +54,12 @@ public final class PunishmentCommand implements GuildCommand {
   }
 
   @Override
-  public @NotNull String name() {
+  public String name() {
     return NAME;
   }
 
   @Override
-  public @NotNull ApplicationCommandRequest request() {
+  public ApplicationCommandRequest request() {
     return ApplicationCommandRequest.builder()
       .name(NAME)
       .description("Query and manage punishments")
@@ -150,12 +151,12 @@ public final class PunishmentCommand implements GuildCommand {
   }
 
   @Override
-  public @NotNull Feature feature() {
+  public Feature feature() {
     return Feature.PUNISHMENTS;
   }
 
   @Override
-  public @NotNull Mono<?> on(final @NotNull GatewayDiscordClient client, final @NotNull ChatInputInteractionEvent event, final @NotNull Guild guild) {
+  public Mono<?> on(final GatewayDiscordClient client, final ChatInputInteractionEvent event, final Guild guild) {
     final Member punisher = event.getInteraction().getMember().orElseThrow();
     return event.deferReply().then(Command.executeOne(event, Map.of(
       SHOW, option -> {

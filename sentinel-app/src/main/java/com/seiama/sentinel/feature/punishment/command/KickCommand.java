@@ -13,12 +13,13 @@ import discord4j.core.object.command.ApplicationCommandOption;
 import discord4j.core.object.entity.Guild;
 import discord4j.discordjson.json.ApplicationCommandOptionData;
 import discord4j.discordjson.json.ApplicationCommandRequest;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 @Component
+@NullMarked
 public final class KickCommand implements GuildCommand {
   private static final String NAME = "kick";
   private final Punishments punishments;
@@ -29,12 +30,12 @@ public final class KickCommand implements GuildCommand {
   }
 
   @Override
-  public @NotNull String name() {
+  public String name() {
     return NAME;
   }
 
   @Override
-  public @NotNull ApplicationCommandRequest request() {
+  public ApplicationCommandRequest request() {
     return ApplicationCommandRequest.builder()
       .name(NAME)
       .description("Kick a member")
@@ -59,12 +60,12 @@ public final class KickCommand implements GuildCommand {
   }
 
   @Override
-  public @NotNull Feature feature() {
+  public Feature feature() {
     return Feature.PUNISHMENTS;
   }
 
   @Override
-  public @NotNull Mono<?> on(final @NotNull GatewayDiscordClient client, final @NotNull ChatInputInteractionEvent event, final @NotNull Guild guild) {
+  public Mono<?> on(final GatewayDiscordClient client, final ChatInputInteractionEvent event, final Guild guild) {
     return this.punishments.createUsing(new ChatInteractionPunishmentCreator(event, guild, PunishmentModel.Type.KICK, PunishmentAction.kick()));
   }
 }

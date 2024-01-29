@@ -23,8 +23,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public class Importer {
   private static final List<ImporterConfig.ReasonModifier> DEFAULT_REASON_MODIFIERS = List.of(
     new ImporterConfig.ReasonModifier(Beemo.class, Objects::isNull, ImporterConstants.BOT_BEEMO_REASON_ANTIRAID),

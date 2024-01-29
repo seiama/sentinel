@@ -8,7 +8,9 @@ import org.bson.BsonWriter;
 import org.bson.codecs.Codec;
 import org.bson.codecs.DecoderContext;
 import org.bson.codecs.EncoderContext;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 @SuppressWarnings("deprecation")
 public final class DiscriminatorCodec implements Codec<Discriminator> {
   @Override

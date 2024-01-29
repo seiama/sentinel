@@ -18,10 +18,11 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
 import org.bson.types.ObjectId;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+@NullMarked
 public interface PunishmentModel {
   String COLLECTION = "punishments";
 
@@ -42,8 +43,8 @@ public interface PunishmentModel {
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     @SuppressWarnings("EmptyLineSeparator")
     interface Stale extends Partial {
-      static @NotNull Stale of(
-        final @NotNull Optional<User> by,
+      static Stale of(
+        final Optional<User> by,
         final @Nullable String reason,
         final boolean automatic,
         final @Nullable ObjectId appeal
@@ -58,17 +59,17 @@ public interface PunishmentModel {
         );
       }
 
-      static @NotNull Stale of(
-        final @NotNull Optional<Snowflake> byId,
-        final @NotNull Optional<String> byUsername,
-        final @NotNull Optional<Discriminator> byDiscriminator,
+      static Stale of(
+        final Optional<Snowflake> byId,
+        final Optional<String> byUsername,
+        final Optional<Discriminator> byDiscriminator,
         final @Nullable String reason,
         final boolean automatic,
         final @Nullable ObjectId appeal
       ) {
         return new Stale() {
           @Override
-          public @NotNull Boolean stale() {
+          public Boolean stale() {
             return true;
           }
 
@@ -173,12 +174,12 @@ public interface PunishmentModel {
       return new UserIdentity(this.punishedId, this.punishedUsername, this.punishedDiscriminator);
     }
 
-    public static @NotNull Complete create(
-      final @NotNull Snowflake guild,
-      final @NotNull Type type,
-      final @NotNull Instant date,
-      final @NotNull Optional<User> punisher,
-      final @NotNull User punished,
+    public static Complete create(
+      final Snowflake guild,
+      final Type type,
+      final Instant date,
+      final Optional<User> punisher,
+      final User punished,
       final @Nullable String reason,
       final @Nullable Duration duration,
       final boolean automatic

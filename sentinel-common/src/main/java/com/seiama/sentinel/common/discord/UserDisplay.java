@@ -4,8 +4,10 @@ import com.seiama.sentinel.common.model.Discriminator;
 import com.seiama.sentinel.common.model.UserIdentity;
 import discord4j.common.util.Snowflake;
 import discord4j.core.util.MentionUtil;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public interface UserDisplay {
   static String render(final Renderer renderer, final UserIdentity identity) {
     return renderer.render(identity);
@@ -28,7 +30,7 @@ public interface UserDisplay {
     Renderer MENTION = identity -> MentionUtil.forUser(identity.id());
     Renderer MENTION_WITH_TRAILING_BACKTICK_WRAPPED_USERNAME_AND_ID = identity -> {
       final Snowflake id = identity.id();
-      final String username = identity.username();
+      final @Nullable String username = identity.username();
       final @Nullable Discriminator discriminator = identity.discriminator();
       final StringBuilder sb = new StringBuilder();
       sb.append(MentionUtil.forUser(id));

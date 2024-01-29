@@ -17,13 +17,14 @@ import discord4j.core.object.entity.Member;
 import discord4j.discordjson.json.ApplicationCommandOptionData;
 import discord4j.discordjson.json.ApplicationCommandRequest;
 import java.util.Map;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import reactor.function.TupleUtils;
 
 @Component
+@NullMarked
 public final class AppealCommand implements GuildCommand {
   private static final String NAME = "appeal";
 
@@ -40,12 +41,12 @@ public final class AppealCommand implements GuildCommand {
   }
 
   @Override
-  public @NotNull String name() {
+  public String name() {
     return NAME;
   }
 
   @Override
-  public @NotNull ApplicationCommandRequest request() {
+  public ApplicationCommandRequest request() {
     return ApplicationCommandRequest.builder()
       .name(NAME)
       .description("Manage punishment appeals")
@@ -76,12 +77,12 @@ public final class AppealCommand implements GuildCommand {
   }
 
   @Override
-  public @NotNull Feature feature() {
+  public Feature feature() {
     return Feature.APPEALS;
   }
 
   @Override
-  public @NotNull Mono<?> on(final @NotNull GatewayDiscordClient client, final @NotNull ChatInputInteractionEvent event, final @NotNull Guild guild) {
+  public Mono<?> on(final GatewayDiscordClient client, final ChatInputInteractionEvent event, final Guild guild) {
     final Interaction interaction = event.getInteraction();
     final Member member = interaction.getMember().orElseThrow();
     return event.deferReply().then(Command.executeOne(event, Map.of(

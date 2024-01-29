@@ -8,7 +8,9 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Stream;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public final class DynoSource implements Source<Dyno> {
   @Override
   public Stream<Dyno> parse(final Path path) throws IOException {

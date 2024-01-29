@@ -25,14 +25,15 @@ import discord4j.discordjson.json.MessageEditRequest;
 import discord4j.discordjson.json.StartThreadWithoutMessageRequest;
 import java.time.Instant;
 import org.bson.types.ObjectId;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import reactor.function.TupleUtils;
 
 @Component
+@NullMarked
 public class ModMail implements Listener {
   private static final int THREAD_AUTO_ARCHIVE_DURATION = 10080; // 7 days, in minutes
   private static final String BUTTON_CREATE_THREAD = "modmail/create-thread";
@@ -46,7 +47,7 @@ public class ModMail implements Listener {
   }
 
   @Override
-  public @NotNull Mono<Void> listen(final @NotNull GatewayDiscordClient client) {
+  public Mono<Void> listen(final GatewayDiscordClient client) {
     return client.on(ButtonInteractionEvent.class, event -> {
       final CustomId id = CustomId.parse(event.getCustomId());
       if (id != null && id.type().equals(BUTTON_CREATE_THREAD)) {

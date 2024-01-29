@@ -4,6 +4,7 @@ import com.seiama.sentinel.common.model.PunishmentModel;
 import com.seiama.sentinel.common.model.PunishmentRepository;
 import discord4j.common.util.Snowflake;
 import org.bson.types.ObjectId;
+import org.jspecify.annotations.NullMarked;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+@NullMarked
 @RequestMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 @RestController
 public class PunishmentController {

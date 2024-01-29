@@ -1,7 +1,9 @@
 package com.seiama.sentinel.common.discord;
 
 import discord4j.common.util.Snowflake;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public final class KnownBots {
   /**
    * {@link Snowflake} for {@code Beemo#4570}.

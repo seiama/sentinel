@@ -2,7 +2,9 @@ package com.seiama.sentinel.importer;
 
 import com.seiama.sentinel.importer.model.ImporterPunishment;
 import java.util.Set;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public interface ImporterConstants {
   Set<ImporterPunishment.Type> REVERSALS = Set.of(ImporterPunishment.Type.UNBAN, ImporterPunishment.Type.UNMUTE);
 

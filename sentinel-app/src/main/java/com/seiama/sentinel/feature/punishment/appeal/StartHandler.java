@@ -37,6 +37,7 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.function.Function;
 import org.bson.types.ObjectId;
+import org.jspecify.annotations.NullMarked;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -44,6 +45,7 @@ import reactor.function.TupleUtils;
 import reactor.util.function.Tuple5;
 import reactor.util.function.Tuples;
 
+@NullMarked
 class StartHandler implements Function<MemberJoinEvent, Publisher<Void>> {
   private final GatewayDiscordClient client;
 

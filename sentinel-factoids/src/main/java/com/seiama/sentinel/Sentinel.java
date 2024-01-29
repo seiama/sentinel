@@ -4,11 +4,13 @@ import com.seiama.sentinel.common.Listener;
 import discord4j.core.GatewayDiscordClient;
 import jakarta.annotation.PostConstruct;
 import java.util.Set;
+import org.jspecify.annotations.NullMarked;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import reactor.core.publisher.Flux;
 
+@NullMarked
 @SpringBootApplication
 public class Sentinel {
   public static void main(final String[] args) {

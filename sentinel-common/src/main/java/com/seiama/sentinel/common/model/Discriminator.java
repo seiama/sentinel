@@ -4,11 +4,12 @@ import com.seiama.functional.function.exceptional.Consumer1E;
 import com.seiama.functional.function.exceptional.RunnableE;
 import discord4j.core.object.entity.User;
 import discord4j.discordjson.json.UserData;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.VisibleForTesting;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @Deprecated
+@NullMarked
 public record Discriminator(
   @Nullable String value
 ) {
@@ -16,11 +17,11 @@ public record Discriminator(
   @VisibleForTesting
   public static final String TEMPORARY_MIGRATION_MARKER = "0";
 
-  public Discriminator(final @NotNull UserData user) {
+  public Discriminator(final UserData user) {
     this(user.discriminator());
   }
 
-  public Discriminator(final @NotNull User user) {
+  public Discriminator(final User user) {
     this(user.getDiscriminator());
   }
 

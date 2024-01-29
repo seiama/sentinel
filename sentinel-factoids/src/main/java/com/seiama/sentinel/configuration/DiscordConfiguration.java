@@ -5,9 +5,11 @@ import discord4j.core.object.presence.ClientPresence;
 import discord4j.gateway.ShardInfo;
 import discord4j.gateway.intent.Intent;
 import discord4j.gateway.intent.IntentSet;
+import org.jspecify.annotations.NullMarked;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
+@NullMarked
 public class DiscordConfiguration extends AbstractDiscordConfiguration {
   @Override
   protected IntentSet intents() {

@@ -4,8 +4,10 @@ import com.seiama.sentinel.model.TemporaryMessageLinkRepository;
 import discord4j.core.event.domain.message.MessageDeleteEvent;
 import discord4j.rest.RestClient;
 import java.util.function.Function;
+import org.jspecify.annotations.NullMarked;
 import org.reactivestreams.Publisher;
 
+@NullMarked
 class MessageLinkDeleteHandler implements Function<MessageDeleteEvent, Publisher<Object>> {
   private final TemporaryMessageLinkRepository messageLinks;
   private final RestClient relayRest;

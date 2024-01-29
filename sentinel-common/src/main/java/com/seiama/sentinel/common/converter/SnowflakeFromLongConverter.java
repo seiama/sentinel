@@ -1,11 +1,13 @@
 package com.seiama.sentinel.common.converter;
 
 import discord4j.common.util.Snowflake;
+import org.jspecify.annotations.NullMarked;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.ReadingConverter;
 import org.springframework.stereotype.Component;
 
 @Component
+@NullMarked
 @ReadingConverter
 public class SnowflakeFromLongConverter implements Converter<Long, Snowflake> {
   @Override

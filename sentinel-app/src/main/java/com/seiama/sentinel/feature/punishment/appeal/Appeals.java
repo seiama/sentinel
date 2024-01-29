@@ -54,8 +54,8 @@ import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import org.bson.types.ObjectId;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -66,6 +66,7 @@ import reactor.function.Function3;
 import reactor.util.function.Tuple2;
 
 @Component
+@NullMarked
 @SuppressWarnings("FinalClass")
 public class Appeals implements Listener {
   static final int CHANNEL_RATE_LIMIT = 5; // in seconds
@@ -113,7 +114,7 @@ public class Appeals implements Listener {
   }
 
   @Override
-  public @NotNull Mono<Void> listen(final @NotNull GatewayDiscordClient client) {
+  public Mono<Void> listen(final GatewayDiscordClient client) {
     final Flux<Void> voteTicker = Flux.interval(Duration.ofMinutes(1), VOTE_CHECK_INTERVAL, Schedulers.newSingle("Punishment Appeal Vote Result Ticker"))
       .flatMap(tick -> {
         return this.appeals.findAllByResultIsNull()
@@ -251,7 +252,7 @@ public class Appeals implements Listener {
       this.nextAttemptMayBeMadeAt = resolveNextAttemptMayBeMadeAt(nextAttemptMayBeMadeAt, result);
     }
 
-    private static Instant resolveNextAttemptMayBeMadeAt(final Instant instant, final AppealModel.Result result) {
+    private static @Nullable Instant resolveNextAttemptMayBeMadeAt(final @Nullable Instant instant, final AppealModel.Result result) {
       if (instant != null) {
         return instant;
       }

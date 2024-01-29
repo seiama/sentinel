@@ -13,12 +13,13 @@ import discord4j.core.object.command.ApplicationCommand;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.User;
 import discord4j.discordjson.json.ApplicationCommandRequest;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 @Component
+@NullMarked
 public final class KickMessageCommand implements MessageCommand {
   private static final String NAME = "Kick";
   private final Punishments punishments;
@@ -29,12 +30,12 @@ public final class KickMessageCommand implements MessageCommand {
   }
 
   @Override
-  public @NotNull String name() {
+  public String name() {
     return NAME;
   }
 
   @Override
-  public @NotNull ApplicationCommandRequest request() {
+  public ApplicationCommandRequest request() {
     return ApplicationCommandRequest.builder()
       .name(NAME)
       .type(ApplicationCommand.Type.MESSAGE.getValue())
@@ -43,12 +44,12 @@ public final class KickMessageCommand implements MessageCommand {
   }
 
   @Override
-  public @NotNull Feature feature() {
+  public Feature feature() {
     return Feature.PUNISHMENTS;
   }
 
   @Override
-  public @NotNull Mono<?> on(final @NotNull GatewayDiscordClient client, final @NotNull MessageInteractionEvent event, final @NotNull Guild guild) {
+  public Mono<?> on(final GatewayDiscordClient client, final MessageInteractionEvent event, final Guild guild) {
     final String modalTitle = "Kick" + event.getResolvedMessage().getAuthor().map(User::getTag).map(" "::concat).orElse("");
     return Modals.presentAndCaptureSingleTextInput(event, modalTitle, "Reason", false, (modal, reason) -> {
       return this.punishments.createUsing(new MessageInteractionPunishmentCreator(modal, event.getResolvedMessage(), guild, PunishmentModel.Type.KICK, PunishmentAction.kick(), reason.orElse(null)));

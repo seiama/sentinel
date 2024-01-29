@@ -11,7 +11,9 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public final class ImporterApplication {
   private static final Path SOURCES_2022_02_22 = Path.of("sources", "2023-02-22");
   private static final Path SOURCES_2022_02_28 = Path.of("sources", "2023-02-28");

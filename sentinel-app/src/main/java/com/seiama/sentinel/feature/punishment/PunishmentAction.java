@@ -12,9 +12,11 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.OptionalInt;
+import org.jspecify.annotations.NullMarked;
 import reactor.core.publisher.Mono;
 import reactor.function.Function3;
 
+@NullMarked
 public interface PunishmentAction<U, M> extends Function3<Guild, U, M, Mono<Void>> {
   Duration DELETE_MESSAGE_LENGTH = Duration.ofHours(1);
 

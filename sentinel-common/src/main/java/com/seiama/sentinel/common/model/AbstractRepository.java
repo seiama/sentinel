@@ -3,7 +3,7 @@ package com.seiama.sentinel.common.model;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.bson.Document;
 import org.bson.types.ObjectId;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -11,6 +11,7 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Mono;
 
+@NullMarked
 @Repository
 public abstract class AbstractRepository<P extends AbstractPartial, M extends AbstractModel> implements ExtendedRepository<P, M> {
   protected final Class<M> model;
@@ -24,13 +25,13 @@ public abstract class AbstractRepository<P extends AbstractPartial, M extends Ab
   }
 
   @Override
-  public @NotNull Mono<M> update(final @NotNull ObjectId _id, @NotNull final P partial) {
+  public Mono<M> update(final ObjectId _id, final P partial) {
     return AbstractPartial.toBson(this.mapper, partial)
       .flatMap(bson -> this.update(_id, Update.fromDocument(new Document("$set", bson))));
   }
 
   @Override
-  public @NotNull Mono<M> update(final @NotNull ObjectId _id, final @NotNull Update update) {
+  public Mono<M> update(final ObjectId _id, final Update update) {
     return this.template.updateFirst(
       Query.query(Criteria.where(AbstractModel._ID).is(_id)),
       update,
@@ -39,7 +40,7 @@ public abstract class AbstractRepository<P extends AbstractPartial, M extends Ab
   }
 
   @Override
-  public @NotNull Mono<M> refresh(final @NotNull M that) {
+  public Mono<M> refresh(final M that) {
     return this.template.findById(that._id(), this.model);
   }
 }

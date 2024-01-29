@@ -7,7 +7,9 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Stream;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public final class ManualSource implements Source<Manual> {
   @Override
   public Stream<Manual> parse(final Path path) throws IOException {

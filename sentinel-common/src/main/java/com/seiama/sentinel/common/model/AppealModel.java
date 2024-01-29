@@ -19,10 +19,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 import org.bson.types.ObjectId;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.query.Update;
 
+@NullMarked
 public interface AppealModel {
   String COLLECTION = "appeals";
 
@@ -82,7 +84,7 @@ public interface AppealModel {
     Snowflake appealDiscussionThread,
     @Nullable Snowflake voteMessage,
     Map<String, List<Snowflake>> votes, // cannot key by Vote
-    Result result,
+    @Nullable Result result,
     @Nullable String reason,
     @MongoDate @Nullable Instant nextAttemptMayBeMadeAt
   ) implements AbstractModel {

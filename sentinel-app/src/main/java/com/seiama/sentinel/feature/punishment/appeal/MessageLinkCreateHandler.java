@@ -16,12 +16,14 @@ import discord4j.core.object.entity.channel.Channel;
 import discord4j.rest.RestClient;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import org.jspecify.annotations.NullMarked;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Mono;
 import reactor.function.TupleUtils;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
+@NullMarked
 class MessageLinkCreateHandler implements Function<MessageCreateEvent, Publisher<Object>> {
   private final GuildRepository guilds;
   private final AppealRepository appeals;

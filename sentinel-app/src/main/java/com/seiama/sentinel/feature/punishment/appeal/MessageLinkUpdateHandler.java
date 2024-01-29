@@ -9,10 +9,12 @@ import discord4j.rest.RestClient;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+import org.jspecify.annotations.NullMarked;
 import org.reactivestreams.Publisher;
 import reactor.function.TupleUtils;
 import reactor.util.function.Tuples;
 
+@NullMarked
 class MessageLinkUpdateHandler implements Function<MessageUpdateEvent, Publisher<Object>> {
   private final GuildRepository guilds;
   private final TemporaryMessageLinkRepository messageLinks;
