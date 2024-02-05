@@ -46,6 +46,7 @@ public interface GuildModel {
         boolean enabled,
         Permissions permissions,
         Snowflake logChannel,
+        Snowflake privateThreadNotificationChannel,
         Appeals appeals
       ) implements IsEnabled {
         @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)

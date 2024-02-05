@@ -91,6 +91,7 @@ public class PunishmentListener implements Listener {
                 };
                 if (type != null) {
                   yield this.punishments.create(
+                    client,
                     guild,
                     PunishmentModel.Complete.create(
                       guild.getId(),

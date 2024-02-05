@@ -6,6 +6,7 @@ import com.seiama.sentinel.feature.punishment.PunishmentAction;
 import com.seiama.sentinel.feature.punishment.Punishments;
 import com.seiama.sentinel.feature.punishment.display.PunishmentMessages;
 import com.seiama.sentinel.feature.punishment.predicate.CanPunish;
+import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.interaction.DeferrableInteractionEvent;
 import discord4j.core.object.command.Interaction;
 import discord4j.core.object.entity.Guild;
@@ -20,6 +21,7 @@ import reactor.core.publisher.Mono;
 
 @NullMarked
 public final class MessageInteractionPunishmentCreator implements Punishments.Creator {
+  private final GatewayDiscordClient client;
   private final DeferrableInteractionEvent event;
   private final Message message;
   private final Guild guild;
@@ -27,7 +29,8 @@ public final class MessageInteractionPunishmentCreator implements Punishments.Cr
   private final PunishmentAction<User, PunishmentModel.Complete> action;
   private final @Nullable String reason;
 
-  public MessageInteractionPunishmentCreator(final DeferrableInteractionEvent event, final Message message, final Guild guild, final PunishmentModel.Type type, final PunishmentAction<User, PunishmentModel.Complete> action, final @Nullable String reason) {
+  public MessageInteractionPunishmentCreator(final GatewayDiscordClient client, final DeferrableInteractionEvent event, final Message message, final Guild guild, final PunishmentModel.Type type, final PunishmentAction<User, PunishmentModel.Complete> action, final @Nullable String reason) {
+    this.client = client;
     this.event = event;
     this.message = message;
     this.guild = guild;
@@ -53,6 +56,7 @@ public final class MessageInteractionPunishmentCreator implements Punishments.Cr
           .then(Mono.empty())
       )
       .flatMap(punished -> punishments.create(
+        this.client,
         this.guild,
         PunishmentModel.Complete.create(
           this.guild.getId(),

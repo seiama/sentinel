@@ -1,17 +1,25 @@
 package com.seiama.sentinel.feature.punishment;
 
 import com.seiama.sentinel.common.discord.KnownBots;
+import com.seiama.sentinel.common.discord.UserDisplay;
 import com.seiama.sentinel.common.model.GuildRepository;
 import com.seiama.sentinel.common.model.PunishmentModel;
 import com.seiama.sentinel.common.model.PunishmentRepository;
+import com.seiama.sentinel.common.model.UserIdentity;
 import com.seiama.sentinel.feature.punishment.display.PunishmentDisplay;
 import com.seiama.sentinel.feature.punishment.display.PunishmentDisplayStyle;
 import com.seiama.sentinel.feature.punishment.display.PunishmentMessages;
 import com.seiama.sentinel.reactive.Reactive;
 import discord4j.common.util.Snowflake;
+import discord4j.core.GatewayDiscordClient;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.User;
+import discord4j.core.object.entity.channel.Channel;
 import discord4j.core.object.entity.channel.TextChannel;
+import discord4j.discordjson.json.StartThreadWithoutMessageRequest;
+import discord4j.discordjson.json.ThreadModifyRequest;
+import discord4j.rest.RestClient;
+import discord4j.rest.entity.RestChannel;
 import discord4j.rest.http.client.ClientException;
 import java.util.Optional;
 import java.util.Set;
@@ -30,6 +38,7 @@ public final class Punishments {
   );
   private static final boolean ACTUALLY_APPLY_PUNISHMENT = true;
   private static final boolean ACTUALLY_NOTIFY_USER = true;
+  private static final int THREAD_AUTO_ARCHIVE_DURATION = 10080; // 7 days, in minutes
   private final GuildRepository guilds;
   private final PunishmentRepository punishments;
 
@@ -52,6 +61,7 @@ public final class Punishments {
   }
 
   public Mono<PunishmentModel.Complete> create(
+    final GatewayDiscordClient client,
     final Guild guild,
     final PunishmentModel.Complete punishment,
     final User punished,
@@ -60,13 +70,14 @@ public final class Punishments {
     return this.punishments
       .insert(punishment)
       .flatMap(model -> Mono.when(
-        this.sendNotification(guild, punished, model)
+        this.sendNotification(client, guild, punished, model)
           .then(this.logToChannel(guild, () -> this.punishments.refresh(model))),
         this.applyPunishment(guild, punished, model, action)
       ).thenReturn(model));
   }
 
   private Mono<?> sendNotification(
+    final GatewayDiscordClient client,
     final Guild guild,
     final User user,
     final PunishmentModel.Complete punishment
@@ -80,8 +91,43 @@ public final class Punishments {
             return message.getId();
           }
         }))
-        // we don't actually care if we can't send a notification to the user
-        .onErrorResume(Reactive.ignoringException()); // avoid possible 50007
+        .onErrorResume(t -> this.createPrivateThreadNotification(client, guild, user, punishment)); // avoid possible 50007
+    }
+    return Mono.empty();
+  }
+
+  private Mono<PunishmentModel.Complete> createPrivateThreadNotification(
+    final GatewayDiscordClient client,
+    final Guild guild,
+    final User user,
+    final PunishmentModel.Complete punishment
+  ) {
+    if (punishment.type().notification() && !punishment.type().terminal() && ACTUALLY_NOTIFY_USER) {
+      final RestClient rest = client.rest();
+      return this.guilds.findByGuild(guild.getId())
+        .mapNotNull(guildModel -> guildModel.features().punishments().privateThreadNotificationChannel())
+        .flatMap(id -> rest.getChannelService().startThreadWithoutMessage(
+          id.asLong(),
+          StartThreadWithoutMessageRequest.builder()
+            .type(Channel.Type.GUILD_PRIVATE_THREAD.getValue())
+            .name(UserDisplay.render(UserDisplay.Renderer.USERNAME, new UserIdentity(user)))
+            .autoArchiveDuration(THREAD_AUTO_ARCHIVE_DURATION)
+            .build()
+        ))
+        .flatMap(threadData -> {
+          final RestChannel thread = rest.getChannelById(Snowflake.of(threadData.id()));
+          return thread.createMessage(PunishmentMessages.punishmentPunishedDirectMessageEmbed(punishment, guild).asRequest())
+            .flatMap(message -> Mono.when(
+              rest.getChannelService().addThreadMember(thread.getId().asLong(), user.getId().asLong()),
+              rest.getChannelService().modifyThread(thread.getId().asLong(), ThreadModifyRequest.builder().locked(true).build(), null)
+            ).thenReturn(thread));
+        })
+        .flatMap(thread -> this.punishments.update(punishment, new PunishmentModel.Partial.PrivateThreadNotified() {
+          @Override
+          public Snowflake privateNotificationThreadId() {
+            return thread.getId();
+          }
+        }));
     }
     return Mono.empty();
   }
