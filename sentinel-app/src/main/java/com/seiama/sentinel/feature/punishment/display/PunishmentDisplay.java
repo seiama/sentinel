@@ -15,8 +15,8 @@ import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public final class PunishmentDisplay {
-  private static final String SYMBOL_AUTOMATIC = "(ᴀ)";
-  private static final String SYMBOL_NOTIFIED = "(ɴ)";
+  private static final String SYMBOL_AUTOMATIC = "(Automatic)";
+  private static final String SYMBOL_NOTIFIED = "(Notified)";
 
   private PunishmentDisplay() {
   }
