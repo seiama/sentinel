@@ -18,7 +18,9 @@ import reactor.function.TupleUtils;
 @NullMarked
 class VoteButtonHandler implements Function<ButtonInteractionEvent, Publisher<Object>> {
   private static final BiFunction<InteractionReplyEditMono, AppealModel.Complete, Mono<?>> VOTE_BUTTON_REFRESHER = (edit, model) -> {
-    return edit.withComponents(Appeals.createVoteButtons(model.votes()));
+    return edit
+      .withEmbedsOrNull(Appeals.createVoteSummary(model.votes()))
+      .withComponents(Appeals.createVoteButtons(model.votes()));
   };
   private final PunishmentRepository punishments;
   private final AppealRepository appeals;

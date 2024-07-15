@@ -34,6 +34,7 @@ import discord4j.core.object.entity.User;
 import discord4j.core.object.reaction.ReactionEmoji;
 import discord4j.core.spec.EmbedCreateFields;
 import discord4j.core.spec.EmbedCreateSpec;
+import discord4j.core.util.MentionUtil;
 import discord4j.discordjson.json.EmbedData;
 import discord4j.discordjson.json.MessageData;
 import discord4j.discordjson.json.MessageEditRequest;
@@ -173,6 +174,31 @@ public class Appeals implements Listener {
           String.format("%s (%d)", vote.strings().name(), votes.getOrDefault(vote.name(), List.of()).size())
         ))
         .toList()
+    );
+  }
+
+  static List<EmbedCreateSpec> createVoteSummary(final Map<String, List<Snowflake>> votes) {
+    final StringBuilder description = new StringBuilder();
+    AppealModel.Vote.all()
+      .forEach(vote -> {
+        description.append("- %s %s: %s".formatted(
+          vote.emoji().asFormat(),
+          vote.strings().name(),
+          votes.getOrDefault(vote.name(), List.of()).stream()
+            .map(MentionUtil::forUser)
+            .collect(Collectors.joining(", "))
+        ));
+      });
+    return List.of(
+      EmbedCreateSpec.builder()
+        .title("Voting")
+        .description("Please cast your vote using one of the buttons below. If you wish to change your vote, simply click a different button.")
+        .build(),
+      EmbedCreateSpec.builder()
+        .title("Vote overview")
+        .description(description.toString())
+        .color(Color.of(0xcabd85))
+        .build()
     );
   }
 
