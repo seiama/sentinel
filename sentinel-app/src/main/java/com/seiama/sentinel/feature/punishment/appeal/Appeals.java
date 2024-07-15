@@ -181,12 +181,13 @@ public class Appeals implements Listener {
     final StringBuilder description = new StringBuilder();
     AppealModel.Vote.all()
       .forEach(vote -> {
-        description.append("- %s %s: %s".formatted(
+        description.append("- %s %s: %s%s".formatted(
           vote.emoji().asFormat(),
           vote.strings().name(),
           votes.getOrDefault(vote.name(), List.of()).stream()
             .map(MentionUtil::forUser)
-            .collect(Collectors.joining(", "))
+            .collect(Collectors.joining(", ")),
+          vote != AppealModel.Vote.VETO ? "\n" : ""
         ));
       });
     return List.of(
