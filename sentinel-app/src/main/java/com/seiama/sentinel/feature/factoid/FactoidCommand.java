@@ -1,5 +1,6 @@
 package com.seiama.sentinel.feature.factoid;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.seiama.sentinel.command.Command;
 import com.seiama.sentinel.command.GuildCommand;
 import com.seiama.sentinel.command.OptionNames;
@@ -22,6 +23,7 @@ import discord4j.discordjson.json.ApplicationCommandOptionData;
 import discord4j.discordjson.json.ApplicationCommandRequest;
 import discord4j.rest.RestClient;
 import discord4j.rest.service.ApplicationService;
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -44,11 +46,15 @@ public final class FactoidCommand implements GuildCommand {
 
   private final FactoidRepository factoids;
   private final RestClient rest;
+  private final org.springframework.web.client.RestClient http;
+  private final ObjectMapper mapper;
 
   @Autowired
-  private FactoidCommand(final FactoidRepository factoids, final @Qualifier("factoidsRest") RestClient rest) {
+  private FactoidCommand(final FactoidRepository factoids, final @Qualifier("factoidsRest") RestClient rest, final org.springframework.web.client.RestClient.Builder http, final ObjectMapper mapper) {
     this.factoids = factoids;
     this.rest = rest;
+    this.http = http.build();
+    this.mapper = mapper;
   }
 
   @Override
@@ -92,6 +98,14 @@ public final class FactoidCommand implements GuildCommand {
               .type(ApplicationCommandOption.Type.STRING.getValue())
               .build()
           )
+          .addOption(
+            ApplicationCommandOptionData.builder()
+              .name(OptionNames.JSON)
+              .description("The URL to JSON for the factoid.")
+              .required(false)
+              .type(ApplicationCommandOption.Type.STRING.getValue())
+              .build()
+          )
           .build()
       )
       .addOption(
@@ -128,8 +142,23 @@ public final class FactoidCommand implements GuildCommand {
             .flatMap(name -> {
               final Optional<String> description = Options.string(option, OptionNames.DESCRIPTION);
               final Optional<String> content = Options.string(option, OptionNames.CONTENT);
+              final Optional<String> json = Options.string(option, OptionNames.JSON);
               final Response response;
-              if (content.isPresent()) {
+              if (json.isPresent()) {
+                try {
+                  response = this.mapper.readValue(
+                    this.http.get()
+                      .uri(URI.create(json.get()))
+                      .retrieve()
+                      .toEntity(String.class)
+                      .getBody(),
+                    Response.class
+                  );
+                } catch (final Throwable t) {
+                  t.printStackTrace();
+                  return event.editReply().withContentOrNull("Something went wrong.");
+                }
+              } else if (content.isPresent()) {
                 response = new Response(
                   content.orElse(null),
                   List.of(),
