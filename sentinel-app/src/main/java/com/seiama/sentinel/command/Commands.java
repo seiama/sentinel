@@ -20,7 +20,6 @@ import java.util.Set;
 import java.util.stream.Stream;
 import org.jspecify.annotations.NullMarked;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -39,8 +38,8 @@ class Commands implements Listener {
   private final Table<Snowflake, String, MessageCommand> messageCommandsByGuildAndName = HashBasedTable.create();
 
   @Autowired
-  Commands(final @Qualifier("applicationId") long applicationId, final GuildRepository guilds, final ApplicationService applicationService, final Set<GlobalCommand> globalCommands, final Set<GuildCommand> guildCommands, final Set<MessageCommand> messageCommands) {
-    this.applicationId = applicationId;
+  Commands(final GuildRepository guilds, final ApplicationService applicationService, final Set<GlobalCommand> globalCommands, final Set<GuildCommand> guildCommands, final Set<MessageCommand> messageCommands) {
+    this.applicationId = 1093034213999132743L;
     this.guilds = guilds;
     this.applicationService = applicationService;
     this.globalCommands = globalCommands;

@@ -38,11 +38,6 @@ public abstract class AbstractDiscordConfiguration {
     return client.getRestClient();
   }
 
-  @Bean("applicationId")
-  long applicationId(final RestClient rest) {
-    return rest.getApplicationId().blockOptional().orElseThrow();
-  }
-
   @Bean
   ApplicationService applicationService(final RestClient rest) {
     return rest.getApplicationService();

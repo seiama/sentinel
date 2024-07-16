@@ -243,6 +243,6 @@ public final class FactoidCommand implements GuildCommand {
   }
 
   private <T> Mono<T> appAction(final BiFunction<Long, ApplicationService, Mono<T>> consumer) {
-    return this.rest.getApplicationId().flatMap(applicationId -> consumer.apply(applicationId, this.rest.getApplicationService()));
+    return Mono.just(1093035048015515668L).flatMap(applicationId -> consumer.apply(applicationId, this.rest.getApplicationService()));
   }
 }
