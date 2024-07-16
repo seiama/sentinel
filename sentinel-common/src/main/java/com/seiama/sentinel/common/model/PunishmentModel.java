@@ -236,7 +236,7 @@ public interface PunishmentModel {
   enum Type {
     BAN(SharedConstants.COLOR_RED, true, true, new Strings("ban", "banned"), Emoji.DOT_RED),
     KICK(SharedConstants.COLOR_GREY, true, true, new Strings("kick", "kicked"), Emoji.DOT_GREY),
-    MUTE(SharedConstants.COLOR_PURPLE, true, false, new Strings("mute", "muted"), Emoji.DOT_PURPLE),
+    MUTE(SharedConstants.COLOR_PURPLE, true, false, new Strings("timeout", "timed out"), Emoji.DOT_PURPLE),
     NOTE(SharedConstants.COLOR_BLUE, false, false, new Strings("note", "noted"), Emoji.DOT_BLUE),
     WARN(SharedConstants.COLOR_ORANGE, true, false, new Strings("warn", "warned"), Emoji.DOT_ORANGE);
 

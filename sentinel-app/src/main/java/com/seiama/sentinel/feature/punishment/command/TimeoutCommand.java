@@ -11,8 +11,12 @@ import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.core.object.command.ApplicationCommandOption;
 import discord4j.core.object.entity.Guild;
+import discord4j.discordjson.json.ApplicationCommandOptionChoiceData;
 import discord4j.discordjson.json.ApplicationCommandOptionData;
 import discord4j.discordjson.json.ApplicationCommandRequest;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Arrays;
 import org.jspecify.annotations.NullMarked;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -20,12 +24,12 @@ import reactor.core.publisher.Mono;
 
 @Component
 @NullMarked
-public final class WarnCommand implements GuildCommand {
-  private static final String NAME = "warn";
+public final class TimeoutCommand implements GuildCommand {
+  private static final String NAME = "timeout";
   private final Punishments punishments;
 
   @Autowired
-  private WarnCommand(final Punishments punishments) {
+  private TimeoutCommand(final Punishments punishments) {
     this.punishments = punishments;
   }
 
@@ -38,7 +42,7 @@ public final class WarnCommand implements GuildCommand {
   public ApplicationCommandRequest request() {
     return ApplicationCommandRequest.builder()
       .name(NAME)
-      .description("Warn a member")
+      .description("Timeout a member")
       .defaultPermission(false)
       .addOption(
         ApplicationCommandOptionData.builder()
@@ -51,8 +55,26 @@ public final class WarnCommand implements GuildCommand {
       .addOption(
         ApplicationCommandOptionData.builder()
           .name(OptionNames.REASON)
-          .description("The reason for warning the member")
+          .description("The reason for timing out the member")
           .type(ApplicationCommandOption.Type.STRING.getValue())
+          .required(true)
+          .build()
+      )
+      .addOption(
+        ApplicationCommandOptionData.builder()
+          .name(OptionNames.DURATION)
+          .description("The duration")
+          .type(ApplicationCommandOption.Type.STRING.getValue())
+          .choices(
+            Arrays.stream(PunishmentAction.MuteDuration.values())
+              .map(option -> {
+                return ApplicationCommandOptionChoiceData.builder()
+                  .name(option.description())
+                  .value(option.name())
+                  .build();
+              })
+              .toList()
+          )
           .required(true)
           .build()
       )
@@ -66,6 +88,11 @@ public final class WarnCommand implements GuildCommand {
 
   @Override
   public Mono<?> on(final GatewayDiscordClient client, final ChatInputInteractionEvent event, final Guild guild) {
-    return this.punishments.createUsing(new ChatInteractionPunishmentCreator(client, event, guild, PunishmentModel.Type.WARN, null, PunishmentAction.warn()));
+    final String durationInput = event.getOptionAsString(OptionNames.DURATION).orElseThrow();
+    final PunishmentAction.MuteDuration duration = PunishmentAction.MuteDuration.valueOf(durationInput);
+    final Instant now = Instant.now();
+    final Instant endsAt = duration.untilFrom(now);
+    final Duration between = Duration.between(now, endsAt);
+    return this.punishments.createUsing(new ChatInteractionPunishmentCreator(client, event, guild, PunishmentModel.Type.MUTE, between, PunishmentAction.mute(endsAt)));
   }
 }
