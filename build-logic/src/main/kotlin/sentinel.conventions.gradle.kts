@@ -35,6 +35,6 @@ repositories {
 
 dependencies {
   checkstyle("ca.stellardrift:stylecheck:0.2.1")
-  errorprone("com.google.errorprone:error_prone_core:2.24.1")
+  errorprone("com.google.errorprone:error_prone_core:2.28.0")
   compileOnlyApi("org.jetbrains:annotations:24.1.0")
 }
