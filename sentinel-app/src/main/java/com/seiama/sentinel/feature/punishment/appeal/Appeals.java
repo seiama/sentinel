@@ -12,6 +12,7 @@ import com.seiama.sentinel.common.model.GuildModel;
 import com.seiama.sentinel.common.model.GuildRepository;
 import com.seiama.sentinel.common.model.PunishmentModel;
 import com.seiama.sentinel.common.model.PunishmentRepository;
+import com.seiama.sentinel.feature.punishment.PunishmentAction;
 import com.seiama.sentinel.feature.punishment.display.PunishmentDisplay;
 import com.seiama.sentinel.feature.punishment.display.PunishmentDisplayStyle;
 import com.seiama.sentinel.model.TemporaryMessageLink;
@@ -475,7 +476,7 @@ public class Appeals implements Listener {
         final Mono<PunishmentModel.Complete> updatedPunishment = Appeals.this.punishments.update(this.model.punishment(), PunishmentModel.Partial.Stale.of(this.user, this.reason, this.automatic, this.model._id()));
         return updatedPunishment
           .flatMap(punishment -> switch (punishment.type()) {
-            case BAN -> this.client.getGuildById(punishment.guild()).flatMap(guild -> guild.unban(punishment.punishedId(), String.format(
+            case BAN -> this.client.getGuildById(punishment.guild()).flatMap(guild -> PunishmentAction.unban().apply(guild, punishment.punishedId(), String.format(
               "Punishment (%s) has been appealed (%s).",
               punishment._id(),
               this.model._id()
