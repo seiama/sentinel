@@ -49,8 +49,8 @@ public final class KickMessageCommand implements MessageCommand {
   @Override
   public @NotNull Mono<?> on(final @NotNull GatewayDiscordClient client, final @NotNull MessageInteractionEvent event, final @NotNull Guild guild) {
     final String modalTitle = "Kick" + event.getResolvedMessage().getAuthor().map(User::getTag).map(" "::concat).orElse("");
-    return Modals.presentAndCaptureSingleTextInput(event, modalTitle, "Reason", false, reason -> {
-      return this.punishments.createUsing(new MessageInteractionPunishmentCreator(event, guild, PunishmentModel.Type.KICK, PunishmentAction.kick(), reason.orElse(null)));
+    return Modals.presentAndCaptureSingleTextInput(event, modalTitle, "Reason", false, (modal, reason) -> {
+      return this.punishments.createUsing(new MessageInteractionPunishmentCreator(modal, event.getResolvedMessage(), guild, PunishmentModel.Type.KICK, PunishmentAction.kick(), reason.orElse(null)));
     });
   }
 }

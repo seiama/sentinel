@@ -49,8 +49,8 @@ public final class BanMessageCommand implements MessageCommand {
   @Override
   public @NotNull Mono<?> on(final @NotNull GatewayDiscordClient client, final @NotNull MessageInteractionEvent event, final @NotNull Guild guild) {
     final String modalTitle = "Ban" + event.getResolvedMessage().getAuthor().map(User::getTag).map(" "::concat).orElse("");
-    return Modals.presentAndCaptureSingleTextInput(event, modalTitle, "Reason", false, reason -> {
-      return this.punishments.createUsing(new MessageInteractionPunishmentCreator(event, guild, PunishmentModel.Type.BAN, PunishmentAction.ban(true), reason.orElse(null)));
+    return Modals.presentAndCaptureSingleTextInput(event, modalTitle, "Reason", false, (modal, reason) -> {
+      return this.punishments.createUsing(new MessageInteractionPunishmentCreator(modal, event.getResolvedMessage(), guild, PunishmentModel.Type.BAN, PunishmentAction.ban(true), reason.orElse(null)));
     });
   }
 }

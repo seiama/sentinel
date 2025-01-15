@@ -48,6 +48,6 @@ public final class QuickBanMessageCommand implements MessageCommand {
   @Override
   public @NotNull Mono<?> on(final @NotNull GatewayDiscordClient client, final @NotNull MessageInteractionEvent event, final @NotNull Guild guild) {
     final String reason = "Quick-banned for sending a message in " + MentionUtil.forChannel(event.getResolvedMessage().getChannelId());
-    return this.punishments.createUsing(new MessageInteractionPunishmentCreator(event, guild, PunishmentModel.Type.BAN, PunishmentAction.ban(true), reason));
+    return this.punishments.createUsing(new MessageInteractionPunishmentCreator(event, event.getResolvedMessage(), guild, PunishmentModel.Type.BAN, PunishmentAction.ban(true), reason));
   }
 }
