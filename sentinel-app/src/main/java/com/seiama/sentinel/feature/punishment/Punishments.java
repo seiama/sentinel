@@ -16,11 +16,13 @@ import java.util.function.Supplier;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Component
 public final class Punishments {
   private static final boolean ACTUALLY_APPLY_PUNISHMENT = true;
+  private static final boolean ACTUALLY_NOTIFY_USER = false;
   private final GuildRepository guilds;
   private final PunishmentRepository punishments;
 
@@ -28,6 +30,14 @@ public final class Punishments {
   private Punishments(final GuildRepository guilds, final PunishmentRepository punishments) {
     this.guilds = guilds;
     this.punishments = punishments;
+  }
+
+  public PunishmentRepository repository() {
+    return this.punishments;
+  }
+
+  public Flux<PunishmentModel.Complete> findActive(final Snowflake guild, final Snowflake punishedId, final PunishmentModel.Type type) {
+    return this.punishments.findAllByGuildAndPunishedIdAndTypeAndStaleIsNotOrderByDateDesc(guild, punishedId, type, true);
   }
 
   public Mono<PunishmentModel.Complete> createUsing(final Creator creator) {
@@ -54,7 +64,7 @@ public final class Punishments {
     final User user,
     final PunishmentModel.Complete punishment
   ) {
-    if (punishment.type().notification()) {
+    if (punishment.type().notification() && ACTUALLY_NOTIFY_USER) {
       return user.getPrivateChannel()
         .flatMap(channel -> channel.createMessage(PunishmentMessages.punishmentPunishedDirectMessageEmbed(punishment, guild)))
         .flatMap(message -> this.punishments.update(punishment, new PunishmentModel.Partial.DirectMessageNotified() {

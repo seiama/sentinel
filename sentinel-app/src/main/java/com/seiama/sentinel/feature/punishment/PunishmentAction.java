@@ -18,6 +18,11 @@ import reactor.function.Function3;
 public interface PunishmentAction<U, M> extends Function3<Guild, U, M, Mono<Void>> {
   Duration DELETE_MESSAGE_LENGTH = Duration.ofHours(1);
 
+  @Deprecated // You generally don't want to use this.
+  static <U, M> PunishmentAction<U, M> noop() {
+    return (guild, user, reason) -> Mono.empty();
+  }
+
   static PunishmentAction<User, PunishmentModel.Complete> ban(final Boolean deleteMessages) {
     return ban(
       Boolean.TRUE.equals(deleteMessages)

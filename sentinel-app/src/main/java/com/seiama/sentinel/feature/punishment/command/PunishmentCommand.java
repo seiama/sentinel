@@ -22,6 +22,7 @@ import discord4j.core.object.entity.Member;
 import discord4j.discordjson.json.ApplicationCommandOptionData;
 import discord4j.discordjson.json.ApplicationCommandRequest;
 import java.util.Map;
+import java.util.Optional;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -187,7 +188,7 @@ public final class PunishmentCommand implements GuildCommand {
           .zipWith(Mono.just(Options.string(option, Options.REASON)))
           .flatMap(TupleUtils.function((id, reason) -> {
             return this.punishments.findById(id)
-              .flatMap(model -> this.punishments.update(model, PunishmentModel.Partial.Stale.of(punisher, reason.orElse(null), false, null)))
+              .flatMap(model -> this.punishments.update(model, PunishmentModel.Partial.Stale.of(Optional.of(punisher), reason.orElse(null), false, null)))
               .flatMap(model -> this.punishmentOps.unenforce(guild, model, String.format("Punishment (%s) has been marked stale.", model._id())).thenReturn(model));
           }))
           .flatMap(result -> event.editReply().withContentOrNull(PunishmentMessages.punishmentMarkedStale(result)).withEmbeds(PunishmentDisplay.punishment(result, PunishmentDisplayStyle.FULL)));
@@ -196,7 +197,7 @@ public final class PunishmentCommand implements GuildCommand {
         return Mono.justOrEmpty(option.getOption(USER).orElse(null))
           .filterWhen(new CanQueryAndMutate<>(this.guilds, guild, punisher))
           .flatMap(user -> Options.user(user, Options.USER).orElseGet(Mono::empty))
-          .flatMap(user -> this.punishments.findAllByPunishedIdOrderByDateDesc(user.getId()).collectList().zipWith(Mono.just(user)))
+          .flatMap(user -> this.punishments.findAllByGuildAndPunishedIdOrderByDateDesc(guild.getId(), user.getId()).collectList().zipWith(Mono.just(user)))
           .map(TupleUtils.function((punishment, user) -> new PunishmentSearchResult(user, punishment)))
           .flatMap(result -> event.editReply().withEmbeds(PunishmentMessages.punishmentSearchEmbed(result)));
       }

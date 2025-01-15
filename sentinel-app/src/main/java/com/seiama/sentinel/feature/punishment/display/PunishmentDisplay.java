@@ -1,5 +1,6 @@
 package com.seiama.sentinel.feature.punishment.display;
 
+import com.seiama.sentinel.common.Thyme;
 import com.seiama.sentinel.common.discord.Emoji;
 import com.seiama.sentinel.common.discord.Mention;
 import com.seiama.sentinel.common.model.PunishmentModel;
@@ -37,6 +38,10 @@ public final class PunishmentDisplay {
       embed.addField("Issued to", sb.toString(), false);
     }
     if (display.reason) ifPresent(punishment.reason(), reason -> embed.addField("Reason", reason, false));
+    if (display.duration) ifPresent(punishment.duration(), duration -> embed.addField("Duration", "~%s (expiry: %s)".formatted(
+      Thyme.PRETTY_TIME.print(Thyme.ymwdhmsDuration(punishment.date(), punishment.date().plus(duration))),
+      TimestampFormat.LONG_DATE_TIME.format(punishment.date().plus(duration))
+    ), false));
     if (display.stale && Boolean.TRUE.equals(punishment.stale())) {
       ifPresent(punishment.staleAt(), at -> embed.addField("Stale time", TimestampFormat.LONG_DATE_TIME.format(at), false));
       ifPresent(punishment.staleById(), id -> embed.addField("Stale by", Mention.userWithId(id, punishment.staleByUsername(), punishment.staleByDiscriminator()), false));

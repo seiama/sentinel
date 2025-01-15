@@ -9,11 +9,12 @@ import reactor.core.publisher.Flux;
 
 @Repository
 public interface PunishmentRepository extends ReactiveMongoRepository<PunishmentModel.Complete, ObjectId>, PunishmentRepositoryCustom {
+  @Deprecated // You probably want to use Punishments.findActive instead.
   Flux<PunishmentModel.Complete> findAllByGuildAndPunishedIdAndTypeAndStaleIsNotOrderByDateDesc(final Snowflake guild, final Snowflake punishedId, final PunishmentModel.Type type, final @Nullable Boolean stale);
 
   Flux<PunishmentModel.Complete> findAllByGuild(final Snowflake guild);
 
-  Flux<PunishmentModel.Complete> findAllByPunishedIdOrderByDateDesc(final Snowflake punishedId);
+  Flux<PunishmentModel.Complete> findAllByGuildAndPunishedIdOrderByDateDesc(final Snowflake guild, final Snowflake punishedId);
 
   Flux<PunishmentModel.Complete> findAllByPunisherId(final Snowflake punisherId);
 }
