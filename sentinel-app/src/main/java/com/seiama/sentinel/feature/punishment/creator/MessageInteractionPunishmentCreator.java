@@ -14,9 +14,11 @@ import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.User;
 import java.time.Instant;
 import java.util.Optional;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import reactor.core.publisher.Mono;
 
+@NullMarked
 public final class MessageInteractionPunishmentCreator implements Punishments.Creator {
   private final DeferrableInteractionEvent event;
   private final Message message;

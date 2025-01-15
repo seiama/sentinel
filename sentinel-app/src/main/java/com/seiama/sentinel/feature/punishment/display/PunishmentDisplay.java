@@ -9,8 +9,10 @@ import discord4j.common.util.TimestampFormat;
 import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.rest.util.Color;
 import java.util.function.Consumer;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public final class PunishmentDisplay {
   private static final String SYMBOL_AUTOMATIC = "(ᴀ)";
   private static final String SYMBOL_NOTIFIED = "(ɴ)";
@@ -56,7 +58,7 @@ public final class PunishmentDisplay {
     if (value != null) consumer.accept(value);
   }
 
-  private static String automaticSuffix(final Boolean value) {
+  private static String automaticSuffix(final @Nullable Boolean value) {
     if (value != null && value) {
       return " " + SYMBOL_AUTOMATIC;
     }

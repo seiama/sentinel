@@ -2,8 +2,10 @@ package com.seiama.sentinel.common.bson;
 
 import java.util.function.BiConsumer;
 import org.bson.types.ObjectId;
+import org.jspecify.annotations.NullMarked;
 import reactor.core.publisher.SynchronousSink;
 
+@NullMarked
 public final class AsObjectId implements BiConsumer<String, SynchronousSink<ObjectId>> {
   public static final AsObjectId INSTANCE = new AsObjectId();
 

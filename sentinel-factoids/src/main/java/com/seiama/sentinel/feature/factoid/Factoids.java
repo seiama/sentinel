@@ -5,12 +5,13 @@ import com.seiama.sentinel.common.model.FactoidModel;
 import com.seiama.sentinel.common.model.FactoidRepository;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 @Component
+@NullMarked
 public class Factoids implements Listener {
   private final FactoidRepository factoids;
 
@@ -20,7 +21,7 @@ public class Factoids implements Listener {
   }
 
   @Override
-  public @NotNull Mono<Void> listen(final @NotNull GatewayDiscordClient client) {
+  public Mono<Void> listen(final GatewayDiscordClient client) {
     return client.on(ChatInputInteractionEvent.class, event -> {
       return event.getInteraction()
         .getGuild()

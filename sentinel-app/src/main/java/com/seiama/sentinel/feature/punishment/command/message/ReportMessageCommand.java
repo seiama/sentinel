@@ -9,12 +9,13 @@ import discord4j.core.event.domain.interaction.MessageInteractionEvent;
 import discord4j.core.object.command.ApplicationCommand;
 import discord4j.core.object.entity.Guild;
 import discord4j.discordjson.json.ApplicationCommandRequest;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 @Component
+@NullMarked
 public final class ReportMessageCommand implements MessageCommand {
   private static final String NAME = "Report";
 
@@ -26,12 +27,12 @@ public final class ReportMessageCommand implements MessageCommand {
   }
 
   @Override
-  public @NotNull String name() {
+  public String name() {
     return NAME;
   }
 
   @Override
-  public @NotNull ApplicationCommandRequest request() {
+  public ApplicationCommandRequest request() {
     return ApplicationCommandRequest.builder()
       .name(NAME)
       .type(ApplicationCommand.Type.MESSAGE.getValue())
@@ -40,12 +41,12 @@ public final class ReportMessageCommand implements MessageCommand {
   }
 
   @Override
-  public @NotNull Feature feature() {
+  public Feature feature() {
     return Feature.MODMAIL;
   }
 
   @Override
-  public @NotNull Mono<?> on(final @NotNull GatewayDiscordClient client, final @NotNull MessageInteractionEvent event, final @NotNull Guild guild) {
+  public Mono<?> on(final GatewayDiscordClient client, final MessageInteractionEvent event, final Guild guild) {
     return event.deferReply()
       .withEphemeral(true)
       .then(this.modmail.create(

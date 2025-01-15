@@ -2,10 +2,12 @@ package com.seiama.sentinel.model;
 
 import discord4j.common.util.Snowflake;
 import org.bson.types.ObjectId;
+import org.jspecify.annotations.NullMarked;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
+@NullMarked
 @Table(name = "temporary_message_links")
 public class TemporaryMessageLink {
   @Id

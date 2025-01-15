@@ -4,11 +4,12 @@ import com.seiama.sentinel.common.model.Feature;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.interaction.MessageInteractionEvent;
 import discord4j.core.object.entity.Guild;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 import reactor.core.publisher.Mono;
 
+@NullMarked
 public interface MessageCommand extends Command {
-  @NotNull Feature feature();
+  Feature feature();
 
-  @NotNull Mono<?> on(final @NotNull GatewayDiscordClient client, final @NotNull MessageInteractionEvent event, final @NotNull Guild guild);
+  Mono<?> on(final GatewayDiscordClient client, final MessageInteractionEvent event, final Guild guild);
 }

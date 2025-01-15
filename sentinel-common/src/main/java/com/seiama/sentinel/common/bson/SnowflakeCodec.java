@@ -8,7 +8,9 @@ import org.bson.BsonWriter;
 import org.bson.codecs.Codec;
 import org.bson.codecs.DecoderContext;
 import org.bson.codecs.EncoderContext;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public final class SnowflakeCodec implements Codec<Snowflake> {
   @Override
   public Snowflake decode(final BsonReader reader, final DecoderContext decoderContext) {

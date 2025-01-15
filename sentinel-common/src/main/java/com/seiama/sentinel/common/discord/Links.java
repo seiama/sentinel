@@ -3,7 +3,9 @@ package com.seiama.sentinel.common.discord;
 import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Message;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public interface Links {
   static String channel(final Snowflake guild, final Snowflake channel) {
     return "https://discord.com/channels/%s/%s".formatted(

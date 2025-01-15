@@ -1,14 +1,15 @@
 package com.seiama.sentinel.common;
 
 import discord4j.core.GatewayDiscordClient;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 import reactor.core.publisher.Mono;
 
+@NullMarked
 public interface Listener {
-  default void connected(final @NotNull GatewayDiscordClient client) {
+  default void connected(final GatewayDiscordClient client) {
   }
 
-  default @NotNull Mono<Void> listen(final @NotNull GatewayDiscordClient client) {
+  default Mono<Void> listen(final GatewayDiscordClient client) {
     return Mono.empty();
   }
 }

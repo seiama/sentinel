@@ -16,13 +16,14 @@ import discord4j.rest.http.client.ClientException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Component
+@NullMarked
 public final class Punishments {
   private static final Set<Snowflake> SHOULD_BE_ASSUMED_AS_AUTOMATIC_BY = Set.of(
     KnownBots.BEEMO_ID
@@ -50,7 +51,7 @@ public final class Punishments {
     return creator.create(this.guilds, this);
   }
 
-  public @NotNull Mono<PunishmentModel.Complete> create(
+  public Mono<PunishmentModel.Complete> create(
     final Guild guild,
     final PunishmentModel.Complete punishment,
     final User punished,
@@ -65,7 +66,7 @@ public final class Punishments {
       ).thenReturn(model));
   }
 
-  private @NotNull Mono<?> sendNotification(
+  private Mono<?> sendNotification(
     final Guild guild,
     final User user,
     final PunishmentModel.Complete punishment
@@ -93,7 +94,7 @@ public final class Punishments {
       .flatMap(channel -> freshPunishmentSource.get().flatMap(punishment -> channel.createMessage(PunishmentDisplay.punishment(punishment, PunishmentDisplayStyle.LOG))));
   }
 
-  private @NotNull Mono<Void> applyPunishment(
+  private Mono<Void> applyPunishment(
     final Guild guild,
     final User user,
     final PunishmentModel.Complete punishment,

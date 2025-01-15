@@ -4,7 +4,9 @@ import com.seiama.sentinel.importer.ImporterConstants;
 import com.seiama.sentinel.importer.model.ImporterPunishment;
 import com.seiama.sentinel.importer.model.ImporterPunishmentSource;
 import java.time.Instant;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public final class Beemo implements ImporterPunishmentSource {
   public long guild;
   public Instant date;

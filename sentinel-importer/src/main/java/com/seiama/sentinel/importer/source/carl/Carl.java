@@ -4,8 +4,10 @@ import com.seiama.sentinel.importer.ImporterConstants;
 import com.seiama.sentinel.importer.model.ImporterPunishment;
 import com.seiama.sentinel.importer.model.ImporterPunishmentSource;
 import java.time.Instant;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public final class Carl implements ImporterPunishmentSource {
   public static final String TYPE_BAN = "ban";
   public static final String TYPE_MUTE = "mute";

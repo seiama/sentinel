@@ -6,9 +6,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Predicate;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public final class ImporterPunishments implements Iterable<ImporterPunishment> {
   final List<ImporterPunishment> punishments = new ArrayList<>();
 
@@ -17,7 +18,7 @@ public final class ImporterPunishments implements Iterable<ImporterPunishment> {
   }
 
   @Override
-  public @NotNull Iterator<ImporterPunishment> iterator() {
+  public Iterator<ImporterPunishment> iterator() {
     return this.punishments.iterator();
   }
 
@@ -36,7 +37,7 @@ public final class ImporterPunishments implements Iterable<ImporterPunishment> {
     for (final ImporterPunishment punishment : this.punishments) {
       if (filter.test(punishment)) {
         assert punishment.values.punishedId != null;
-        List<ImporterPunishment> punishments = punishmentsByPunishedId.get(punishment.values.punishedId.longValue());
+        @Nullable List<ImporterPunishment> punishments = punishmentsByPunishedId.get(punishment.values.punishedId.longValue());
         if (punishments == null) {
           punishments = new ArrayList<>();
           punishmentsByPunishedId.put(punishment.values.punishedId.longValue(), punishments);

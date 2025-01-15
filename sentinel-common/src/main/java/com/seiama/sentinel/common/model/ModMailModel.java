@@ -10,11 +10,13 @@ import com.seiama.sentinel.common.jackson.InstantExtendedJsonSerializer;
 import discord4j.common.util.Snowflake;
 import java.time.Instant;
 import org.bson.types.ObjectId;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
+@NullMarked
 public interface ModMailModel {
   String COLLECTION = "modmail";
 

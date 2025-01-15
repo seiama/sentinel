@@ -1,5 +1,8 @@
 package com.seiama.sentinel.command;
 
+import org.jspecify.annotations.NullMarked;
+
+@NullMarked
 public final class OptionNames {
   public static final String CONTENT = "content";
   public static final String DELETE_MESSAGES = "delete_messages";

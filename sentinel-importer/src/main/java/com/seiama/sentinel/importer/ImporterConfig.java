@@ -6,8 +6,10 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public record ImporterConfig(
   long guild,
   List<UserIdHint> userIdHints,
@@ -40,8 +42,8 @@ public record ImporterConfig(
 
   public record ReasonModifier(
     @Nullable Class<? extends ImporterPunishmentSource> type,
-    Predicate<String> when,
-    String then
+    Predicate<@Nullable String> when,
+    @Nullable String then
   ) {
   }
 }

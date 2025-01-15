@@ -2,9 +2,11 @@ package com.seiama.sentinel.common.model.response;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@NullMarked
 public record Button(
   Emoji emoji,
   String label,

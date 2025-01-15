@@ -7,7 +7,9 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Stream;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public final class BeemoSource implements Source<Beemo> {
   @Override
   public Stream<Beemo> parse(final Path path) throws IOException {

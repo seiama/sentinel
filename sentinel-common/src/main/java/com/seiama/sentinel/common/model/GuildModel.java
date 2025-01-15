@@ -10,8 +10,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import org.bson.types.ObjectId;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+@NullMarked
 public interface GuildModel {
   String COLLECTION = "guilds";
 
@@ -27,7 +30,7 @@ public interface GuildModel {
     Features features
   ) implements AbstractModel {
     public <F extends IsEnabled> boolean featureEnabled(final Function<Features, F> featureGetter) {
-      final F feature = featureGetter.apply(this.features);
+      final @Nullable F feature = featureGetter.apply(this.features);
       return feature != null && feature.enabled();
     }
 

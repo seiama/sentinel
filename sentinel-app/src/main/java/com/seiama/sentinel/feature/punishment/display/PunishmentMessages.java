@@ -12,8 +12,10 @@ import discord4j.core.spec.MessageCreateSpec;
 import discord4j.rest.util.Color;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public final class PunishmentMessages {
   private static final int MAX_REASON_LENGTH_IN_PUNISHMENT_SEARCH = 45;
 

@@ -1,5 +1,8 @@
 package com.seiama.sentinel.feature.punishment.display;
 
+import org.jspecify.annotations.NullMarked;
+
+@NullMarked
 public enum PunishmentDisplayStyle {
   FULL(true, true, true, true, true, true, true, true, true),
   LOG(true, false, false, true, true, true, true, true, true),

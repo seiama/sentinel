@@ -1,7 +1,9 @@
 package com.seiama.sentinel.common.model;
 
 import java.util.function.Predicate;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public record Feature(
   Predicate<GuildModel.Complete> enabledForGuild
 ) {

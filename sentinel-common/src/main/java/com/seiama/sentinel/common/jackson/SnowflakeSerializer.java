@@ -5,7 +5,9 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import discord4j.common.util.Snowflake;
 import java.io.IOException;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class SnowflakeSerializer extends StdSerializer<Snowflake> {
   public SnowflakeSerializer() {
     super(Snowflake.class);

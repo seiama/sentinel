@@ -8,13 +8,14 @@ import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.discordjson.json.ApplicationCommandRequest;
 import discord4j.rest.util.Color;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.info.GitProperties;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 @Component
+@NullMarked
 public final class AboutCommand implements GlobalCommand {
   private static final String NAME = "about";
   private final GitProperties git;
@@ -25,12 +26,12 @@ public final class AboutCommand implements GlobalCommand {
   }
 
   @Override
-  public @NotNull String name() {
+  public String name() {
     return NAME;
   }
 
   @Override
-  public @NotNull ApplicationCommandRequest request() {
+  public ApplicationCommandRequest request() {
     return ApplicationCommandRequest.builder()
       .name(NAME)
       .description("Displays information about Sentinel")
@@ -38,7 +39,7 @@ public final class AboutCommand implements GlobalCommand {
   }
 
   @Override
-  public @NotNull Mono<?> on(final @NotNull GatewayDiscordClient client, final @NotNull ChatInputInteractionEvent event) {
+  public Mono<?> on(final GatewayDiscordClient client, final ChatInputInteractionEvent event) {
     return client.getSelf().flatMap(user -> {
       final EmbedCreateSpec embed = EmbedCreateSpec.builder()
         .color(Color.of(0xec4768))

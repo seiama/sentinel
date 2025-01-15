@@ -6,9 +6,11 @@ import discord4j.core.spec.EmbedCreateFields;
 import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.rest.util.Color;
 import java.util.List;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@NullMarked
 public record Embed(
   @Nullable String title,
   @Nullable String description,

@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -26,6 +26,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Component
+@NullMarked
 class Commands implements Listener {
   private final long applicationId;
   private final GuildRepository guilds;
@@ -48,7 +49,7 @@ class Commands implements Listener {
   }
 
   @Override
-  public void connected(final @NotNull GatewayDiscordClient client) {
+  public void connected(final GatewayDiscordClient client) {
     Flux.fromIterable(this.globalCommands)
       .doOnNext(command -> this.globalCommandsByName.put(command.name(), command))
       .map(Command::request)
@@ -86,7 +87,7 @@ class Commands implements Listener {
 
   @Override
   @SuppressWarnings("CodeBlock2Expr") // readability
-  public @NotNull Mono<Void> listen(final @NotNull GatewayDiscordClient client) {
+  public Mono<Void> listen(final GatewayDiscordClient client) {
     return Mono.when(
       client.on(ChatInputInteractionEvent.class, event -> {
         return Mono.when(

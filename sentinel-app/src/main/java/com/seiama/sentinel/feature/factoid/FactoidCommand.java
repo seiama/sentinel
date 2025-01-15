@@ -27,14 +27,15 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import org.bson.types.ObjectId;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 @Component
+@NullMarked
 public final class FactoidCommand implements GuildCommand {
   private static final String NAME = "factoid";
 
@@ -51,12 +52,12 @@ public final class FactoidCommand implements GuildCommand {
   }
 
   @Override
-  public @NotNull String name() {
+  public String name() {
     return NAME;
   }
 
   @Override
-  public @NotNull ApplicationCommandRequest request() {
+  public ApplicationCommandRequest request() {
     return ApplicationCommandRequest.builder()
       .name(NAME)
       .description("Manage factoids")
@@ -113,12 +114,12 @@ public final class FactoidCommand implements GuildCommand {
   }
 
   @Override
-  public @NotNull Feature feature() {
+  public Feature feature() {
     return Feature.FACTOIDS;
   }
 
   @Override
-  public @NotNull Mono<?> on(final @NotNull GatewayDiscordClient client, final @NotNull ChatInputInteractionEvent event, final @NotNull Guild guild) {
+  public Mono<?> on(final GatewayDiscordClient client, final ChatInputInteractionEvent event, final Guild guild) {
     return event.deferReply()
       .withEphemeral(true)
       .then(Command.executeOne(event, Map.of(
@@ -191,7 +192,7 @@ public final class FactoidCommand implements GuildCommand {
   }
 
   @Override
-  public @NotNull Mono<?> suggest(final @NotNull GatewayDiscordClient client, final @NotNull ChatInputAutoCompleteEvent event, final @NotNull Guild guild) {
+  public Mono<?> suggest(final GatewayDiscordClient client, final ChatInputAutoCompleteEvent event, final Guild guild) {
     final ApplicationCommandInteractionOption option = event.getFocusedOption();
     final Optional<ApplicationCommandInteractionOptionValue> value = option.getValue();
     if (value.isPresent()) {

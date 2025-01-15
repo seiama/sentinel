@@ -7,7 +7,10 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public final class Dyno implements ImporterPunishmentSource {
   private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("EEE, MMM d, yyyy h:mm a", Locale.US).withZone(ZoneId.of("America/New_York"));
 
@@ -25,7 +28,7 @@ public final class Dyno implements ImporterPunishmentSource {
   public long server;
   public String type;
   public User user;
-  public User mod;
+  public @Nullable User mod;
   public String reason;
   public long message;
   public int v;

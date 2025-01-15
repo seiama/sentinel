@@ -8,11 +8,13 @@ import com.seiama.sentinel.common.model.response.Response;
 import discord4j.common.util.Snowflake;
 import discord4j.discordjson.json.ApplicationCommandRequest;
 import org.bson.types.ObjectId;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
+@NullMarked
 public interface FactoidModel {
   String COLLECTION = "factoids";
 
@@ -48,7 +50,7 @@ public interface FactoidModel {
     String name,
     String description,
     Response response,
-    Snowflake commandId
+    @Nullable Snowflake commandId
   ) implements AbstractModel {
     public ApplicationCommandRequest asRequest() {
       return ApplicationCommandRequest.builder()

@@ -6,10 +6,12 @@ import discord4j.gateway.ShardInfo;
 import discord4j.gateway.intent.Intent;
 import discord4j.gateway.intent.IntentSet;
 import discord4j.rest.RestClient;
+import org.jspecify.annotations.NullMarked;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
+@NullMarked
 public class DiscordConfiguration extends AbstractDiscordConfiguration {
   private static final String DISCORD_TOKEN_FACTOIDS = "DISCORD_TOKEN_FACTOIDS";
   private static final String DISCORD_TOKEN_RELAY = "DISCORD_TOKEN_RELAY";

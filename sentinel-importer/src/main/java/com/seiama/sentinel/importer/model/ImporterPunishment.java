@@ -9,8 +9,10 @@ import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.google.common.base.MoreObjects;
 import com.seiama.sentinel.common.jackson.InstantExtendedJsonSerializer;
 import java.time.Instant;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public final class ImporterPunishment {
   public final ImporterPunishmentSource source;
   public final Values values = new Values();

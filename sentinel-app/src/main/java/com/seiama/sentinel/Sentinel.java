@@ -5,11 +5,13 @@ import discord4j.core.GatewayDiscordClient;
 import jakarta.annotation.PostConstruct;
 import java.time.Instant;
 import java.util.Set;
+import org.jspecify.annotations.NullMarked;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import reactor.core.publisher.Flux;
 
+@NullMarked
 @SpringBootApplication
 public class Sentinel {
   public static final Instant BOOT_TIME = Instant.now();

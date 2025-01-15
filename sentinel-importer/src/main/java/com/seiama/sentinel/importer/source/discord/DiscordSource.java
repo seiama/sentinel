@@ -7,7 +7,9 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Stream;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public final class DiscordSource implements Source<Discord> {
   @Override
   public Stream<Discord> parse(final Path path) throws IOException {

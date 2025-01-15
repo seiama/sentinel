@@ -5,15 +5,16 @@ import discord4j.core.object.command.ApplicationCommandInteractionOption;
 import discord4j.discordjson.json.ApplicationCommandRequest;
 import java.util.Map;
 import java.util.Objects;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 import reactor.core.publisher.Mono;
 
+@NullMarked
 public interface Command {
-  @NotNull String name();
+  String name();
 
-  @NotNull ApplicationCommandRequest request();
+  ApplicationCommandRequest request();
 
-  static @NotNull Mono<?> executeOne(final @NotNull ChatInputInteractionEvent event, final @NotNull Map<String, Executable> executables) {
+  static Mono<?> executeOne(final ChatInputInteractionEvent event, final Map<String, Executable> executables) {
     return Mono.defer(() -> {
       return executables.entrySet()
         .stream()
@@ -26,6 +27,6 @@ public interface Command {
 
   @FunctionalInterface
   interface Executable {
-    @NotNull Mono<?> execute(final @NotNull ApplicationCommandInteractionOption option);
+    Mono<?> execute(final ApplicationCommandInteractionOption option);
   }
 }

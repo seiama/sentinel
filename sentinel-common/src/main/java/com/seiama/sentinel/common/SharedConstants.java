@@ -1,5 +1,8 @@
 package com.seiama.sentinel.common;
 
+import org.jspecify.annotations.NullMarked;
+
+@NullMarked
 public interface SharedConstants {
   int COLOR_BLUE = 0x3498db;
   int COLOR_GREEN = 0x17a878;

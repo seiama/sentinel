@@ -1,7 +1,9 @@
 package com.seiama.sentinel.common;
 
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public record CustomId(
   String type,
   String value

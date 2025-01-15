@@ -12,9 +12,11 @@ import discord4j.rest.RestClient;
 import discord4j.rest.service.ApplicationService;
 import discord4j.rest.util.AllowedMentions;
 import java.util.function.Consumer;
+import org.jspecify.annotations.NullMarked;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 
+@NullMarked
 public abstract class AbstractDiscordConfiguration {
   private static final String DISCORD_TOKEN = "DISCORD_TOKEN";
 

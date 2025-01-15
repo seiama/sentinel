@@ -5,9 +5,11 @@ import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Member;
 import java.util.Collections;
 import java.util.function.Function;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.reactivestreams.Publisher;
 
+@NullMarked
 public final class CanQueryAndMutate<T> implements Function<T, Publisher<Boolean>> {
   private final GuildRepository guilds;
   private final Guild guild;

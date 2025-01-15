@@ -17,7 +17,9 @@ import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.function.ToLongFunction;
 import java.util.stream.Collectors;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 final class ImporterSummary {
   void print(final Importer importer) {
     final List<ImporterPunishment> punishments = importer.punishments.all();

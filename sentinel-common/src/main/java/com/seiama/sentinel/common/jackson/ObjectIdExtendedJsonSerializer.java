@@ -5,7 +5,9 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import java.io.IOException;
 import org.bson.types.ObjectId;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class ObjectIdExtendedJsonSerializer extends StdSerializer<ObjectId> {
   public ObjectIdExtendedJsonSerializer() {
     super(ObjectId.class);

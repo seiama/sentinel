@@ -10,10 +10,12 @@ import discord4j.core.event.domain.interaction.ButtonInteractionEvent;
 import discord4j.core.spec.InteractionReplyEditMono;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import org.jspecify.annotations.NullMarked;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Mono;
 import reactor.function.TupleUtils;
 
+@NullMarked
 class VoteButtonHandler implements Function<ButtonInteractionEvent, Publisher<Object>> {
   private static final BiFunction<InteractionReplyEditMono, AppealModel.Complete, Mono<?>> VOTE_BUTTON_REFRESHER = (edit, model) -> {
     return edit.withComponents(Appeals.createVoteButtons(model.votes()));

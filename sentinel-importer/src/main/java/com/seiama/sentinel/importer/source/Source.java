@@ -9,7 +9,9 @@ import com.seiama.sentinel.importer.source.warship.WarshipSource;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.stream.Stream;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public interface Source<T> {
   BeemoSource BEEMO = new BeemoSource();
   CarlSource CARL = new CarlSource();

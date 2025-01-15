@@ -8,7 +8,9 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public final class Json {
   private static final ObjectMapper MAPPER = new ObjectMapper()
     .registerModule(new JavaTimeModule());

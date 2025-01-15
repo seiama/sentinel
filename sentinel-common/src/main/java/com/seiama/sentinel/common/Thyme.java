@@ -11,7 +11,9 @@ import net.time4j.engine.TimeMetric;
 import net.time4j.tz.Timezone;
 import net.time4j.tz.ZonalOffset;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public final class Thyme {
   public static final PrettyTime PRETTY_TIME = PrettyTime.of(Locale.ENGLISH);
   private static final TimeMetric<IsoUnit, net.time4j.Duration<IsoUnit>> YMWDHMS_METRIC = net.time4j.Duration

@@ -1,18 +1,19 @@
 package com.seiama.sentinel.common.model;
 
 import org.bson.types.ObjectId;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 import org.springframework.data.mongodb.core.query.Update;
 import reactor.core.publisher.Mono;
 
+@NullMarked
 public interface ExtendedRepository<P extends AbstractPartial, M extends AbstractModel> {
-  default @NotNull Mono<M> update(final @NotNull M model, final @NotNull P partial) {
+  default Mono<M> update(final M model, final P partial) {
     return this.update(model._id(), partial);
   }
 
-  @NotNull Mono<M> update(final @NotNull ObjectId _id, final @NotNull P partial);
+  Mono<M> update(final ObjectId _id, final P partial);
 
-  @NotNull Mono<M> update(final @NotNull ObjectId _id, final @NotNull Update update);
+  Mono<M> update(final ObjectId _id, final Update update);
 
-  @NotNull Mono<M> refresh(final @NotNull M that);
+  Mono<M> refresh(final M that);
 }
