@@ -12,6 +12,9 @@ import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.User;
 import discord4j.core.object.entity.channel.TextChannel;
 import discord4j.rest.http.client.ClientException;
+
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +24,9 @@ import reactor.core.publisher.Mono;
 
 @Component
 public final class Punishments {
+  private static final Set<Snowflake> SHOULD_BE_ASSUMED_AS_AUTOMATIC_BY = Set.of(
+    Snowflake.of("515067662028636170") // Beemo#4570
+  );
   private static final boolean ACTUALLY_APPLY_PUNISHMENT = true;
   private static final boolean ACTUALLY_NOTIFY_USER = false;
   private final GuildRepository guilds;
@@ -105,6 +111,13 @@ public final class Punishments {
       case MUTE -> PunishmentAction.unmute().apply(guild, punishment.punishedId(), reason);
       default -> Mono.empty();
     };
+  }
+
+  boolean shouldBeAssumedAsAutomatic(final Optional<User> punisher) {
+    return punisher
+      .map(User::getId)
+      .map(SHOULD_BE_ASSUMED_AS_AUTOMATIC_BY::contains)
+      .orElse(false);
   }
 
   @FunctionalInterface
