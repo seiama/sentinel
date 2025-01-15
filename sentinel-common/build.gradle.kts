@@ -3,8 +3,9 @@ plugins {
 }
 
 dependencies {
-  api("com.discord4j:discord4j-core:3.3.0-20230223.014557-69")
+  api("com.discord4j:discord4j-core:3.3.0-20230329.235612-77")
   api("com.fasterxml.jackson.core:jackson-databind:2.14.2")
+  api("com.google.guava:guava:31.1-jre")
   api("io.projectreactor.netty:reactor-netty-core:1.1.4")
   api("jakarta.persistence:jakarta.persistence-api:3.1.0")
   api("org.mongodb:bson:4.8.2")

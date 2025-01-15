@@ -6,6 +6,7 @@ import com.seiama.sentinel.common.Listener;
 import com.seiama.sentinel.common.model.GuildRepository;
 import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
+import discord4j.core.event.domain.interaction.ChatInputAutoCompleteEvent;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.discordjson.json.ApplicationCommandRequest;
 import discord4j.rest.service.ApplicationService;
@@ -88,6 +89,24 @@ class Commands implements Listener {
               .flatMap(guild -> {
                 return Mono.justOrEmpty(this.globalCommandsByName.get(event.getCommandName()))
                   .flatMap(command -> command.on(client, event));
+              });
+          })
+        );
+      }),
+      client.on(ChatInputAutoCompleteEvent.class, event -> {
+        return Mono.when(
+          Mono.defer(() -> {
+            return event.getInteraction().getGuild()
+              .flatMap(guild -> {
+                return Mono.justOrEmpty(this.guildCommandsByGuildAndName.get(guild.getId(), event.getCommandName()))
+                  .flatMap(command -> command.suggest(client, event, guild));
+              });
+          }),
+          Mono.defer(() -> {
+            return event.getInteraction().getGuild()
+              .flatMap(guild -> {
+                return Mono.justOrEmpty(this.globalCommandsByName.get(event.getCommandName()))
+                  .flatMap(command -> command.suggest(client, event));
               });
           })
         );

@@ -96,7 +96,7 @@ public final class PunishmentCommand implements GuildCommand {
 
   @Override
   public @NotNull Mono<?> on(final @NotNull GatewayDiscordClient client, final @NotNull ChatInputInteractionEvent event, final @NotNull Guild guild) {
-    return Command.executeOne(event, Map.of(
+    return event.deferReply().then(Command.executeOne(event, Map.of(
       SHOW, option -> {
         return Mono.justOrEmpty(Options.string(option, Options.PUNISHMENT).orElse(null))
           .map(ObjectId::new)
@@ -111,6 +111,6 @@ public final class PunishmentCommand implements GuildCommand {
           .map(TupleUtils.function((punishment, user) -> new PunishmentSearchResult(user, punishment)))
           .flatMap(result -> event.editReply().withEmbeds(PunishmentMessages.punishmentSearchEmbed(result)));
       }
-    ));
+    )));
   }
 }

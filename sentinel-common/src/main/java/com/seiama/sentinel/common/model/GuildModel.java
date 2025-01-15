@@ -23,7 +23,8 @@ public interface GuildModel {
   ) implements AbstractModel {
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public record Features(
-      Punishments punishments
+      Punishments punishments,
+      Factoids factoids
     ) {
       @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
       public record Punishments(
@@ -40,6 +41,12 @@ public interface GuildModel {
           Snowflake appealDiscussionThreadsChannel
         ) {
         }
+      }
+
+      @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+      public record Factoids(
+        boolean enabled
+      ) {
       }
     }
   }

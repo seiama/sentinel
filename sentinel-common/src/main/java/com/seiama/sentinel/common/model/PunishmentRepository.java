@@ -10,7 +10,7 @@ import reactor.core.publisher.Mono;
 
 @Repository
 public interface PunishmentRepository extends ReactiveMongoRepository<PunishmentModel.Complete, ObjectId>, PunishmentRepositoryCustom {
-  Mono<PunishmentModel.Complete> findByPunishedIdAndStaleIsNotOrderByDateDesc(final Snowflake punishedId, final @Nullable Boolean stale);
+  Mono<PunishmentModel.Complete> findByPunishedIdAndTypeAndStaleIsNotOrderByDateDesc(final Snowflake punishedId, final PunishmentModel.Type type, final @Nullable Boolean stale);
 
   Flux<PunishmentModel.Complete> findAllByPunishedId(final Snowflake punishedId);
 

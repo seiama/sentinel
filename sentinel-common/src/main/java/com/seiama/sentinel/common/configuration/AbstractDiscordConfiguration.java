@@ -13,6 +13,7 @@ import discord4j.rest.service.ApplicationService;
 import discord4j.rest.util.AllowedMentions;
 import java.util.function.Consumer;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 
 public abstract class AbstractDiscordConfiguration {
   private static final String DISCORD_TOKEN = "DISCORD_TOKEN";
@@ -30,6 +31,7 @@ public abstract class AbstractDiscordConfiguration {
   protected abstract ClientPresence presence(final ShardInfo shard);
 
   @Bean
+  @Primary
   RestClient restClient(final GatewayDiscordClient client) {
     return client.getRestClient();
   }

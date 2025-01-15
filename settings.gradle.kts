@@ -15,6 +15,7 @@ sequenceOf(
   "sentinel-api",
   "sentinel-app",
   "sentinel-common",
+  "sentinel-factoids",
   "sentinel-importer"
 ).forEach {
   include(it)

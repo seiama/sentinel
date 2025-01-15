@@ -7,6 +7,7 @@ public record Feature(
 ) {
   public static final Feature PUNISHMENTS = new Feature(model -> model.features().punishments().enabled());
   public static final Feature PUNISHMENTS_APPEALS = new Feature(model -> model.features().punishments().appeals().enabled());
+  public static final Feature FACTOIDS = new Feature(model -> model.features().factoids().enabled());
 
   public boolean enabledForGuild(final GuildModel.Complete model) {
     return this.enabledForGuild.test(model);

@@ -141,7 +141,7 @@ public class Appeals implements Listener {
             final ObjectId appealId = new ObjectId();
             final GuildModel.Complete.Features.Punishments.Appeals config = guildModel.features().punishments().appeals();
             final Member member = event.getMember();
-            final Mono<PunishmentModel.Complete> getPunishment = this.punishments.findByPunishedIdAndStaleIsNotOrderByDateDesc(member.getId(), true);
+            final Mono<PunishmentModel.Complete> getPunishment = this.punishments.findByPunishedIdAndTypeAndStaleIsNotOrderByDateDesc(member.getId(), PunishmentModel.Type.BAN, true);
             final Mono<PunishmentModel.Complete> kickUserForNoActivePunishment = event.getGuild()
               .flatMap(guild -> guild.kick(member.getId(), null))
               .then(Mono.empty());
@@ -529,7 +529,7 @@ public class Appeals implements Listener {
               "Punishment (%s) has been appealed (%s).",
               punishment._id(),
               this.model._id()
-            ))).onErrorResume(ClientException.class, Reactive.ignoringException()); // avoid possible 10026
+            ))).onErrorResume(ClientException.class, Reactive.<Void>ignoringException()); // avoid possible 10026
             default -> Mono.empty();
           });
       }
