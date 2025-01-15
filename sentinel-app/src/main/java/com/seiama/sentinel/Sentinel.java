@@ -1,6 +1,6 @@
 package com.seiama.sentinel;
 
-import com.seiama.sentinel.core.Listener;
+import com.seiama.sentinel.common.Listener;
 import discord4j.core.GatewayDiscordClient;
 import jakarta.annotation.PostConstruct;
 import java.util.Set;

@@ -1,4 +1,4 @@
-package com.seiama.sentinel.util;
+package com.seiama.sentinel.common.discord;
 
 import discord4j.common.util.Snowflake;
 import org.jetbrains.annotations.Nullable;

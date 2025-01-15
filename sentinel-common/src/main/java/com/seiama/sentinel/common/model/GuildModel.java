@@ -1,21 +1,14 @@
 package com.seiama.sentinel.common.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.seiama.sentinel.common.annotation.MongoPrimaryId;
 import discord4j.common.util.Snowflake;
 import org.bson.types.ObjectId;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
 
 public interface GuildModel {
   String COLLECTION = "guilds";
-
-  interface Fields {
-    @SuppressWarnings("ConstantName")
-    String _ID = AbstractModel._ID;
-  }
 
   interface Partial extends AbstractPartial {
   }
@@ -23,9 +16,7 @@ public interface GuildModel {
   @Document(collection = COLLECTION)
   @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
   record Complete(
-    @Field(Fields._ID)
-    @JsonProperty(Fields._ID)
-    @Id ObjectId _id,
+    @MongoPrimaryId ObjectId _id,
     Snowflake guild,
     String invite,
     Features features

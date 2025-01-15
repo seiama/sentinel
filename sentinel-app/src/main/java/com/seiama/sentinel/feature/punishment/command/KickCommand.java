@@ -2,9 +2,9 @@ package com.seiama.sentinel.feature.punishment.command;
 
 import com.seiama.sentinel.command.GuildCommand;
 import com.seiama.sentinel.command.Options;
+import com.seiama.sentinel.common.model.Feature;
 import com.seiama.sentinel.common.model.PunishmentModel;
 import com.seiama.sentinel.common.model.PunishmentRepository;
-import com.seiama.sentinel.feature.Feature;
 import com.seiama.sentinel.feature.punishment.PunishmentAction;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;

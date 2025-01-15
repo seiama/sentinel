@@ -1,22 +1,22 @@
 package com.seiama.sentinel.feature.punishment.appeal;
 
 import com.seiama.common.Comparables;
+import com.seiama.sentinel.common.Listener;
+import com.seiama.sentinel.common.discord.Discord;
 import com.seiama.sentinel.common.discord.Emoji;
+import com.seiama.sentinel.common.discord.Mention;
 import com.seiama.sentinel.common.model.AppealModel;
 import com.seiama.sentinel.common.model.AppealRepository;
+import com.seiama.sentinel.common.model.Feature;
 import com.seiama.sentinel.common.model.GuildModel;
 import com.seiama.sentinel.common.model.GuildRepository;
 import com.seiama.sentinel.common.model.PunishmentModel;
 import com.seiama.sentinel.common.model.PunishmentRepository;
-import com.seiama.sentinel.core.Listener;
-import com.seiama.sentinel.feature.Feature;
 import com.seiama.sentinel.feature.punishment.display.PunishmentDisplay;
 import com.seiama.sentinel.feature.punishment.display.PunishmentDisplayStyle;
 import com.seiama.sentinel.model.TemporaryMessageLink;
 import com.seiama.sentinel.model.TemporaryMessageLinkRepository;
 import com.seiama.sentinel.reactive.Reactive;
-import com.seiama.sentinel.util.Discord;
-import com.seiama.sentinel.util.Mention;
 import discord4j.common.util.Snowflake;
 import discord4j.common.util.TimestampFormat;
 import discord4j.core.GatewayDiscordClient;
@@ -282,7 +282,7 @@ public class Appeals implements Listener {
           }));
       }),
       client.on(MessageUpdateEvent.class, event -> {
-        return this.messageLinks.findBySourceMessageId(event.getMessageId().asString())
+        return this.messageLinks.findBySourceMessageId(event.getMessageId().asLong())
           .flatMap(targetIds -> {
             return event.getGuild()
               .zipWith(event.getMessage())
@@ -301,7 +301,7 @@ public class Appeals implements Listener {
           });
       }),
       client.on(MessageDeleteEvent.class, event -> {
-        return this.messageLinks.findBySourceMessageId(event.getMessageId().asString())
+        return this.messageLinks.findBySourceMessageId(event.getMessageId().asLong())
           .flatMap(targetIds -> {
             return client.rest().getChannelService().deleteMessage(targetIds.targetChannelId().asLong(), targetIds.targetMessageId().asLong(), null);
           });
@@ -470,8 +470,8 @@ public class Appeals implements Listener {
         }),
         this.unenforce(),
         this.sendMessagesToChannelsAndThreadsAndThenArchiveAndClose(),
-        Appeals.this.messageLinks.deleteAllByTargetChannelId(this.model.appealChannel().asString()).onErrorResume(t -> Mono.empty()),
-        Appeals.this.messageLinks.deleteAllByTargetChannelId(this.model.appealThread().asString()).onErrorResume(t -> Mono.empty())
+        Appeals.this.messageLinks.deleteAllByTargetChannelId(this.model.appealChannel().asLong()).onErrorResume(t -> Mono.empty()),
+        Appeals.this.messageLinks.deleteAllByTargetChannelId(this.model.appealThread().asLong()).onErrorResume(t -> Mono.empty())
       );
     }
 
