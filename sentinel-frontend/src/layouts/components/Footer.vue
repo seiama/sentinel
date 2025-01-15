@@ -12,7 +12,7 @@ const commitShort = __GIT_COMMIT_SHORT__
     </span>
     <span class="d-md-flex gap-x-4 text-primary d-none">
       <a
-        href="https://github.com/seiama/sentinel/commit/{{ commit }}"
+        :href="`https://github.com/seiama/sentinel/commit/${commit}`"
         target="noopener"
       >{{ commitShort }} on {{ branch }}</a>
     </span>
