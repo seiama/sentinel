@@ -86,6 +86,7 @@ public class Appeals implements Listener {
   private static final int NEW_APPEAL_NOTIFICATION_COLOR = 0x0089b4;
 
   static final String NO_APPEAL_ASSOCIATED_WITH_THIS_CHANNEL = "There is no appeal associated with this channel.";
+  static final String NO_ACTIVE_APPEAL = "The appeal associated with this channel is no longer active.";
 
   private static final Duration COOLDOWN_NO = Duration.ofDays(30 * 6); // 6 months, approximately
   private static final Duration COOLDOWN_LATER = Duration.ofDays(30); // 1 month, approximately
