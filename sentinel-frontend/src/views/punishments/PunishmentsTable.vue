@@ -142,7 +142,7 @@ export default {
   },
   methods: {
     formatUsername(username, discriminator) {
-      return discriminator !== null ? `${username}#${discriminator}` : username
+      return discriminator ? `${username}#${discriminator}` : username
     },
     formatDate(date) {
       const dt = new Date(date)
