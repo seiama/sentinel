@@ -4,10 +4,12 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.seiama.sentinel.common.annotation.MongoDate;
 import com.seiama.sentinel.common.annotation.MongoId;
 import com.seiama.sentinel.common.annotation.MongoPrimaryId;
 import com.seiama.sentinel.common.discord.Emoji;
+import com.seiama.sentinel.common.jackson.ObjectIdExtendedJsonSerializer;
 import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.User;
 import discord4j.core.object.reaction.ReactionEmoji;
@@ -88,6 +90,7 @@ public interface PunishmentModel {
       @JsonProperty String staleByDiscriminator();
       @JsonProperty @Nullable String staleReason();
       @JsonProperty @Nullable Boolean staleAutomatic();
+      @JsonSerialize(using = ObjectIdExtendedJsonSerializer.class)
       @JsonProperty @MongoId @Nullable ObjectId staleAppeal();
     }
 
