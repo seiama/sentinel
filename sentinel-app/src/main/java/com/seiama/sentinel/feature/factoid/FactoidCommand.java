@@ -173,17 +173,17 @@ public final class FactoidCommand implements GuildCommand {
                     return Mono.empty();
                   }
                 })
-                .then(event.editReply().withContentOrNull(Emoji.toString(Emoji.YES)));
+                .then(event.editReply().withContentOrNull(Emoji.YES.asFormat()));
             });
         },
         REMOVE, option -> {
           return Mono.justOrEmpty(Options.string(option, Options.NAME))
             .flatMap(name -> {
               return this.factoids.findByGuildAndName(guild.getId(), name)
-                .switchIfEmpty(event.editReply().withContentOrNull("%s Could not find a factoid with name `%s`.".formatted(Emoji.toString(Emoji.NO), name)).then(Mono.empty()))
+                .switchIfEmpty(event.editReply().withContentOrNull("%s Could not find a factoid with name `%s`.".formatted(Emoji.NO.asFormat(), name)).then(Mono.empty()))
                 .flatMap(model -> this.appAction((id, service) -> service.deleteGuildApplicationCommand(id, guild.getId().asLong(), model.commandId().asLong())).thenReturn(model))
                 .flatMap(this.factoids::delete)
-                .then(event.editReply().withContentOrNull(Emoji.toString(Emoji.YES)));
+                .then(event.editReply().withContentOrNull(Emoji.YES.asFormat()));
             });
         }
       )));

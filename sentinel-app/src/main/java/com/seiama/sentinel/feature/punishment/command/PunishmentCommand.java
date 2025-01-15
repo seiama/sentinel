@@ -3,16 +3,16 @@ package com.seiama.sentinel.feature.punishment.command;
 import com.seiama.sentinel.command.Command;
 import com.seiama.sentinel.command.GuildCommand;
 import com.seiama.sentinel.command.Options;
+import com.seiama.sentinel.common.bson.AsObjectId;
 import com.seiama.sentinel.common.model.Feature;
 import com.seiama.sentinel.common.model.GuildRepository;
 import com.seiama.sentinel.common.model.PunishmentModel;
 import com.seiama.sentinel.common.model.PunishmentRepository;
-import com.seiama.sentinel.feature.punishment.Punishments;
 import com.seiama.sentinel.feature.punishment.display.PunishmentDisplay;
 import com.seiama.sentinel.feature.punishment.display.PunishmentDisplayStyle;
 import com.seiama.sentinel.feature.punishment.display.PunishmentMessages;
+import com.seiama.sentinel.feature.punishment.predicate.CanPunish;
 import com.seiama.sentinel.feature.punishment.search.PunishmentSearchResult;
-import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.core.object.command.ApplicationCommandOption;
@@ -20,9 +20,7 @@ import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Member;
 import discord4j.discordjson.json.ApplicationCommandOptionData;
 import discord4j.discordjson.json.ApplicationCommandRequest;
-import java.time.Instant;
 import java.util.Map;
-import org.bson.types.ObjectId;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -153,20 +151,20 @@ public final class PunishmentCommand implements GuildCommand {
 
   @Override
   public @NotNull Mono<?> on(final @NotNull GatewayDiscordClient client, final @NotNull ChatInputInteractionEvent event, final @NotNull Guild guild) {
-    final Member member = event.getInteraction().getMember().orElseThrow();
+    final Member punisher = event.getInteraction().getMember().orElseThrow();
     return event.deferReply().then(Command.executeOne(event, Map.of(
       SHOW, option -> {
         return Mono.justOrEmpty(Options.string(option, Options.PUNISHMENT).orElse(null))
-          .filterWhen(Punishments.mayPunish(this.guilds, guild, member))
-          .map(ObjectId::new)
+          .filterWhen(new CanPunish<>(this.guilds, guild, punisher))
+          .handle(AsObjectId.INSTANCE)
           .flatMap(this.punishments::findById)
           .flatMap(punishment -> event.editReply().withEmbeds(PunishmentDisplay.punishment(punishment, PunishmentDisplayStyle.FULL)))
           .onErrorResume(throwable -> event.editReply().withContentOrNull(PunishmentMessages.PUNISHMENT_NOT_FOUND));
       },
       REASON, option -> {
         return Mono.justOrEmpty(Options.string(option, Options.PUNISHMENT).orElse(null))
-          .filterWhen(Punishments.mayPunish(this.guilds, guild, member))
-          .map(ObjectId::new)
+          .filterWhen(new CanPunish<>(this.guilds, guild, punisher))
+          .handle(AsObjectId.INSTANCE)
           .zipWith(Mono.justOrEmpty(Options.string(option, Options.REASON).orElse(null)))
           .flatMap(TupleUtils.function((id, reason) -> {
             return this.punishments.findById(id)
@@ -181,58 +179,18 @@ public final class PunishmentCommand implements GuildCommand {
       },
       STALE, option -> {
         return Mono.justOrEmpty(Options.string(option, Options.PUNISHMENT).orElse(null))
-          .filterWhen(Punishments.mayPunish(this.guilds, guild, member))
-          .map(ObjectId::new)
+          .filterWhen(new CanPunish<>(this.guilds, guild, punisher))
+          .handle(AsObjectId.INSTANCE)
           .zipWith(Mono.just(Options.string(option, Options.REASON)))
           .flatMap(TupleUtils.function((id, reason) -> {
             return this.punishments.findById(id)
-              .flatMap(model -> this.punishments.update(model, new PunishmentModel.Partial.Stale() {
-                @Override
-                public @NotNull Boolean stale() {
-                  return true;
-                }
-
-                @Override
-                public Instant staleAt() {
-                  return Instant.now();
-                }
-
-                @Override
-                public Snowflake staleById() {
-                  return member.getId();
-                }
-
-                @Override
-                public String staleByUsername() {
-                  return member.getUsername();
-                }
-
-                @Override
-                public String staleByDiscriminator() {
-                  return member.getDiscriminator();
-                }
-
-                @Override
-                public @Nullable String staleReason() {
-                  return reason.orElse(null);
-                }
-
-                @Override
-                public @NotNull Boolean staleAutomatic() {
-                  return false;
-                }
-
-                @Override
-                public @Nullable ObjectId staleAppeal() {
-                  return null;
-                }
-              }));
+              .flatMap(model -> this.punishments.update(model, PunishmentModel.Partial.Stale.of(punisher, reason.orElse(null), false, null)));
           }))
           .flatMap(result -> event.editReply().withContentOrNull(PunishmentMessages.punishmentMarkedStale(result)).withEmbeds(PunishmentDisplay.punishment(result, PunishmentDisplayStyle.FULL)));
       },
       SEARCH, option -> {
         return Mono.justOrEmpty(option.getOption(USER).orElse(null))
-          .filterWhen(Punishments.mayPunish(this.guilds, guild, member))
+          .filterWhen(new CanPunish<>(this.guilds, guild, punisher))
           .flatMap(user -> Options.user(user, Options.USER).orElseGet(Mono::empty))
           .flatMap(user -> this.punishments.findAllByPunishedId(user.getId()).collectList().zipWith(Mono.just(user)))
           .map(TupleUtils.function((punishment, user) -> new PunishmentSearchResult(user, punishment)))

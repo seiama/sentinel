@@ -2,13 +2,13 @@ package com.seiama.sentinel.feature.punishment.display;
 
 import com.seiama.sentinel.common.discord.Discord;
 import com.seiama.sentinel.common.discord.Emoji;
-import com.seiama.sentinel.common.discord.Mention;
 import com.seiama.sentinel.common.model.PunishmentModel;
 import com.seiama.sentinel.feature.punishment.search.PunishmentSearchResult;
 import discord4j.common.util.TimestampFormat;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.core.spec.MessageCreateSpec;
+import discord4j.core.util.MentionUtil;
 import discord4j.rest.util.Color;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -41,10 +41,10 @@ public final class PunishmentMessages {
     return String.format(
       "(`%s`) // %s (`%d`) has been %s by %s (`%d`)",
       punishment._id(),
-      Mention.user(punishment.punishedId()),
+      MentionUtil.forUser(punishment.punishedId()),
       punishment.punishedId().asLong(),
       punishment.type().words().actioned(),
-      Mention.user(punishment.punisherId()),
+      MentionUtil.forUser(punishment.punisherId()),
       punishment.punisherId().asLong()
     );
   }
@@ -58,7 +58,10 @@ public final class PunishmentMessages {
   }
 
   public static String punishmentPunishedReason(final PunishmentModel.Complete punishment) {
-    return String.format("(%s) %s", punishment._id(), punishment.reason());
+    return "(%s) %s".formatted(
+      punishment._id(),
+      Objects.requireNonNullElse(punishment.reason(), REASON_NOT_SPECIFIED)
+    );
   }
 
   public static EmbedCreateSpec punishmentSearchEmbed(final PunishmentSearchResult result) {
@@ -79,7 +82,7 @@ public final class PunishmentMessages {
         }
         return String.format(
           "%s %s (`%s`) %s%s",
-          Emoji.toString(punishment.type().emoji()),
+          punishment.type().emoji().asFormat(),
           punishment.type().words().actioned(),
           punishment._id(),
           TimestampFormat.LONG_DATE_TIME.format(punishment.date()),
@@ -91,7 +94,7 @@ public final class PunishmentMessages {
     if (!description.isEmpty()) {
       embed.description(description);
     } else {
-      embed.description("Squeaky clean record.  " + Emoji.toString(Emoji.TADA));
+      embed.description("Squeaky clean record.  " + Emoji.TADA.asFormat());
     }
     return embed.build();
   }

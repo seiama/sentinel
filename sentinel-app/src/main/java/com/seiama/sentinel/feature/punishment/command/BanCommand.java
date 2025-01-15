@@ -3,11 +3,9 @@ package com.seiama.sentinel.feature.punishment.command;
 import com.seiama.sentinel.command.GuildCommand;
 import com.seiama.sentinel.command.Options;
 import com.seiama.sentinel.common.model.Feature;
-import com.seiama.sentinel.common.model.GuildRepository;
 import com.seiama.sentinel.common.model.PunishmentModel;
-import com.seiama.sentinel.common.model.PunishmentRepository;
 import com.seiama.sentinel.feature.punishment.PunishmentAction;
-import com.seiama.sentinel.feature.punishment.PunishmentApplier;
+import com.seiama.sentinel.feature.punishment.Punishments;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.core.object.command.ApplicationCommandOption;
@@ -23,12 +21,10 @@ import reactor.core.publisher.Mono;
 public final class BanCommand implements GuildCommand {
   private static final String NAME = "ban";
 
-  private final GuildRepository guilds;
-  private final PunishmentRepository punishments;
+  private final Punishments punishments;
 
   @Autowired
-  private BanCommand(final GuildRepository guilds, final PunishmentRepository punishments) {
-    this.guilds = guilds;
+  private BanCommand(final Punishments punishments) {
     this.punishments = punishments;
   }
 
@@ -69,13 +65,6 @@ public final class BanCommand implements GuildCommand {
 
   @Override
   public @NotNull Mono<?> on(final @NotNull GatewayDiscordClient client, final @NotNull ChatInputInteractionEvent event, final @NotNull Guild guild) {
-    return PunishmentApplier.apply(
-      event,
-      guild,
-      this.guilds,
-      this.punishments,
-      PunishmentModel.Type.BAN,
-      PunishmentAction.ban()
-    );
+    return this.punishments.command(event, guild, PunishmentModel.Type.BAN, PunishmentAction.ban());
   }
 }
