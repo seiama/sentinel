@@ -40,16 +40,16 @@ public class Warship implements ImporterPunishmentSource {
       default -> throw new IllegalArgumentException("Unknown punishment type: " + this.type.id);
     };
     punishment.values.date = DATE_TIME_FORMATTER.parse(this.created_at, Instant::from);
-    punishment.values.punisher_id = this.actor.id;
-    punishment.values.punisher_username = this.actor.username;
-    punishment.values.punisher_discriminator = String.format("%04d", this.actor.discriminator);
-    punishment.values.punished_id = this.user.id;
-    punishment.values.punished_username = this.user.username;
-    punishment.values.punished_discriminator = String.format("%04d", this.user.discriminator);
+    punishment.values.punisherId = this.actor.id;
+    punishment.values.punisherUsername = this.actor.username;
+    punishment.values.punisherDiscriminator = String.format("%04d", this.actor.discriminator);
+    punishment.values.punishedId = this.user.id;
+    punishment.values.punishedUsername = this.user.username;
+    punishment.values.punishedDiscriminator = String.format("%04d", this.user.discriminator);
     punishment.values.reason = this.reason;
-    punishment.values.import_by = ImporterConstants.IMPORTER_WARSHIP;
-    punishment.values.import_id = String.valueOf(this.id);
-    punishment.values.import_at = Instant.now();
+    punishment.values.importBy = ImporterConstants.IMPORTER_WARSHIP;
+    punishment.values.importId = String.valueOf(this.id);
+    punishment.values.importAt = Instant.now();
     return punishment;
   }
 

@@ -16,16 +16,16 @@ public final class Beemo implements ImporterPunishmentSource {
     punishment.values.guild = this.guild;
     punishment.values.type = ImporterPunishment.Type.BAN;
     punishment.values.date = this.date;
-    punishment.values.punisher_id = ImporterConstants.BOT_BEEMO_ID;
-    punishment.values.punisher_username = ImporterConstants.BOT_BEEMO_USERNAME;
-    punishment.values.punisher_discriminator = ImporterConstants.BOT_BEEMO_DISCRIMINATOR;
-    punishment.values.punished_id = this.user.id;
-    punishment.values.punished_username = this.user.username;
-    punishment.values.punished_discriminator = this.user.discriminator;
+    punishment.values.punisherId = ImporterConstants.BOT_BEEMO_ID;
+    punishment.values.punisherUsername = ImporterConstants.BOT_BEEMO_USERNAME;
+    punishment.values.punisherDiscriminator = ImporterConstants.BOT_BEEMO_DISCRIMINATOR;
+    punishment.values.punishedId = this.user.id;
+    punishment.values.punishedUsername = this.user.username;
+    punishment.values.punishedDiscriminator = this.user.discriminator;
     punishment.values.automatic = true;
-    punishment.values.import_by = ImporterConstants.IMPORTER_BEEMO;
-    punishment.values.import_id = null; // not provided
-    punishment.values.import_at = Instant.now();
+    punishment.values.importBy = ImporterConstants.IMPORTER_BEEMO;
+    punishment.values.importId = null; // not provided
+    punishment.values.importAt = Instant.now();
     return punishment;
   }
 

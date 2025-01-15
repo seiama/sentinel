@@ -2,10 +2,10 @@ package com.seiama.sentinel.feature.punishment.appeal;
 
 import com.seiama.common.Comparables;
 import com.seiama.sentinel.common.discord.Emoji;
+import com.seiama.sentinel.common.model.AppealModel;
 import com.seiama.sentinel.common.model.AppealRepository;
 import com.seiama.sentinel.common.model.GuildModel;
 import com.seiama.sentinel.common.model.GuildRepository;
-import com.seiama.sentinel.common.model.PunishmentAppealModel;
 import com.seiama.sentinel.common.model.PunishmentModel;
 import com.seiama.sentinel.common.model.PunishmentRepository;
 import com.seiama.sentinel.core.Listener;
@@ -95,16 +95,16 @@ public class Appeals implements Listener {
   private static final Duration VOTE_DURATION = Duration.ofDays(3);
   private static final Duration VOTE_CHECK_INTERVAL = Duration.ofMinutes(30);
 
-  private static final PunishmentAppealModel.Vote[] VOTES = PunishmentAppealModel.Vote.values();
+  private static final AppealModel.Vote[] VOTES = AppealModel.Vote.values();
   private static final String VOTE_BUTTON_PREFIX = "appeal-vote:";
-  private static final Map<String, PunishmentAppealModel.Vote> VOTE_BUTTONS = Arrays.stream(VOTES)
+  private static final Map<String, AppealModel.Vote> VOTE_BUTTONS = Arrays.stream(VOTES)
     .collect(Collectors.toMap(vote -> VOTE_BUTTON_PREFIX + vote.words().button(), Function.identity()));
-  private static final Map<PunishmentAppealModel.Vote, Function3<String, ReactionEmoji, String, Button>> VOTE_BUTTON_FACTORY = Map.of(
-    PunishmentAppealModel.Vote.YES, Button::success,
-    PunishmentAppealModel.Vote.NO, Button::danger,
-    PunishmentAppealModel.Vote.ABSTAIN, Button::primary,
-    PunishmentAppealModel.Vote.LATER, Button::secondary,
-    PunishmentAppealModel.Vote.VETO, Button::danger
+  private static final Map<AppealModel.Vote, Function3<String, ReactionEmoji, String, Button>> VOTE_BUTTON_FACTORY = Map.of(
+    AppealModel.Vote.YES, Button::success,
+    AppealModel.Vote.NO, Button::danger,
+    AppealModel.Vote.ABSTAIN, Button::primary,
+    AppealModel.Vote.LATER, Button::secondary,
+    AppealModel.Vote.VETO, Button::danger
   );
 
   private final GuildRepository guilds;
@@ -145,15 +145,15 @@ public class Appeals implements Listener {
               .then(Mono.empty());
             final Mono<TextChannel> createAppealChannel = event.getGuild()
               .flatMap(guild -> guild.createTextChannel(createChannelName(member))
-                .withParentId(config.appeal_channels_category())
+                .withParentId(config.appealChannelsCategory())
                 .withPermissionOverwrites(
                   PermissionOverwrite.forMember(member.getId(), PermissionSet.of(Permission.VIEW_CHANNEL), PermissionSet.none()),
-                  PermissionOverwrite.forRole(config.everyone_role(), PermissionSet.none(), PermissionSet.of(Permission.VIEW_CHANNEL, Permission.ATTACH_FILES))
+                  PermissionOverwrite.forRole(config.everyoneRole(), PermissionSet.none(), PermissionSet.of(Permission.VIEW_CHANNEL, Permission.ATTACH_FILES))
                 )
                 .withRateLimitPerUser(CHANNEL_RATE_LIMIT)
               );
             final Mono<ChannelData> createAppealThread = client.rest().getChannelService().startThreadWithoutMessage(
-              config.appeal_threads_channel().asLong(),
+              config.appealThreadsChannel().asLong(),
               StartThreadWithoutMessageRequest.builder()
                 .type(Channel.Type.GUILD_PRIVATE_THREAD.getValue())
                 .name(createThreadName(member))
@@ -161,7 +161,7 @@ public class Appeals implements Listener {
                 .build()
             );
             final Mono<ChannelData> createAppealDiscussionThread = client.rest().getChannelService().startThreadWithoutMessage(
-              config.appeal_discussion_threads_channel().asLong(),
+              config.appealDiscussionThreadsChannel().asLong(),
               StartThreadWithoutMessageRequest.builder()
                 .type(Channel.Type.GUILD_PRIVATE_THREAD.getValue())
                 .name(createThreadName(member))
@@ -175,7 +175,7 @@ public class Appeals implements Listener {
                 createAppealThread,
                 createAppealDiscussionThread
               )
-              .zipWhen(TupleUtils.function((punishment, channel, appealThread, appealDiscussionThread) -> this.appeals.insert(new PunishmentAppealModel.Complete(
+              .zipWhen(TupleUtils.function((punishment, channel, appealThread, appealDiscussionThread) -> this.appeals.insert(new AppealModel.Complete(
                 new ObjectId(),
                 punishment.guild(),
                 Instant.now(),
@@ -220,9 +220,9 @@ public class Appeals implements Listener {
                       .asRequest()
                   ).flatMap(voteMessage -> Mono.when(
                     client.rest().getChannelService().addPinnedMessage(appealDiscussionThread.id().asLong(), voteMessage.id().asLong()),
-                    this.appeals.update(model._id(), (PunishmentAppealModel.Partial.VoteMessage) () -> Snowflake.of(voteMessage.id()))
+                    this.appeals.update(model._id(), (AppealModel.Partial.VoteMessage) () -> Snowflake.of(voteMessage.id()))
                   )),
-                  client.rest().getChannelById(config.appeal_threads_channel()).createMessage(
+                  client.rest().getChannelById(config.appealThreadsChannel()).createMessage(
                     EmbedCreateSpec.builder()
                       .color(Color.of(NEW_APPEAL_NOTIFICATION_COLOR))
                       .title("A new appeal has been created")
@@ -254,16 +254,16 @@ public class Appeals implements Listener {
           .flatMap(TupleUtils.function((guild, channel) -> {
             final Channel.Type type = channel.getType();
             if (type == Channel.Type.GUILD_TEXT) {
-              return Mono.just(Tuples.<Tuple2<Guild, GuildModel.Complete>, Supplier<Mono<PunishmentAppealModel.Complete>>, Function<PunishmentAppealModel.Complete, Snowflake>>of(
+              return Mono.just(Tuples.<Tuple2<Guild, GuildModel.Complete>, Supplier<Mono<AppealModel.Complete>>, Function<AppealModel.Complete, Snowflake>>of(
                 guild,
                 () -> this.appeals.findByAppealChannel(channel.getId()),
-                PunishmentAppealModel.Complete::appealThread
+                AppealModel.Complete::appealThread
               ));
             } else if (type == Channel.Type.GUILD_PRIVATE_THREAD) {
-              return Mono.just(Tuples.<Tuple2<Guild, GuildModel.Complete>, Supplier<Mono<PunishmentAppealModel.Complete>>, Function<PunishmentAppealModel.Complete, Snowflake>>of(
+              return Mono.just(Tuples.<Tuple2<Guild, GuildModel.Complete>, Supplier<Mono<AppealModel.Complete>>, Function<AppealModel.Complete, Snowflake>>of(
                 guild,
                 () -> this.appeals.findByAppealThread(channel.getId()),
-                PunishmentAppealModel.Complete::appealChannel
+                AppealModel.Complete::appealChannel
               ));
             }
             return Mono.empty();
@@ -307,7 +307,7 @@ public class Appeals implements Listener {
           });
       }),
       client.on(ButtonInteractionEvent.class, event -> {
-        final PunishmentAppealModel.Vote vote = VOTE_BUTTONS.get(event.getCustomId());
+        final AppealModel.Vote vote = VOTE_BUTTONS.get(event.getCustomId());
         if (vote != null) {
           final Snowflake user = event.getInteraction().getUser().getId();
           final Snowflake channelId = event.getInteraction().getChannelId();
@@ -315,12 +315,12 @@ public class Appeals implements Listener {
             .then(this.appeals.findByAppealDiscussionThreadAndResultIsNull(channelId))
             .flatMap(model -> {
               final Update updates = new Update();
-              for (final PunishmentAppealModel.Vote value : VOTES) {
+              for (final AppealModel.Vote value : VOTES) {
                 if (value != vote) {
-                  updates.pull(PunishmentAppealModel.voteKey(value), user);
+                  updates.pull(AppealModel.voteKey(value), user);
                 }
               }
-              updates.push(PunishmentAppealModel.voteKey(vote), user);
+              updates.push(AppealModel.voteKey(vote), user);
               return this.appeals.update(model._id(), updates);
             })
             .flatMap(model -> event.editReply().withComponents(createVoteButtons(model.votes())));
@@ -339,7 +339,7 @@ public class Appeals implements Listener {
     return member.getUsername() + "#" + member.getDiscriminator();
   }
 
-  Mono<PunishmentAppealModel.Complete> findByAppealThread(final Snowflake channel) {
+  Mono<AppealModel.Complete> findByAppealThread(final Snowflake channel) {
     return this.appeals.findByAppealThread(channel);
   }
 
@@ -370,18 +370,18 @@ public class Appeals implements Listener {
 
   class VoteFinisher {
     final GatewayDiscordClient client;
-    final PunishmentAppealModel.Complete model;
+    final AppealModel.Complete model;
 
-    VoteFinisher(final GatewayDiscordClient client, final PunishmentAppealModel.Complete model) {
+    VoteFinisher(final GatewayDiscordClient client, final AppealModel.Complete model) {
       this.client = client;
       this.model = model;
     }
 
     Mono<Void> create() {
-      final PunishmentAppealModel.VoteResult result = VoteResultFinder.resultOf(
+      final AppealModel.VoteResult result = VoteResultFinder.resultOf(
         this.model.votes().entrySet()
           .stream()
-          .collect(Collectors.toMap(entry -> PunishmentAppealModel.Vote.valueOf(entry.getKey()), Map.Entry::getValue))
+          .collect(Collectors.toMap(entry -> AppealModel.Vote.valueOf(entry.getKey()), Map.Entry::getValue))
       );
       return Mono.when(
         this.client.getSelf().flatMap(user -> {
@@ -398,16 +398,16 @@ public class Appeals implements Listener {
     }
   }
 
-  Mono<Void> accept(final GatewayDiscordClient client, final PunishmentAppealModel.Complete model, final User user) {
-    return this.acceptOrDenyOrCancel(new AppealFinisher(client, model, user, PunishmentAppealModel.Result.ACCEPTED, null, null));
+  Mono<Void> accept(final GatewayDiscordClient client, final AppealModel.Complete model, final User user) {
+    return this.acceptOrDenyOrCancel(new AppealFinisher(client, model, user, AppealModel.Result.ACCEPTED, null, null));
   }
 
-  Mono<Void> deny(final GatewayDiscordClient client, final PunishmentAppealModel.Complete model, final User user, final @Nullable String reason, final @Nullable Instant nextAttemptMayBeMadeAt) {
-    return this.acceptOrDenyOrCancel(new AppealFinisher(client, model, user, PunishmentAppealModel.Result.DENIED, reason, nextAttemptMayBeMadeAt));
+  Mono<Void> deny(final GatewayDiscordClient client, final AppealModel.Complete model, final User user, final @Nullable String reason, final @Nullable Instant nextAttemptMayBeMadeAt) {
+    return this.acceptOrDenyOrCancel(new AppealFinisher(client, model, user, AppealModel.Result.DENIED, reason, nextAttemptMayBeMadeAt));
   }
 
-  private Mono<Void> cancel(final GatewayDiscordClient client, final PunishmentAppealModel.Complete model, final User user) {
-    return this.acceptOrDenyOrCancel(new AppealFinisher(client, model, user, PunishmentAppealModel.Result.CANCELLED, null, null));
+  private Mono<Void> cancel(final GatewayDiscordClient client, final AppealModel.Complete model, final User user) {
+    return this.acceptOrDenyOrCancel(new AppealFinisher(client, model, user, AppealModel.Result.CANCELLED, null, null));
   }
 
   private Mono<Void> acceptOrDenyOrCancel(final AppealFinisher finisher) {
@@ -416,18 +416,18 @@ public class Appeals implements Listener {
 
   class AppealFinisher {
     final GatewayDiscordClient client;
-    final PunishmentAppealModel.Complete model;
+    final AppealModel.Complete model;
     final User user; // (accepted, denied) -> (staff | bot) | (cancelled) -> punished
     final boolean automatic;
-    final PunishmentAppealModel.Result result;
+    final AppealModel.Result result;
     final @Nullable String reason;
     final @Nullable Instant nextAttemptMayBeMadeAt;
 
     AppealFinisher(
       final GatewayDiscordClient client,
-      final PunishmentAppealModel.Complete model,
+      final AppealModel.Complete model,
       final User user,
-      final PunishmentAppealModel.Result result,
+      final AppealModel.Result result,
       final @Nullable String reason,
       final @Nullable Instant nextAttemptMayBeMadeAt
     ) {
@@ -440,11 +440,11 @@ public class Appeals implements Listener {
       this.nextAttemptMayBeMadeAt = resolveNextAttemptMayBeMadeAt(nextAttemptMayBeMadeAt, result);
     }
 
-    private static Instant resolveNextAttemptMayBeMadeAt(final Instant instant, final PunishmentAppealModel.Result result) {
+    private static Instant resolveNextAttemptMayBeMadeAt(final Instant instant, final AppealModel.Result result) {
       if (instant != null) {
         return instant;
       }
-      if (result == PunishmentAppealModel.Result.DENIED) {
+      if (result == AppealModel.Result.DENIED) {
         return Instant.now().plus(COOLDOWN_NO);
       }
       return null;
@@ -452,9 +452,9 @@ public class Appeals implements Listener {
 
     Mono<Void> create() {
       return Mono.when(
-        Appeals.this.appeals.update(this.model, new PunishmentAppealModel.Partial.Close() {
+        Appeals.this.appeals.update(this.model, new AppealModel.Partial.Close() {
           @Override
-          public PunishmentAppealModel.Result result() {
+          public AppealModel.Result result() {
             return AppealFinisher.this.result;
           }
 
@@ -476,7 +476,7 @@ public class Appeals implements Listener {
     }
 
     private Mono<Void> unenforce() {
-      if (this.result == PunishmentAppealModel.Result.ACCEPTED) {
+      if (this.result == AppealModel.Result.ACCEPTED) {
         final Mono<PunishmentModel.Complete> updatedPunishment = Appeals.this.punishments.update(this.model.punishment(), new PunishmentModel.Partial.Stale() {
           @Override
           public @NotNull Boolean stale() {
@@ -484,7 +484,7 @@ public class Appeals implements Listener {
           }
 
           @Override
-          public Boolean stale_automatic() {
+          public Boolean staleAutomatic() {
             return AppealFinisher.this.automatic;
           }
 
@@ -539,10 +539,10 @@ public class Appeals implements Listener {
         .flatMap(guildModel -> Mono.when(
           Mono.when(
             Mono.just(this.result)
-              .filter(result -> result != PunishmentAppealModel.Result.CANCELLED)
+              .filter(result -> result != AppealModel.Result.CANCELLED)
               .flatMap(result -> this.client.rest().getChannelById(this.model.appealChannel()).createMessage(embedForPunished)),
             Mono.just(this.result)
-              .filter(result -> result == PunishmentAppealModel.Result.ACCEPTED)
+              .filter(result -> result == AppealModel.Result.ACCEPTED)
               .flatMap(accepted -> this.client.rest().getChannelById(this.model.appealChannel()).createMessage(guildModel.invite())),
             Mono.justOrEmpty(this.model.voteMessage()).flatMap(voteMessage -> this.client.rest().getMessageById(this.model.appealDiscussionThread(), voteMessage).edit(
               MessageEditRequest.builder()
@@ -560,7 +560,7 @@ public class Appeals implements Listener {
               reasonForActionLog
             )
           ),
-          this.client.rest().getChannelById(guildModel.features().punishments().appeals().appeal_threads_channel()).createMessage(embedForStaff),
+          this.client.rest().getChannelById(guildModel.features().punishments().appeals().appealThreadsChannel()).createMessage(embedForStaff),
           this.client.rest().getChannelById(this.model.appealThread()).createMessage(embedForStaff).then(
             this.client.rest().getChannelService().modifyThread(
               this.model.appealThread().asLong(),

@@ -1,5 +1,8 @@
 package com.seiama.sentinel.common.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import discord4j.common.util.Snowflake;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
@@ -21,8 +24,10 @@ public interface GuildModel {
   }
 
   @Document(collection = COLLECTION)
+  @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
   record Complete(
     @Field(Fields._ID)
+    @JsonProperty(Fields._ID)
     @Id ObjectId _id,
     @Field(Fields.GUILD)
     Snowflake guild,
@@ -31,20 +36,23 @@ public interface GuildModel {
     @Field(Fields.FEATURES)
     Features features
   ) implements AbstractModel {
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public record Features(
       Punishments punishments
     ) {
+      @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
       public record Punishments(
         boolean enabled,
         Appeals appeals
       ) {
+        @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
         public record Appeals(
           boolean enabled,
           Snowflake guild,
-          Snowflake everyone_role,
-          Snowflake appeal_channels_category,
-          Snowflake appeal_threads_channel,
-          Snowflake appeal_discussion_threads_channel
+          Snowflake everyoneRole,
+          Snowflake appealChannelsCategory,
+          Snowflake appealThreadsChannel,
+          Snowflake appealDiscussionThreadsChannel
         ) {
         }
       }

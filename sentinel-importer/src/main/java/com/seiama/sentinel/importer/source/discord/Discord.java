@@ -17,15 +17,15 @@ public final class Discord implements ImporterPunishmentSource {
     punishment.values.guild = null; // not provided
     punishment.values.type = ImporterPunishment.Type.BAN;
     punishment.values.date = null; // not provided
-    punishment.values.punisher_id = null; // not provided
-    punishment.values.punisher_username = null; // not provided
-    punishment.values.punisher_discriminator = null; // not provided
-    punishment.values.punished_id = this.user.id;
-    punishment.values.punished_username = this.user.username;
-    punishment.values.punished_discriminator = this.user.discriminator;
-    punishment.values.import_by = ImporterConstants.IMPORTER_DISCORD;
-    punishment.values.import_id = null; // not provided
-    punishment.values.import_at = Instant.now();
+    punishment.values.punisherId = null; // not provided
+    punishment.values.punisherUsername = null; // not provided
+    punishment.values.punisherDiscriminator = null; // not provided
+    punishment.values.punishedId = this.user.id;
+    punishment.values.punishedUsername = this.user.username;
+    punishment.values.punishedDiscriminator = this.user.discriminator;
+    punishment.values.importBy = ImporterConstants.IMPORTER_DISCORD;
+    punishment.values.importId = null; // not provided
+    punishment.values.importAt = Instant.now();
     return punishment;
   }
 

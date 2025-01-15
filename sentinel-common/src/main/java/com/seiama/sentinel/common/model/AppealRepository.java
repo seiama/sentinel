@@ -8,14 +8,14 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Repository
-public interface AppealRepository extends ReactiveMongoRepository<PunishmentAppealModel.Complete, ObjectId>, AppealRepositoryCustom {
-  Flux<PunishmentAppealModel.Complete> findAllByResultIsNull();
+public interface AppealRepository extends ReactiveMongoRepository<AppealModel.Complete, ObjectId>, AppealRepositoryCustom {
+  Flux<AppealModel.Complete> findAllByResultIsNull();
 
-  Mono<PunishmentAppealModel.Complete> findByAppealChannel(final Snowflake appealChannel);
+  Mono<AppealModel.Complete> findByAppealChannel(final Snowflake appealChannel);
 
-  Mono<PunishmentAppealModel.Complete> findByAppealThread(final Snowflake appealThread);
+  Mono<AppealModel.Complete> findByAppealThread(final Snowflake appealThread);
 
-  Mono<PunishmentAppealModel.Complete> findByGuildAndUserAndResultIsNull(final Snowflake guild, final Snowflake user);
+  Mono<AppealModel.Complete> findByGuildAndUserAndResultIsNull(final Snowflake guild, final Snowflake user);
 
-  Mono<PunishmentAppealModel.Complete> findByAppealDiscussionThreadAndResultIsNull(final Snowflake appealDiscussionThread);
+  Mono<AppealModel.Complete> findByAppealDiscussionThreadAndResultIsNull(final Snowflake appealDiscussionThread);
 }

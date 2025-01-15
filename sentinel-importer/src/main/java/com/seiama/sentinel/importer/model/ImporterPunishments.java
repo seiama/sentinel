@@ -35,11 +35,11 @@ public final class ImporterPunishments implements Iterable<ImporterPunishment> {
     final Long2ObjectMap<List<ImporterPunishment>> punishmentsByPunishedId = new Long2ObjectOpenHashMap<>();
     for (final ImporterPunishment punishment : this.punishments) {
       if (filter.test(punishment)) {
-        assert punishment.values.punished_id != null;
-        List<ImporterPunishment> punishments = punishmentsByPunishedId.get(punishment.values.punished_id.longValue());
+        assert punishment.values.punishedId != null;
+        List<ImporterPunishment> punishments = punishmentsByPunishedId.get(punishment.values.punishedId.longValue());
         if (punishments == null) {
           punishments = new ArrayList<>();
-          punishmentsByPunishedId.put(punishment.values.punished_id.longValue(), punishments);
+          punishmentsByPunishedId.put(punishment.values.punishedId.longValue(), punishments);
         }
         punishments.add(punishment);
       }
