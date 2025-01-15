@@ -24,6 +24,7 @@ import discord4j.discordjson.json.ApplicationCommandRequest;
 import discord4j.rest.RestClient;
 import discord4j.rest.service.ApplicationService;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -148,12 +149,14 @@ public final class FactoidCommand implements GuildCommand {
                 try {
                   response = this.mapper.readValue(
                     this.http.get()
-                      .uri(URI.create(json.get()))
+                      .uri(new URI(json.get()))
                       .retrieve()
                       .toEntity(String.class)
                       .getBody(),
                     Response.class
                   );
+                } catch (final URISyntaxException e) {
+                  return event.editReply().withContentOrNull("The provided URL to the JSON is invalid.");
                 } catch (final Throwable t) {
                   t.printStackTrace();
                   return event.editReply().withContentOrNull("Something went wrong.");
