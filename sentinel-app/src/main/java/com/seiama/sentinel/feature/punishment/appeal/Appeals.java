@@ -49,6 +49,7 @@ import discord4j.discordjson.json.MessageEditRequest;
 import discord4j.discordjson.json.PermissionsEditRequest;
 import discord4j.discordjson.json.StartThreadWithoutMessageRequest;
 import discord4j.discordjson.json.ThreadModifyRequest;
+import discord4j.discordjson.json.UserData;
 import discord4j.discordjson.possible.Possible;
 import discord4j.rest.RestClient;
 import discord4j.rest.entity.RestChannel;
@@ -77,6 +78,7 @@ import reactor.function.Function3;
 import reactor.function.TupleUtils;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuple4;
+import reactor.util.function.Tuple5;
 import reactor.util.function.Tuples;
 
 @Component
@@ -182,9 +184,10 @@ public class Appeals implements Listener {
                   .switchIfEmpty(kickUserForNoActivePunishment),
                 createAppealChannel,
                 createAppealThread,
-                createAppealDiscussionThread
+                createAppealDiscussionThread,
+                this.relayRest.getSelf()
               )
-              .zipWhen(TupleUtils.function((punishment, channel, appealThread, appealDiscussionThread) -> this.appeals.insert(new AppealModel.Complete(
+              .zipWhen(TupleUtils.function((punishment, channel, appealThread, appealDiscussionThread, relayUser) -> this.appeals.insert(new AppealModel.Complete(
                 appealId,
                 punishment.guild(),
                 Instant.now(),
@@ -200,13 +203,14 @@ public class Appeals implements Listener {
                 null
               ))))
               .map(tuple -> {
-                final Tuple4<PunishmentModel.Complete, TextChannel, ChannelData, ChannelData> t1 = tuple.getT1();
-                return Tuples.of(t1.getT1(), t1.getT2(), t1.getT3(), t1.getT4(), tuple.getT2());
+                final Tuple5<PunishmentModel.Complete, TextChannel, ChannelData, ChannelData, UserData> t1 = tuple.getT1();
+                return Tuples.of(t1.getT1(), t1.getT2(), t1.getT3(), t1.getT4(), t1.getT5(), tuple.getT2());
               })
-              .flatMap(TupleUtils.function((punishment, channel, appealThread, appealDiscussionThread, model) -> {
+              .flatMap(TupleUtils.function((punishment, channel, appealThread, appealDiscussionThread, relayUser, model) -> {
                 final RestChannel appealThreadChannel = client.rest().getChannelById(Snowflake.of(appealThread.id()));
                 final RestChannel appealDiscussionThreadChannel = client.rest().getChannelById(Snowflake.of(appealDiscussionThread.id()));
                 return Mono.when(
+                  client.rest().getChannelService().addThreadMember(appealThread.id().asLong(), relayUser.id().asLong()),
                   channel.createMessage(PunishmentDisplay.punishment(punishment, PunishmentDisplayStyle.APPEAL)),
                   channel.createMessage(String.format("Hey, %s! This appeal is now active. Please explain why you think this punishment should be appealed.", member.getMention())),
                   appealThreadChannel.createMessage(PunishmentDisplay.punishment(punishment, PunishmentDisplayStyle.FULL).asRequest()),
