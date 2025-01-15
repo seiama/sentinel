@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.seiama.sentinel.common.SharedConstants;
 import com.seiama.sentinel.common.annotation.MongoDate;
 import com.seiama.sentinel.common.annotation.MongoId;
 import com.seiama.sentinel.common.annotation.MongoPrimaryId;
@@ -177,11 +178,11 @@ public interface PunishmentModel {
   }
 
   enum Type {
-    BAN(0xf04747, true, new Words("ban", "banned"), Emoji.DOT_RED),
-    KICK(0xb5988e, true, new Words("kick", "kicked"), Emoji.DOT_GREY),
-    MUTE(0x9b59b6, true, new Words("mute", "muted"), Emoji.DOT_PURPLE),
-    NOTE(0x3498db, false, new Words("note", "noted"), Emoji.DOT_BLUE),
-    WARN(0xfaa61a, true, new Words("warn", "warned"), Emoji.DOT_ORANGE);
+    BAN(SharedConstants.COLOR_RED, true, new Words("ban", "banned"), Emoji.DOT_RED),
+    KICK(SharedConstants.COLOR_GREY, true, new Words("kick", "kicked"), Emoji.DOT_GREY),
+    MUTE(SharedConstants.COLOR_PURPLE, true, new Words("mute", "muted"), Emoji.DOT_PURPLE),
+    NOTE(SharedConstants.COLOR_BLUE, false, new Words("note", "noted"), Emoji.DOT_BLUE),
+    WARN(SharedConstants.COLOR_ORANGE, true, new Words("warn", "warned"), Emoji.DOT_ORANGE);
 
     private final int color;
     private final boolean notification;
