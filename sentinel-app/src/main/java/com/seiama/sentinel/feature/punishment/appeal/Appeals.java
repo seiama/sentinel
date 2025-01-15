@@ -475,8 +475,8 @@ public class Appeals implements Listener {
         }),
         this.unenforce(),
         this.sendMessagesToChannelsAndThreadsAndThenArchiveAndClose(),
-        Appeals.this.messageLinks.deleteAllByTargetChannelId(this.model.appealChannel().asLong()).onErrorResume(t -> Mono.empty()),
-        Appeals.this.messageLinks.deleteAllByTargetChannelId(this.model.appealThread().asLong()).onErrorResume(t -> Mono.empty())
+        Appeals.this.messageLinks.deleteAllByTargetChannelId(this.model.appealChannel().asLong()).onErrorResume(Reactive.ignoringException()),
+        Appeals.this.messageLinks.deleteAllByTargetChannelId(this.model.appealThread().asLong()).onErrorResume(Reactive.ignoringException())
       );
     }
 
@@ -529,7 +529,7 @@ public class Appeals implements Listener {
               "Punishment (%s) has been appealed (%s).",
               punishment._id(),
               this.model._id()
-            ))).onErrorResume(ClientException.class, t -> Mono.empty()); // avoid possible 10026
+            ))).onErrorResume(ClientException.class, Reactive.ignoringException()); // avoid possible 10026
             default -> Mono.empty();
           });
       }
