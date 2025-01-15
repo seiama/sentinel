@@ -45,16 +45,18 @@ public final class Punishments implements Listener {
 
   @Override
   public @NotNull Mono<Void> listen(final @NotNull GatewayDiscordClient client) {
-    return client.on(MemberJoinEvent.class, event -> {
-      final Member member = event.getMember();
-      return this.punishments.findAllByGuildAndPunishedIdAndTypeAndStaleIsNotOrderByDateDesc(event.getGuildId(), member.getId(), PunishmentModel.Type.BAN, false)
-        .next()
-        .flatMap(punishment -> member.ban(
-          BanQuerySpec.builder()
-            .reason("Enforcing punishment %s".formatted(punishment._id()))
-            .build()
-        ).onErrorResume(ClientException.class, e -> member.kick("Enforcing punishment %s".formatted(punishment._id()))));
-    }).then();
+    return Mono.when(
+      client.on(MemberJoinEvent.class, event -> {
+        final Member member = event.getMember();
+        return this.punishments.findAllByGuildAndPunishedIdAndTypeAndStaleIsNotOrderByDateDesc(event.getGuildId(), member.getId(), PunishmentModel.Type.BAN, false)
+          .next()
+          .flatMap(punishment -> member.ban(
+            BanQuerySpec.builder()
+              .reason("Enforcing punishment %s".formatted(punishment._id()))
+              .build()
+          ).onErrorResume(ClientException.class, e -> member.kick("Enforcing punishment %s".formatted(punishment._id()))));
+      })
+    );
   }
 
   public @NotNull Mono<?> command(
