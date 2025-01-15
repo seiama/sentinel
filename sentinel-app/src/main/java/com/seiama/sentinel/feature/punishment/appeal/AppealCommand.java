@@ -76,7 +76,7 @@ public final class AppealCommand implements GuildCommand {
 
   @Override
   public @NotNull Feature feature() {
-    return Feature.PUNISHMENTS_APPEALS;
+    return Feature.APPEALS;
   }
 
   @Override

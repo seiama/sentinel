@@ -4,6 +4,7 @@ import com.seiama.common.Comparables;
 import com.seiama.sentinel.common.Listener;
 import com.seiama.sentinel.common.discord.Emoji;
 import com.seiama.sentinel.common.discord.Mention;
+import com.seiama.sentinel.common.model.Feature;
 import com.seiama.sentinel.common.model.GuildModel;
 import com.seiama.sentinel.common.model.GuildRepository;
 import discord4j.common.util.TimestampFormat;
@@ -79,8 +80,8 @@ public class Logging implements Listener {
 
   private Flux<TextChannel> channelsFor(final Guild guild, final GuildModel.Complete.Features.Logging.Event event) {
     return this.guilds.findByGuild(guild.getId())
+      .filter(Feature.LOGGING.enabledForGuild())
       .map(model -> model.features().logging())
-      .filter(GuildModel.Complete.Features.Logging::enabled)
       .flatMapMany(config -> {
         return Flux.fromIterable(config.mapping().entrySet())
           .filter(entry -> entry.getValue().contains(event))
