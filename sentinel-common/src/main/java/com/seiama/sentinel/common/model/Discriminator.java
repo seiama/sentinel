@@ -1,7 +1,10 @@
 package com.seiama.sentinel.common.model;
 
-import com.seiama.common.functional.function.exceptional.Consumer1E;
-import com.seiama.common.functional.function.exceptional.RunnableE;
+import com.seiama.functional.function.exceptional.Consumer1E;
+import com.seiama.functional.function.exceptional.RunnableE;
+import discord4j.core.object.entity.User;
+import discord4j.discordjson.json.UserData;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.VisibleForTesting;
 
@@ -13,12 +16,22 @@ public record Discriminator(
   @VisibleForTesting
   public static final String TEMPORARY_MIGRATION_MARKER = "0";
 
+  public Discriminator(final @NotNull UserData user) {
+    this(user.discriminator());
+  }
+
+  public Discriminator(final @NotNull User user) {
+    this(user.getDiscriminator());
+  }
+
   public boolean migrated() {
-    return TEMPORARY_MIGRATION_MARKER.equals(this.value);
+    return this.value == null || TEMPORARY_MIGRATION_MARKER.equals(this.value);
   }
 
   public static @Nullable String unbox(final @Nullable Discriminator discriminator) {
-    if (discriminator == null || discriminator.migrated()) {
+    if (discriminator == null) {
+      return null;
+    } else if (discriminator.migrated()) {
       return null;
     } else {
       return discriminator.value();
@@ -30,10 +43,11 @@ public record Discriminator(
     final RunnableE<E> migrated,
     final Consumer1E<String, E> unmigrated
   ) throws E {
-    if (discriminator == null || discriminator.migrated()) {
+    final @Nullable String value = unbox(discriminator);
+    if (value == null) {
       migrated.run();
     } else {
-      unmigrated.accept(discriminator.value());
+      unmigrated.accept(value);
     }
   }
 }

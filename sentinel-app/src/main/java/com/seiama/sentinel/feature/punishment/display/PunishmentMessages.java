@@ -2,14 +2,13 @@ package com.seiama.sentinel.feature.punishment.display;
 
 import com.seiama.sentinel.common.discord.Discord;
 import com.seiama.sentinel.common.discord.Emoji;
-import com.seiama.sentinel.common.discord.Mention;
+import com.seiama.sentinel.common.discord.UserDisplay;
 import com.seiama.sentinel.common.model.PunishmentModel;
 import com.seiama.sentinel.feature.punishment.search.PunishmentSearchResult;
 import discord4j.common.util.TimestampFormat;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.core.spec.MessageCreateSpec;
-import discord4j.core.util.MentionUtil;
 import discord4j.rest.util.Color;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -47,9 +46,9 @@ public final class PunishmentMessages {
     return String.format(
       "(`%s`) // %s has been %s by %s (`%d`)%s",
       punishment._id(),
-      Mention.userWithId(punishment.punishedId(), punishment.punishedUsername(), punishment.punishedDiscriminator()),
+      UserDisplay.render(UserDisplay.Renderer.MENTION_WITH_TRAILING_BACKTICK_WRAPPED_USERNAME_AND_ID, punishment.punished()),
       punishment.type().strings().actioned(),
-      MentionUtil.forUser(punishment.punisherId()),
+      UserDisplay.render(UserDisplay.Renderer.MENTION, punishment.punisher()),
       punishment.punisherId().asLong(),
       reason != null
         ? "\n**Reason**: " + reason

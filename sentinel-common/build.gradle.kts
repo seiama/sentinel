@@ -7,6 +7,7 @@ dependencies {
   api("com.fasterxml.jackson.core:jackson-databind:2.14.2")
   api("com.google.guava:guava:31.1-jre")
   api("com.seiama:commons:1.0.0-SNAPSHOT")
+  api("com.seiama:functional:1.0.0-SNAPSHOT")
   api("io.projectreactor.netty:reactor-netty-core:1.1.4")
   api("jakarta.persistence:jakarta.persistence-api:3.1.0")
   api("net.time4j:time4j-base:5.9.2")

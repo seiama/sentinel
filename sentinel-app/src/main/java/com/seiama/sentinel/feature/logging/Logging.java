@@ -3,10 +3,11 @@ package com.seiama.sentinel.feature.logging;
 import com.seiama.common.Comparables;
 import com.seiama.sentinel.common.Listener;
 import com.seiama.sentinel.common.discord.Emoji;
-import com.seiama.sentinel.common.discord.Mention;
+import com.seiama.sentinel.common.discord.UserDisplay;
 import com.seiama.sentinel.common.model.Feature;
 import com.seiama.sentinel.common.model.GuildModel;
 import com.seiama.sentinel.common.model.GuildRepository;
+import com.seiama.sentinel.common.model.UserIdentity;
 import discord4j.common.util.TimestampFormat;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.guild.MemberJoinEvent;
@@ -45,7 +46,7 @@ public class Logging implements Listener {
                 sb
                   .append(Emoji.DOT_GREEN.asFormat())
                   .append(' ')
-                  .append(Mention.userWithId(member))
+                  .append(UserDisplay.render(UserDisplay.Renderer.MENTION_WITH_TRAILING_BACKTICK_WRAPPED_USERNAME_AND_ID, new UserIdentity(member)))
                   .append(" joined - created ");
                 final Instant userCreation = member.getId().getTimestamp();
                 sb.append(TimestampFormat.RELATIVE_TIME.format(userCreation));
@@ -65,7 +66,7 @@ public class Logging implements Listener {
                 sb
                   .append(Emoji.DOT_RED.asFormat())
                   .append(' ')
-                  .append(Mention.userWithId(event.getUser()))
+                  .append(UserDisplay.render(UserDisplay.Renderer.MENTION_WITH_TRAILING_BACKTICK_WRAPPED_USERNAME_AND_ID, new UserIdentity(event.getUser())))
                   .append(" left");
                 final Member member = event.getMember().orElse(null);
                 if (member != null && member.getJoinTime().isPresent()) {

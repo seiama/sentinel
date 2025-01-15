@@ -45,12 +45,16 @@ public interface ModMailModel {
     Type type,
     Snowflake creatorId,
     String creatorUsername,
-    String creatorDiscriminator,
+    @Deprecated
+    @Nullable Discriminator creatorDiscriminator,
     Snowflake message,
     String content,
     @MongoDate @Nullable Instant threadCreatedAt,
     @Nullable Snowflake threadCreatedBy
   ) implements AbstractModel {
+    public UserIdentity creator() {
+      return new UserIdentity(this.creatorId, this.creatorUsername, this.creatorDiscriminator);
+    }
   }
 
   enum Type {
