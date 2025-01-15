@@ -9,7 +9,6 @@ import com.seiama.sentinel.common.model.Discriminator;
 import com.seiama.sentinel.common.model.GuildRepository;
 import com.seiama.sentinel.common.model.ModMailModel;
 import com.seiama.sentinel.common.model.ModMailRepository;
-import com.seiama.sentinel.common.model.UserIdentity;
 import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.interaction.ButtonInteractionEvent;
@@ -135,7 +134,7 @@ public class ModMail implements Listener {
       .flatMap(TupleUtils.function((guildModel, model) -> {
         final CustomId createThreadButton = new CustomId(BUTTON_CREATE_THREAD, model._id().toString());
         final EmbedCreateSpec.Builder embed = EmbedCreateSpec.builder()
-          .author(String.format("%s (%s)", user.getTag(), user.getId().asString()), null, user.getAvatarUrl())
+          .footer(String.format("%s (%s)", user.getTag(), user.getId().asString()), user.getAvatarUrl())
           .title(type.strings().submitted())
           .timestamp(Instant.now());
         final StringBuilder description = new StringBuilder();
@@ -146,9 +145,7 @@ public class ModMail implements Listener {
         embed.description(description.toString());
         if (message != null) {
           message.getAuthor()
-            .map(UserIdentity::new)
-            .map(identity -> UserDisplay.render(UserDisplay.Renderer.MENTION_WITH_TRAILING_BACKTICK_WRAPPED_USERNAME_AND_ID, identity))
-            .ifPresent(author -> embed.addField("Author", author, false));
+            .ifPresent(author -> embed.author(String.format("%s (%s)", author.getTag(), author.getId().asString()), null, author.getAvatarUrl()));
           embed.addField("Message", Links.message(guild, message), false);
         }
         return client.rest().getChannelById(guildModel.features().modmail().notificationChannel())
