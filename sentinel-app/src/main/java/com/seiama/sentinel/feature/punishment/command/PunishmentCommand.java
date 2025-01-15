@@ -196,7 +196,7 @@ public final class PunishmentCommand implements GuildCommand {
         return Mono.justOrEmpty(option.getOption(USER).orElse(null))
           .filterWhen(new CanQueryAndMutate<>(this.guilds, guild, punisher))
           .flatMap(user -> Options.user(user, Options.USER).orElseGet(Mono::empty))
-          .flatMap(user -> this.punishments.findAllByPunishedId(user.getId()).collectList().zipWith(Mono.just(user)))
+          .flatMap(user -> this.punishments.findAllByPunishedIdOrderByDateDesc(user.getId()).collectList().zipWith(Mono.just(user)))
           .map(TupleUtils.function((punishment, user) -> new PunishmentSearchResult(user, punishment)))
           .flatMap(result -> event.editReply().withEmbeds(PunishmentMessages.punishmentSearchEmbed(result)));
       }
