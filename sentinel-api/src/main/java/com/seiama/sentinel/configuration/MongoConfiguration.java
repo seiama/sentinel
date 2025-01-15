@@ -1,6 +1,7 @@
 package com.seiama.sentinel.configuration;
 
 import com.mongodb.MongoClientSettings;
+import com.seiama.sentinel.common.bson.DiscriminatorCodec;
 import com.seiama.sentinel.common.bson.SnowflakeCodec;
 import com.seiama.sentinel.common.converter.SnowflakeFromLongConverter;
 import com.seiama.sentinel.common.converter.SnowflakeToStringConverter;
@@ -20,7 +21,10 @@ public class MongoConfiguration {
       builder.codecRegistry(CodecRegistries.fromRegistries(
         MongoClientSettings.getDefaultCodecRegistry(),
         CodecRegistries.fromProviders(
-          CodecRegistries.fromCodecs(new SnowflakeCodec()),
+          CodecRegistries.fromCodecs(
+            new DiscriminatorCodec(),
+            new SnowflakeCodec()
+          ),
           PojoCodecProvider.builder()
             .automatic(true)
             .build()
