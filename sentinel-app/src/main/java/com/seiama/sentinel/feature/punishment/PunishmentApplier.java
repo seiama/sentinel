@@ -25,28 +25,6 @@ public final class PunishmentApplier {
   private PunishmentApplier() {
   }
 
-  private static @NotNull Mono<?> notifyAndApply(
-    final Guild guild,
-    final User user,
-    final PunishmentRepository punishments,
-    final PunishmentModel.Complete punishment,
-    final PunishmentAction action
-  ) {
-    return Mono.whenDelayError(
-      user.getPrivateChannel()
-        .flatMap(channel -> channel.createMessage(PunishmentMessages.punishmentPunishedDirectMessageEmbed(punishment, guild)))
-        .flatMap(message -> punishments.update(punishment, new PunishmentModel.Partial.DirectMessageNotified() {
-          @Override
-          public Snowflake dmNotificationMessageId() {
-            return message.getId();
-          }
-        }))
-        // we don't actually care if we can't send a notification to the user
-        .onErrorResume(Reactive.ignoringException()), // avoid possible 50007
-      ACTUALLY_APPLY_PUNISHMENT ? action.apply(guild, user, punishment) : Mono.empty()
-    );
-  }
-
   public static @NotNull Mono<?> apply(
     final ChatInputInteractionEvent event,
     final Guild guild,
@@ -72,9 +50,42 @@ public final class PunishmentApplier {
           false
         )))
         .flatMap(TupleUtils.function((user, punishment) -> Mono.whenDelayError(
-          notifyAndApply(guild, user, punishments, punishment, action),
+          sendNotification(guild, user, punishments, punishment),
+          applyPunishment(guild, user, punishment, action),
           event.editReply().withContent(Possible.of(Optional.of(PunishmentMessages.punishmentPunisherResponse(punishment))))
         )))
     );
+  }
+
+  private static @NotNull Mono<?> sendNotification(
+    final Guild guild,
+    final User user,
+    final PunishmentRepository punishments,
+    final PunishmentModel.Complete punishment
+  ) {
+    if (punishment.type().notification()) {
+      return user.getPrivateChannel()
+        .flatMap(channel -> channel.createMessage(PunishmentMessages.punishmentPunishedDirectMessageEmbed(punishment, guild)))
+        .flatMap(message -> punishments.update(punishment, new PunishmentModel.Partial.DirectMessageNotified() {
+          @Override
+          public Snowflake dmNotificationMessageId() {
+            return message.getId();
+          }
+        }))
+        // we don't actually care if we can't send a notification to the user
+        .onErrorResume(Reactive.ignoringException()); // avoid possible 50007
+    }
+    return Mono.empty();
+  }
+
+  private static @NotNull Mono<?> applyPunishment(
+    final Guild guild,
+    final User user,
+    final PunishmentModel.Complete punishment,
+    final PunishmentAction action
+  ) {
+    return ACTUALLY_APPLY_PUNISHMENT
+      ? action.apply(guild, user, punishment)
+      : Mono.empty();
   }
 }

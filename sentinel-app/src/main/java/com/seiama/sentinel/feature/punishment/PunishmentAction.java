@@ -25,6 +25,10 @@ public interface PunishmentAction extends Function3<Guild, User, PunishmentModel
     );
   }
 
+  static PunishmentAction note() {
+    return (guild, user, punishment) -> Mono.empty();
+  }
+
   static PunishmentAction warn() {
     return (guild, user, punishment) -> Mono.empty();
   }
