@@ -9,6 +9,8 @@ import com.seiama.sentinel.feature.punishment.Punishments;
 import com.seiama.sentinel.feature.punishment.creator.ChatInteractionPunishmentCreator;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
+import discord4j.core.object.command.ApplicationCommandInteractionOption;
+import discord4j.core.object.command.ApplicationCommandInteractionOptionValue;
 import discord4j.core.object.command.ApplicationCommandOption;
 import discord4j.core.object.entity.Guild;
 import discord4j.discordjson.json.ApplicationCommandOptionChoiceData;
@@ -88,7 +90,10 @@ public final class TimeoutCommand implements GuildCommand {
 
   @Override
   public Mono<?> on(final GatewayDiscordClient client, final ChatInputInteractionEvent event, final Guild guild) {
-    final String durationInput = event.getOptionAsString(OptionNames.DURATION).orElseThrow();
+    final String durationInput = event.getOption(OptionNames.DURATION)
+      .flatMap(ApplicationCommandInteractionOption::getValue)
+      .map(ApplicationCommandInteractionOptionValue::asString)
+      .orElseThrow();
     final PunishmentAction.MuteDuration duration = PunishmentAction.MuteDuration.valueOf(durationInput);
     final Instant now = Instant.now();
     final Instant endsAt = duration.untilFrom(now);
