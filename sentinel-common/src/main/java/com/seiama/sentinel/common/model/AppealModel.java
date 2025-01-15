@@ -19,25 +19,14 @@ import org.springframework.data.mongodb.core.mapping.Field;
 public interface AppealModel {
   String COLLECTION = "appeals";
 
-  static String voteKey(final Vote vote) {
-    return Fields.VOTES + "." + vote.name();
-  }
-
   interface Fields {
     @SuppressWarnings("ConstantName")
     String _ID = AbstractModel._ID;
-    String GUILD = "guild";
-    String DATE = "date";
-    String USER = "user";
-    String PUNISHMENT = "punishment";
-    String APPEAL_CHANNEL = "appeal_channel";
-    String APPEAL_THREAD = "appeal_thread";
-    String APPEAL_DISCUSSION_THREAD = "appeal_discussion_thread";
-    String VOTE_MESSAGE = "vote_message";
     String VOTES = "votes";
-    String RESULT = "result";
-    String REASON = "reason";
-    String NEXT_ATTEMPT_MAY_BE_MADE_AT = "next_attempt_may_be_made_at";
+
+    static String votes(final Vote vote) {
+      return VOTES + "." + vote.name();
+    }
   }
 
   interface Partial extends AbstractPartial {

@@ -317,10 +317,10 @@ public class Appeals implements Listener {
               final Update updates = new Update();
               for (final AppealModel.Vote value : VOTES) {
                 if (value != vote) {
-                  updates.pull(AppealModel.voteKey(value), user);
+                  updates.pull(AppealModel.Fields.votes(value), user);
                 }
               }
-              updates.push(AppealModel.voteKey(vote), user);
+              updates.push(AppealModel.Fields.votes(vote), user);
               return this.appeals.update(model._id(), updates);
             })
             .flatMap(model -> event.editReply().withComponents(createVoteButtons(model.votes())));

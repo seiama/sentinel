@@ -12,6 +12,7 @@ import java.time.Instant;
 import org.bson.types.ObjectId;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
@@ -21,28 +22,6 @@ public interface PunishmentModel {
   interface Fields {
     @SuppressWarnings("ConstantName")
     String _ID = AbstractModel._ID;
-    String GUILD = "guild";
-    String TYPE = "type";
-    String DATE = "date";
-    String PUNISHER_ID = "punisher_id";
-    String PUNISHER_USERNAME = "punisher_username";
-    String PUNISHER_DISCRIMINATOR = "punisher_discriminator";
-    String PUNISHED_ID = "punished_id";
-    String PUNISHED_USERNAME = "punished_username";
-    String PUNISHED_DISCRIMINATOR = "punished_discriminator";
-    String REASON = "reason";
-    String AUTOMATIC = "automatic";
-    String EXPUNGED = "expunged";
-    String STALE = "stale";
-    String STALE_AUTOMATIC = "stale_automatic";
-    String STALE_AT = "stale_at";
-    String STALE_BY_ID = "stale_by_id";
-    String STALE_BY_USERNAME = "stale_by_username";
-    String STALE_BY_DISCRIMINATOR = "stale_by_discriminator";
-    String STALE_REASON = "stale_reason";
-    String IMPORT_BY = "import_by";
-    String IMPORT_ID = "import_id";
-    String IMPORT_AT = "import_at";
   }
 
   interface Partial extends AbstractPartial {
@@ -78,7 +57,7 @@ public interface PunishmentModel {
   record Complete(
     @Field(Fields._ID)
     @JsonProperty(Fields._ID)
-    ObjectId _id,
+    @Id ObjectId _id,
     Snowflake guild,
     Type type,
     Instant date,
