@@ -14,6 +14,7 @@ import discord4j.core.object.command.Interaction;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.User;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
 import org.jspecify.annotations.NullMarked;
@@ -26,13 +27,15 @@ public final class ChatInteractionPunishmentCreator implements Punishments.Creat
   private final ChatInputInteractionEvent event;
   private final Guild guild;
   private final PunishmentModel.Type type;
+  private final @Nullable Duration duration;
   private final PunishmentAction<User, PunishmentModel.Complete> action;
 
-  public ChatInteractionPunishmentCreator(final GatewayDiscordClient client, final ChatInputInteractionEvent event, final Guild guild, final PunishmentModel.Type type, final PunishmentAction<User, PunishmentModel.Complete> action) {
+  public ChatInteractionPunishmentCreator(final GatewayDiscordClient client, final ChatInputInteractionEvent event, final Guild guild, final PunishmentModel.Type type, final @Nullable Duration duration, final PunishmentAction<User, PunishmentModel.Complete> action) {
     this.client = client;
     this.event = event;
     this.guild = guild;
     this.type = type;
+    this.duration = duration;
     this.action = action;
   }
 
@@ -64,7 +67,7 @@ public final class ChatInteractionPunishmentCreator implements Punishments.Creat
           Optional.of(punisher),
           punished,
           reason,
-          null,
+          this.duration,
           false
         ),
         punished,
