@@ -2,6 +2,7 @@ package com.seiama.sentinel.controller;
 
 import com.seiama.sentinel.common.model.PunishmentModel;
 import com.seiama.sentinel.common.model.PunishmentRepository;
+import discord4j.common.util.Snowflake;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -24,14 +25,14 @@ public class PunishmentController {
   }
 
   @CrossOrigin
-  @GetMapping("/v1/punishments")
-  public Flux<PunishmentModel.Complete> punishments() {
-    return this.punishments.findAll();
+  @GetMapping("/v1/punishments/{guild}")
+  public Flux<PunishmentModel.Complete> punishments(final @PathVariable("guild") Snowflake guild) {
+    return this.punishments.findAllByGuild(guild);
   }
 
   @CrossOrigin
-  @GetMapping("/v1/punishment/{id}")
-  public Mono<PunishmentModel.Complete> punishmentById(final @PathVariable("id") String id) {
-    return this.punishments.findById(new ObjectId(id));
+  @GetMapping("/v1/punishments/{guild}/{id}")
+  public Mono<PunishmentModel.Complete> punishmentById(final @PathVariable("guild") Snowflake guild, final @PathVariable("id") ObjectId id) {
+    return this.punishments.findById(id);
   }
 }
