@@ -53,9 +53,9 @@ class Commands implements Listener {
             commands.add(command);
           }
         }
-        this.guildCommandsByGuild.put(model.id(), commands);
+        this.guildCommandsByGuild.put(model.guild(), commands);
         return new GuildRequests(
-          model.id().asLong(),
+          model.guild().asLong(),
           commands
             .stream()
             .map(Command::request)

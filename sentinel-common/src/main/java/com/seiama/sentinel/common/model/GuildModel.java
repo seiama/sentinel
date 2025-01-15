@@ -12,7 +12,7 @@ public interface GuildModel {
   interface Fields {
     @SuppressWarnings("ConstantName")
     String _ID = AbstractModel._ID;
-    String ID = "id";
+    String GUILD = "guild";
     String INVITE = "invite";
     String FEATURES = "features";
   }
@@ -24,8 +24,8 @@ public interface GuildModel {
   record Complete(
     @Field(Fields._ID)
     @Id ObjectId _id,
-    @Field(Fields.ID)
-    Snowflake id,
+    @Field(Fields.GUILD)
+    Snowflake guild,
     @Field(Fields.INVITE)
     String invite,
     @Field(Fields.FEATURES)

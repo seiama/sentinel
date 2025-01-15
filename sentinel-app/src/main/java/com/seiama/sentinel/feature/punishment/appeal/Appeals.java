@@ -139,7 +139,7 @@ public class Appeals implements Listener {
           .flatMap(guildModel -> {
             final GuildModel.Complete.Features.Punishments.Appeals config = guildModel.features().punishments().appeals();
             final Member member = event.getMember();
-            final Mono<PunishmentModel.Complete> getPunishment = this.punishments.findByPunishedIdAndStaleIsNotLikeOrderByDateDesc(member.getId(), true);
+            final Mono<PunishmentModel.Complete> getPunishment = this.punishments.findByPunishedIdAndStaleIsNotOrderByDateDesc(member.getId(), true);
             final Mono<PunishmentModel.Complete> kickUserForNoActivePunishment = event.getGuild()
               .flatMap(guild -> guild.kick(member.getId(), null))
               .then(Mono.empty());
@@ -247,7 +247,7 @@ public class Appeals implements Listener {
           return Mono.empty();
         }
         return message.getGuild()
-          .zipWhen(guild -> this.guilds.findByIdOrFeaturesPunishmentsAppealsGuild(guild.getId(), guild.getId()))
+          .zipWhen(guild -> this.guilds.findByGuildOrFeaturesPunishmentsAppealsGuild(guild.getId(), guild.getId()))
           .filter(tuple -> Feature.PUNISHMENTS_APPEALS.enabledForGuild(tuple.getT2()))
           .zipWith(message.getChannel())
           // todo: filter channel by ids
@@ -282,7 +282,7 @@ public class Appeals implements Listener {
           }));
       }),
       client.on(MessageUpdateEvent.class, event -> {
-        return this.messageLinks.findBySourceMessageId(event.getMessageId())
+        return this.messageLinks.findBySourceMessageId(event.getMessageId().asString())
           .flatMap(targetIds -> {
             return event.getGuild()
               .zipWith(event.getMessage())
@@ -301,7 +301,7 @@ public class Appeals implements Listener {
           });
       }),
       client.on(MessageDeleteEvent.class, event -> {
-        return this.messageLinks.findBySourceMessageId(event.getMessageId())
+        return this.messageLinks.findBySourceMessageId(event.getMessageId().asString())
           .flatMap(targetIds -> {
             return client.rest().getChannelService().deleteMessage(targetIds.targetChannelId().asLong(), targetIds.targetMessageId().asLong(), null);
           });
@@ -349,7 +349,7 @@ public class Appeals implements Listener {
       .description(message.content())
       .timestamp(message.editedTimestamp().orElse(message.timestamp()))
       .author(
-        guild.getT1().getId().equals(guild.getT2().id())
+        guild.getT1().getId().equals(guild.getT2().guild())
           ? Discord.author(guild.getT1()).map(EmbedCreateFields.Author::asRequest).map(Possible::of).orElse(Possible.absent())
           : Possible.of(Discord.author(message.author(), author))
       )
@@ -470,8 +470,8 @@ public class Appeals implements Listener {
         }),
         this.unenforce(),
         this.sendMessagesToChannelsAndThreadsAndThenArchiveAndClose(),
-        Appeals.this.messageLinks.deleteAllByTargetChannelId(this.model.appealChannel()).onErrorResume(t -> Mono.empty()),
-        Appeals.this.messageLinks.deleteAllByTargetChannelId(this.model.appealThread()).onErrorResume(t -> Mono.empty())
+        Appeals.this.messageLinks.deleteAllByTargetChannelId(this.model.appealChannel().asString()).onErrorResume(t -> Mono.empty()),
+        Appeals.this.messageLinks.deleteAllByTargetChannelId(this.model.appealThread().asString()).onErrorResume(t -> Mono.empty())
       );
     }
 
@@ -535,7 +535,7 @@ public class Appeals implements Listener {
       final EmbedData embedForPunished = this.createEmbedForPunished(embedForBoth.apply(EmbedCreateSpec.builder())).asRequest();
       final EmbedData embedForStaff = this.createEmbedForStaff(embedForBoth.apply(EmbedCreateSpec.builder())).asRequest();
       final String reasonForActionLog = "Appeal has been " + this.result.words().name();
-      return Appeals.this.guilds.findById(this.model.guild())
+      return Appeals.this.guilds.findByGuild(this.model.guild())
         .flatMap(guildModel -> Mono.when(
           Mono.when(
             Mono.just(this.result)

@@ -1,33 +1,25 @@
 package com.seiama.sentinel.model;
 
-import com.seiama.sentinel.common.converter.SnowflakeFromStringConverter;
 import discord4j.common.util.Snowflake;
-import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
 import org.bson.types.ObjectId;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
-@Entity
 @Table(name = "temporary_message_links")
 public class TemporaryMessageLink {
   @Id
   private Long id;
   @Column
-  private ObjectId guild;
+  private String guild;
   @Column
-  @Convert(converter = SnowflakeFromStringConverter.class)
-  private Snowflake sourceChannelId;
+  private Long sourceChannelId;
   @Column
-  @Convert(converter = SnowflakeFromStringConverter.class)
-  private Snowflake sourceMessageId;
+  private Long sourceMessageId;
   @Column
-  @Convert(converter = SnowflakeFromStringConverter.class)
-  private Snowflake targetChannelId;
+  private Long targetChannelId;
   @Column
-  @Convert(converter = SnowflakeFromStringConverter.class)
-  private Snowflake targetMessageId;
+  private Long targetMessageId;
 
   public TemporaryMessageLink() {
   }
@@ -39,30 +31,30 @@ public class TemporaryMessageLink {
     final Snowflake targetChannelId,
     final Snowflake targetMessageId
   ) {
-    this.guild = guild;
-    this.sourceChannelId = sourceChannelId;
-    this.sourceMessageId = sourceMessageId;
-    this.targetChannelId = targetChannelId;
-    this.targetMessageId = targetMessageId;
+    this.guild = guild.toHexString();
+    this.sourceChannelId = sourceChannelId.asLong();
+    this.sourceMessageId = sourceMessageId.asLong();
+    this.targetChannelId = targetChannelId.asLong();
+    this.targetMessageId = targetMessageId.asLong();
   }
 
   public ObjectId guild() {
-    return this.guild;
+    return new ObjectId(this.guild);
   }
 
   public Snowflake sourceChannelId() {
-    return this.sourceChannelId;
+    return Snowflake.of(this.sourceChannelId);
   }
 
   public Snowflake sourceMessageId() {
-    return this.sourceMessageId;
+    return Snowflake.of(this.sourceMessageId);
   }
 
   public Snowflake targetChannelId() {
-    return this.targetChannelId;
+    return Snowflake.of(this.targetChannelId);
   }
 
   public Snowflake targetMessageId() {
-    return this.targetMessageId;
+    return Snowflake.of(this.targetMessageId);
   }
 }
