@@ -1,5 +1,7 @@
 package com.seiama.sentinel.command;
 
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
 import com.seiama.sentinel.common.Listener;
 import com.seiama.sentinel.common.model.GuildRepository;
 import discord4j.common.util.Snowflake;
@@ -26,7 +28,8 @@ class Commands implements Listener {
   private final ApplicationService applicationService;
   private final Set<GlobalCommand> globalCommands;
   private final Set<GuildCommand> guildCommands;
-  private final Map<Snowflake, Set<GuildCommand>> guildCommandsByGuild = new HashMap<>();
+  private final Map<String, GlobalCommand> globalCommandsByName = new HashMap<>();
+  private final Table<Snowflake, String, GuildCommand> guildCommandsByGuildAndName = HashBasedTable.create();
 
   @Autowired
   Commands(final @Qualifier("applicationId") long applicationId, final GuildRepository guilds, final ApplicationService applicationService, final Set<GlobalCommand> globalCommands, final Set<GuildCommand> guildCommands) {
@@ -40,6 +43,7 @@ class Commands implements Listener {
   @Override
   public void connected(final @NotNull GatewayDiscordClient client) {
     Flux.fromIterable(this.globalCommands)
+      .doOnNext(command -> this.globalCommandsByName.put(command.name(), command))
       .map(Command::request)
       .collectList()
       .flatMapMany(requests -> this.applicationService.bulkOverwriteGlobalApplicationCommand(this.applicationId, requests))
@@ -50,10 +54,10 @@ class Commands implements Listener {
         final Set<GuildCommand> commands = new HashSet<>();
         for (final GuildCommand command : this.guildCommands) {
           if (command.feature().enabledForGuild(model)) {
+            this.guildCommandsByGuildAndName.put(model.guild(), command.name(), command);
             commands.add(command);
           }
         }
-        this.guildCommandsByGuild.put(model.guild(), commands);
         return new GuildRequests(
           model.guild().asLong(),
           commands
@@ -75,18 +79,14 @@ class Commands implements Listener {
           Mono.defer(() -> {
             return event.getInteraction().getGuild()
               .flatMap(guild -> {
-                return Flux.fromIterable(this.guildCommandsByGuild.get(guild.getId()))
-                  .filter(command -> command.test(event, guild))
-                  .next()
+                return Mono.justOrEmpty(this.guildCommandsByGuildAndName.get(guild.getId(), event.getCommandName()))
                   .flatMap(command -> command.on(client, event, guild));
               });
           }),
           Mono.defer(() -> {
             return event.getInteraction().getGuild()
               .flatMap(guild -> {
-                return Flux.fromIterable(this.globalCommands)
-                  .filter(command -> command.test(event))
-                  .next()
+                return Mono.justOrEmpty(this.globalCommandsByName.get(event.getCommandName()))
                   .flatMap(command -> command.on(client, event));
               });
           })

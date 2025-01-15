@@ -52,7 +52,7 @@ public final class PunishmentAction {
           }
         }))
         // we don't actually care if we can't send a notification to the user
-        .onErrorResume(t -> Mono.empty()),
+        .onErrorResume(t -> Mono.empty()), // avoid possible 50007
       ACTUALLY_APPLY_PUNISHMENT ? action.apply(guild, user, punishment) : Mono.empty()
     );
   }

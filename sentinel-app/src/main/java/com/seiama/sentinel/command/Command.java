@@ -13,10 +13,6 @@ public interface Command {
 
   @NotNull ApplicationCommandRequest request();
 
-  default boolean test(final @NotNull ChatInputInteractionEvent event) {
-    return this.name().equals(event.getCommandName());
-  }
-
   static @NotNull Mono<?> executeOne(final @NotNull ChatInputInteractionEvent event, final @NotNull Map<String, Executable> executables) {
     return Mono.defer(() -> {
       return executables.entrySet()
