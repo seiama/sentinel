@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 @Component
-public class QuickKickMessageCommand implements MessageCommand {
+public final class QuickKickMessageCommand implements MessageCommand {
   private static final String NAME = "Quick Kick";
   private final Punishments punishments;
 
