@@ -15,7 +15,7 @@ import java.util.List;
 public final class ImporterApplication {
   private static final Path SOURCES_2022_02_22 = Path.of("sources", "2023-02-22");
   private static final Path SOURCES_2022_02_28 = Path.of("sources", "2023-02-28");
-  private static final Path SOURCES_2022_03_30 = Path.of("sources", "2023-03-30");
+  private static final Path SOURCES_2022_04_13 = Path.of("sources", "2023-04-13");
 
   private ImporterApplication() {
   }
@@ -44,7 +44,8 @@ public final class ImporterApplication {
         new ImporterConfig.SingleModifier(Warship.class, 28798, punishment -> {
           punishment.values.date = DateTimeFormatter.ISO_DATE_TIME.parse("2021-10-10T13:39:18.924017Z", Instant::from); // set to value from carl-bot #3650 to allow proper merging
         }),
-        new ImporterConfig.SingleModifier(Warship.class, 39750, ImporterConfig.SingleModifier.DO_NOT_EXPORT) // how to handle this one??
+        new ImporterConfig.SingleModifier(Warship.class, 39750, ImporterConfig.SingleModifier.DO_NOT_EXPORT), // how to handle this one??
+        new ImporterConfig.SingleModifier(Warship.class, 48797, ImporterConfig.SingleModifier.DO_NOT_EXPORT) // how to handle this one??
       ),
       List.of(),
       LongSet.of()
@@ -54,10 +55,10 @@ public final class ImporterApplication {
 
     importer.addPunishments(Source.BEEMO.parse(SOURCES_2022_02_28.resolve("beemo.json")));
     importer.addPunishments(Source.CARL.parse(SOURCES_2022_02_22.resolve("carl-bot.json")));
-    importer.addPunishments(Source.DISCORD.parse(SOURCES_2022_03_30.resolve("discord.json")));
+    importer.addPunishments(Source.DISCORD.parse(SOURCES_2022_04_13.resolve("discord.json")));
     importer.addPunishments(Source.DYNO.parse(SOURCES_2022_02_22.resolve("dyno.json")));
     importer.addPunishments(Source.MANUAL.parse(SOURCES_2022_02_22.resolve("manual.json")));
-    importer.addPunishments(Source.WARSHIP.parse(SOURCES_2022_03_30.resolve("warship.json")));
+    importer.addPunishments(Source.WARSHIP.parse(SOURCES_2022_04_13.resolve("warship.json")));
 
     importer.process(config);
 
