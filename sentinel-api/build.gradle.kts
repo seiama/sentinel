@@ -2,6 +2,7 @@ plugins {
   id("sentinel.conventions")
   id("org.springframework.boot") version "3.0.5"
   id("io.spring.dependency-management") version "1.1.0"
+  id("com.gorylenko.gradle-git-properties") version "2.4.1"
 }
 
 tasks.named<Jar>(JavaPlugin.JAR_TASK_NAME) {
