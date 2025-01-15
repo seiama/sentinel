@@ -11,6 +11,9 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 import java.util.function.BiFunction;
+import java.util.function.Function;
+import org.jetbrains.annotations.Nullable;
+import org.reactivestreams.Publisher;
 import reactor.core.publisher.Mono;
 
 public final class Modals {
@@ -22,7 +25,8 @@ public final class Modals {
     final String modalTitle,
     final String inputTitle,
     final boolean inputRequired,
-    final BiFunction<ModalSubmitInteractionEvent, Optional<String>, Mono<T>> onText
+    final BiFunction<ModalSubmitInteractionEvent, Optional<String>, Mono<T>> onText,
+    final @Nullable Function<? super TimeoutException, ? extends Publisher<? extends T>> onExpiry
   ) {
     final String modalId = createRandomId();
     final String inputId = createRandomId();
@@ -43,7 +47,7 @@ public final class Modals {
             return Mono.empty();
           })
           .timeout(Duration.ofMinutes(2))
-          .onErrorResume(TimeoutException.class, Reactive.<T>ignoringException())
+          .onErrorResume(TimeoutException.class, onExpiry != null ? onExpiry : Reactive.<T>ignoringException())
           .then()
       );
   }

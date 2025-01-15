@@ -6,6 +6,7 @@ import com.seiama.sentinel.common.SharedConstants;
 import com.seiama.sentinel.common.discord.Discord;
 import com.seiama.sentinel.common.discord.Emoji;
 import com.seiama.sentinel.common.discord.Mention;
+import com.seiama.sentinel.common.discord.Modals;
 import com.seiama.sentinel.common.model.AppealModel;
 import com.seiama.sentinel.common.model.AppealRepository;
 import com.seiama.sentinel.common.model.Feature;
@@ -40,6 +41,7 @@ import discord4j.core.object.entity.channel.TextChannel;
 import discord4j.core.object.reaction.ReactionEmoji;
 import discord4j.core.spec.EmbedCreateFields;
 import discord4j.core.spec.EmbedCreateSpec;
+import discord4j.core.spec.InteractionReplyEditMono;
 import discord4j.core.spec.MessageCreateSpec;
 import discord4j.core.util.MentionUtil;
 import discord4j.discordjson.json.ChannelData;
@@ -61,6 +63,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -109,6 +112,9 @@ public class Appeals implements Listener {
     AppealModel.Vote.LATER, Button::secondary,
     AppealModel.Vote.VETO, Button::danger
   );
+  private static final BiFunction<InteractionReplyEditMono, AppealModel.Complete, Mono<?>> VOTE_BUTTON_REFRESHER = (edit, model) -> {
+    return edit.withComponents(Appeals.createVoteButtons(model.votes()));
+  };
 
   private final GuildRepository guilds;
   private final PunishmentRepository punishments;
@@ -335,10 +341,41 @@ public class Appeals implements Listener {
         if (vote != null) {
           final Snowflake user = event.getInteraction().getUser().getId();
           final Snowflake channelId = event.getInteraction().getChannelId();
-          return event.deferEdit()
-            .then(this.appeals.findByAppealDiscussionThreadAndResultIsNull(channelId))
-            .flatMap(model -> this.appeals.update(model._id(), AppealModel.setVote(user, vote)))
-            .flatMap(model -> event.editReply().withComponents(createVoteButtons(model.votes())));
+
+          return this.appeals.findByAppealDiscussionThreadAndResultIsNull(channelId)
+            .zipWhen(appeal -> this.punishments.findById(appeal.punishment()))
+            .flatMap(TupleUtils.function((appeal, punishment) -> {
+              if (!vote.canVoteWithIfPunisher() && user.equals(punishment.punisherId())) {
+                return event.deferEdit()
+                  .then(VOTE_BUTTON_REFRESHER.apply(event.editReply(), appeal))
+                  .then(
+                    event.createFollowup()
+                      .withEphemeral(true)
+                      .withContent("%s You can't cast \"%s\" on this vote as you are the one who created this punishment.".formatted(
+                        Emoji.NO.asFormat(),
+                        vote.words().name()
+                      ))
+                  );
+              }
+              final BiFunction<InteractionReplyEditMono, String, Mono<Void>> updateAndRefresh = (edit, reason) -> {
+                return this.appeals.update(appeal._id(), AppealModel.setVote(user, vote, reason))
+                  .flatMap(newModel -> VOTE_BUTTON_REFRESHER.apply(edit, newModel))
+                  .then();
+              };
+              if (vote.requiresReason()) {
+                return Modals.presentAndCaptureSingleTextInput(event, "Veto Vote", "Reason", true, (modal, reason) -> {
+                  return modal.deferEdit()
+                    .then(updateAndRefresh.apply(modal.editReply(), reason.orElse(null)));
+                }, timeout -> {
+                  return event.createFollowup("You must provide a reason when submitting a veto vote.")
+                    .withEphemeral(true)
+                    .then(Mono.empty());
+                });
+              } else {
+                return event.deferEdit()
+                  .then(updateAndRefresh.apply(event.editReply(), null));
+              }
+            }));
         }
         return Mono.empty();
       })

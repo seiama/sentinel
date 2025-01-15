@@ -52,6 +52,6 @@ public final class KickMessageCommand implements MessageCommand {
     final String modalTitle = "Kick" + event.getResolvedMessage().getAuthor().map(User::getTag).map(" "::concat).orElse("");
     return Modals.presentAndCaptureSingleTextInput(event, modalTitle, "Reason", false, (modal, reason) -> {
       return this.punishments.createUsing(new MessageInteractionPunishmentCreator(modal, event.getResolvedMessage(), guild, PunishmentModel.Type.KICK, PunishmentAction.kick(), reason.orElse(null)));
-    });
+    }, null);
   }
 }
