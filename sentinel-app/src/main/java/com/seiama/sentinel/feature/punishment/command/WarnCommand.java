@@ -6,9 +6,11 @@ import com.seiama.sentinel.common.model.PunishmentModel;
 import com.seiama.sentinel.common.model.PunishmentRepository;
 import com.seiama.sentinel.feature.Feature;
 import com.seiama.sentinel.feature.punishment.PunishmentAction;
+import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.core.object.command.ApplicationCommandOption;
 import discord4j.core.object.entity.Guild;
+import discord4j.discordjson.json.ApplicationCommandOptionData;
 import discord4j.discordjson.json.ApplicationCommandRequest;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +20,7 @@ import reactor.core.publisher.Mono;
 @Component
 public final class WarnCommand implements GuildCommand {
   private static final String NAME = "warn";
+
   private final PunishmentRepository punishments;
 
   @Autowired
@@ -35,8 +38,23 @@ public final class WarnCommand implements GuildCommand {
     return ApplicationCommandRequest.builder()
       .name(NAME)
       .description("Warn a member")
-      .addOption(Options.option(option -> option.name(Options.MEMBER).description("The member to warn").type(ApplicationCommandOption.Type.USER.getValue()).required(true)))
-      .addOption(Options.option(option -> option.name(Options.REASON).description("The reason for warning the member").type(ApplicationCommandOption.Type.STRING.getValue()).required(true)))
+      .defaultPermission(false)
+      .addOption(
+        ApplicationCommandOptionData.builder()
+          .name(Options.MEMBER)
+          .description("The member to warn")
+          .type(ApplicationCommandOption.Type.USER.getValue())
+          .required(true)
+          .build()
+      )
+      .addOption(
+        ApplicationCommandOptionData.builder()
+          .name(Options.REASON)
+          .description("The reason for warning the member")
+          .type(ApplicationCommandOption.Type.STRING.getValue())
+          .required(true)
+          .build()
+      )
       .build();
   }
 
@@ -46,7 +64,7 @@ public final class WarnCommand implements GuildCommand {
   }
 
   @Override
-  public @NotNull Mono<?> on(final @NotNull ChatInputInteractionEvent event, final @NotNull Guild guild) {
+  public @NotNull Mono<?> on(final @NotNull GatewayDiscordClient client, final @NotNull ChatInputInteractionEvent event, final @NotNull Guild guild) {
     return PunishmentAction.apply(
       event,
       guild,

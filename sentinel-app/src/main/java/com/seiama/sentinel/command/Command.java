@@ -18,12 +18,14 @@ public interface Command {
   }
 
   static @NotNull Mono<?> executeOne(final @NotNull ChatInputInteractionEvent event, final @NotNull Map<String, Executable> executables) {
-    return executables.entrySet()
-      .stream()
-      .map(entry -> event.getOption(entry.getKey()).map(option -> entry.getValue().execute(option)).orElse(null))
-      .filter(Objects::nonNull)
-      .findFirst()
-      .orElse(Mono.empty());
+    return Mono.defer(() -> {
+      return executables.entrySet()
+        .stream()
+        .map(entry -> event.getOption(entry.getKey()).map(option -> entry.getValue().execute(option)).orElse(null))
+        .filter(Objects::nonNull)
+        .findFirst()
+        .orElse(Mono.empty());
+    });
   }
 
   @FunctionalInterface

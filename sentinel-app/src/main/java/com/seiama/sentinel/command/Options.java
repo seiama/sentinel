@@ -4,10 +4,7 @@ import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.core.object.command.ApplicationCommandInteractionOption;
 import discord4j.core.object.command.ApplicationCommandInteractionOptionValue;
 import discord4j.core.object.entity.User;
-import discord4j.discordjson.json.ApplicationCommandOptionData;
-import discord4j.discordjson.json.ImmutableApplicationCommandOptionData;
 import java.util.Optional;
-import java.util.function.UnaryOperator;
 import reactor.core.publisher.Mono;
 
 public final class Options {
@@ -17,10 +14,6 @@ public final class Options {
   public static final String USER = "user";
 
   private Options() {
-  }
-
-  public static ApplicationCommandOptionData option(final UnaryOperator<ImmutableApplicationCommandOptionData.Builder> op) {
-    return op.apply(ApplicationCommandOptionData.builder()).build();
   }
 
   public static Optional<Mono<User>> user(final ChatInputInteractionEvent event, final String name) {
