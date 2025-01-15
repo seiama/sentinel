@@ -1,5 +1,6 @@
 package com.seiama.sentinel.feature.punishment.creator;
 
+import com.seiama.sentinel.command.OptionNames;
 import com.seiama.sentinel.command.Options;
 import com.seiama.sentinel.common.model.GuildRepository;
 import com.seiama.sentinel.common.model.PunishmentModel;
@@ -39,8 +40,8 @@ public final class ChatInteractionPunishmentCreator implements Punishments.Creat
   private Mono<PunishmentModel.Complete> deferred(final GuildRepository guilds, final Punishments punishments) {
     final Interaction interaction = this.event.getInteraction();
     final Member punisher = interaction.getMember().orElseThrow();
-    final @Nullable String reason = Options.string(this.event, Options.REASON).orElse(null);
-    return Options.user(this.event, Options.MEMBER)
+    final @Nullable String reason = Options.string(this.event, OptionNames.REASON).orElse(null);
+    return Options.user(this.event, OptionNames.MEMBER)
       .orElse(Mono.empty())
       .filterWhen(new CanPunish<>(guilds, this.guild, punisher))
       .switchIfEmpty(

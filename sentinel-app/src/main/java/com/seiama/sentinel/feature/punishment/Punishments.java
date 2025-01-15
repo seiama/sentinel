@@ -1,9 +1,9 @@
 package com.seiama.sentinel.feature.punishment;
 
+import com.seiama.sentinel.common.discord.KnownBots;
 import com.seiama.sentinel.common.model.GuildRepository;
 import com.seiama.sentinel.common.model.PunishmentModel;
 import com.seiama.sentinel.common.model.PunishmentRepository;
-import com.seiama.sentinel.common.model.UserIdentity;
 import com.seiama.sentinel.feature.punishment.display.PunishmentDisplay;
 import com.seiama.sentinel.feature.punishment.display.PunishmentDisplayStyle;
 import com.seiama.sentinel.feature.punishment.display.PunishmentMessages;
@@ -25,7 +25,7 @@ import reactor.core.publisher.Mono;
 @Component
 public final class Punishments {
   private static final Set<Snowflake> SHOULD_BE_ASSUMED_AS_AUTOMATIC_BY = Set.of(
-    UserIdentity.BEEMO_ID
+    KnownBots.BEEMO_ID
   );
   private static final boolean ACTUALLY_APPLY_PUNISHMENT = true;
   private static final boolean ACTUALLY_NOTIFY_USER = true;

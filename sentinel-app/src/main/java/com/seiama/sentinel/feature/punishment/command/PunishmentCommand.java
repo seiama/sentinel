@@ -2,6 +2,7 @@ package com.seiama.sentinel.feature.punishment.command;
 
 import com.seiama.sentinel.command.Command;
 import com.seiama.sentinel.command.GuildCommand;
+import com.seiama.sentinel.command.OptionNames;
 import com.seiama.sentinel.command.Options;
 import com.seiama.sentinel.common.bson.AsObjectId;
 import com.seiama.sentinel.common.model.Feature;
@@ -74,7 +75,7 @@ public final class PunishmentCommand implements GuildCommand {
               .type(ApplicationCommandOption.Type.SUB_COMMAND.getValue())
               .addOption(
                 ApplicationCommandOptionData.builder()
-                  .name(Options.USER)
+                  .name(OptionNames.USER)
                   .description("The user")
                   .required(true)
                   .type(ApplicationCommandOption.Type.USER.getValue())
@@ -91,7 +92,7 @@ public final class PunishmentCommand implements GuildCommand {
           .type(ApplicationCommandOption.Type.SUB_COMMAND.getValue())
           .addOption(
             ApplicationCommandOptionData.builder()
-              .name(Options.PUNISHMENT)
+              .name(OptionNames.PUNISHMENT)
               .description("The id of the punishment to show")
               .required(true)
               .type(ApplicationCommandOption.Type.STRING.getValue())
@@ -106,7 +107,7 @@ public final class PunishmentCommand implements GuildCommand {
           .type(ApplicationCommandOption.Type.SUB_COMMAND.getValue())
           .addOption(
             ApplicationCommandOptionData.builder()
-              .name(Options.PUNISHMENT)
+              .name(OptionNames.PUNISHMENT)
               .description("The id of the punishment to modify")
               .required(true)
               .type(ApplicationCommandOption.Type.STRING.getValue())
@@ -114,7 +115,7 @@ public final class PunishmentCommand implements GuildCommand {
           )
           .addOption(
             ApplicationCommandOptionData.builder()
-              .name(Options.REASON)
+              .name(OptionNames.REASON)
               .description("The new reason")
               .required(true)
               .type(ApplicationCommandOption.Type.STRING.getValue())
@@ -129,7 +130,7 @@ public final class PunishmentCommand implements GuildCommand {
           .type(ApplicationCommandOption.Type.SUB_COMMAND.getValue())
           .addOption(
             ApplicationCommandOptionData.builder()
-              .name(Options.PUNISHMENT)
+              .name(OptionNames.PUNISHMENT)
               .description("The id of the punishment to mark as stale")
               .required(true)
               .type(ApplicationCommandOption.Type.STRING.getValue())
@@ -137,7 +138,7 @@ public final class PunishmentCommand implements GuildCommand {
           )
           .addOption(
             ApplicationCommandOptionData.builder()
-              .name(Options.REASON)
+              .name(OptionNames.REASON)
               .description("The reason for marking this punishment stale")
               .required(false)
               .type(ApplicationCommandOption.Type.STRING.getValue())
@@ -158,7 +159,7 @@ public final class PunishmentCommand implements GuildCommand {
     final Member punisher = event.getInteraction().getMember().orElseThrow();
     return event.deferReply().then(Command.executeOne(event, Map.of(
       SHOW, option -> {
-        return Mono.justOrEmpty(Options.string(option, Options.PUNISHMENT).orElse(null))
+        return Mono.justOrEmpty(Options.string(option, OptionNames.PUNISHMENT).orElse(null))
           .filterWhen(new CanQueryAndMutate<>(this.guilds, guild, punisher))
           .handle(AsObjectId.INSTANCE)
           .flatMap(this.punishments::findById)
@@ -166,10 +167,10 @@ public final class PunishmentCommand implements GuildCommand {
           .onErrorResume(throwable -> event.editReply().withContentOrNull(PunishmentMessages.PUNISHMENT_NOT_FOUND));
       },
       REASON, option -> {
-        return Mono.justOrEmpty(Options.string(option, Options.PUNISHMENT).orElse(null))
+        return Mono.justOrEmpty(Options.string(option, OptionNames.PUNISHMENT).orElse(null))
           .filterWhen(new CanQueryAndMutate<>(this.guilds, guild, punisher))
           .handle(AsObjectId.INSTANCE)
-          .zipWith(Mono.justOrEmpty(Options.string(option, Options.REASON).orElse(null)))
+          .zipWith(Mono.justOrEmpty(Options.string(option, OptionNames.REASON).orElse(null)))
           .flatMap(TupleUtils.function((id, reason) -> {
             return this.punishments.findById(id)
               .flatMap(model -> this.punishments.update(model, new PunishmentModel.Partial.Reason() {
@@ -182,10 +183,10 @@ public final class PunishmentCommand implements GuildCommand {
           .flatMap(result -> event.editReply().withContentOrNull(PunishmentMessages.punishmentUpdated(result)));
       },
       STALE, option -> {
-        return Mono.justOrEmpty(Options.string(option, Options.PUNISHMENT).orElse(null))
+        return Mono.justOrEmpty(Options.string(option, OptionNames.PUNISHMENT).orElse(null))
           .filterWhen(new CanQueryAndMutate<>(this.guilds, guild, punisher))
           .handle(AsObjectId.INSTANCE)
-          .zipWith(Mono.just(Options.string(option, Options.REASON)))
+          .zipWith(Mono.just(Options.string(option, OptionNames.REASON)))
           .flatMap(TupleUtils.function((id, reason) -> {
             return this.punishments.findById(id)
               .flatMap(model -> this.punishments.update(model, PunishmentModel.Partial.Stale.of(Optional.of(punisher), reason.orElse(null), false, null)))
@@ -196,7 +197,7 @@ public final class PunishmentCommand implements GuildCommand {
       SEARCH, option -> {
         return Mono.justOrEmpty(option.getOption(USER).orElse(null))
           .filterWhen(new CanQueryAndMutate<>(this.guilds, guild, punisher))
-          .flatMap(user -> Options.user(user, Options.USER).orElseGet(Mono::empty))
+          .flatMap(user -> Options.user(user, OptionNames.USER).orElseGet(Mono::empty))
           .flatMap(user -> this.punishments.findAllByGuildAndPunishedIdOrderByDateDesc(guild.getId(), user.getId()).collectList().zipWith(Mono.just(user)))
           .map(TupleUtils.function((punishment, user) -> new PunishmentSearchResult(user, punishment)))
           .flatMap(result -> event.editReply().withEmbeds(PunishmentMessages.punishmentSearchEmbed(result)));
