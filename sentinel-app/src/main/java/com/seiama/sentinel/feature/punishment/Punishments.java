@@ -48,7 +48,7 @@ public final class Punishments implements Listener {
     return Mono.when(
       client.on(MemberJoinEvent.class, event -> {
         final Member member = event.getMember();
-        return this.punishments.findAllByGuildAndPunishedIdAndTypeAndStaleIsNotOrderByDateDesc(event.getGuildId(), member.getId(), PunishmentModel.Type.BAN, false)
+        return this.punishments.findAllByGuildAndPunishedIdAndTypeAndStaleIsNotOrderByDateDesc(event.getGuildId(), member.getId(), PunishmentModel.Type.BAN, true)
           .next()
           .flatMap(punishment -> member.ban(
             BanQuerySpec.builder()
