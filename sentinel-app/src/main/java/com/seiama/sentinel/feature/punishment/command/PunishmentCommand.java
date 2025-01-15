@@ -8,6 +8,7 @@ import com.seiama.sentinel.common.model.Feature;
 import com.seiama.sentinel.common.model.GuildRepository;
 import com.seiama.sentinel.common.model.PunishmentModel;
 import com.seiama.sentinel.common.model.PunishmentRepository;
+import com.seiama.sentinel.feature.punishment.Punishments;
 import com.seiama.sentinel.feature.punishment.display.PunishmentDisplay;
 import com.seiama.sentinel.feature.punishment.display.PunishmentDisplayStyle;
 import com.seiama.sentinel.feature.punishment.display.PunishmentMessages;
@@ -39,11 +40,13 @@ public final class PunishmentCommand implements GuildCommand {
   private static final String STALE = "stale";
 
   private final GuildRepository guilds;
+  private final Punishments punishmentOps;
   private final PunishmentRepository punishments;
 
   @Autowired
-  private PunishmentCommand(final GuildRepository guilds, final PunishmentRepository punishments) {
+  private PunishmentCommand(final GuildRepository guilds, final Punishments punishmentOps, final PunishmentRepository punishments) {
     this.guilds = guilds;
+    this.punishmentOps = punishmentOps;
     this.punishments = punishments;
   }
 
@@ -184,7 +187,8 @@ public final class PunishmentCommand implements GuildCommand {
           .zipWith(Mono.just(Options.string(option, Options.REASON)))
           .flatMap(TupleUtils.function((id, reason) -> {
             return this.punishments.findById(id)
-              .flatMap(model -> this.punishments.update(model, PunishmentModel.Partial.Stale.of(punisher, reason.orElse(null), false, null)));
+              .flatMap(model -> this.punishments.update(model, PunishmentModel.Partial.Stale.of(punisher, reason.orElse(null), false, null)))
+              .flatMap(model -> this.punishmentOps.unenforce(guild, model, String.format("Punishment (%s) has been marked stale.", model._id())).thenReturn(model));
           }))
           .flatMap(result -> event.editReply().withContentOrNull(PunishmentMessages.punishmentMarkedStale(result)).withEmbeds(PunishmentDisplay.punishment(result, PunishmentDisplayStyle.FULL)));
       },
