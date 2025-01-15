@@ -31,6 +31,7 @@ public interface GuildModel {
       public record Punishments(
         boolean enabled,
         Permissions permissions,
+        Snowflake logChannel,
         Appeals appeals
       ) {
         @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)

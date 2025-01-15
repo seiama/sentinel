@@ -11,6 +11,7 @@ import org.jetbrains.annotations.Nullable;
 
 public final class PunishmentDisplay {
   private static final String SYMBOL_AUTOMATIC = "(ᴀ)";
+  private static final String SYMBOL_NOTIFIED = "(ɴ)";
 
   private PunishmentDisplay() {
   }
@@ -23,7 +24,18 @@ public final class PunishmentDisplay {
     if (display.expunged) embed.addField("Expunged", Emoji.emoji(punishment.expunged()).asFormat(), true);
     if (display.time) embed.addField("Time", TimestampFormat.LONG_DATE_TIME.format(punishment.date()), false);
     if (display.issuedBy) embed.addField("Issued by", Mention.userWithId(punishment.punisherId(), punishment.punisherUsername(), punishment.punisherDiscriminator()), false);
-    if (display.issuedTo) embed.addField("Issued to", Mention.userWithId(punishment.punishedId(), punishment.punishedUsername(), punishment.punishedDiscriminator()), false);
+    if (display.issuedTo) {
+      final StringBuilder sb = new StringBuilder();
+      sb.append(Mention.userWithId(punishment.punishedId(), punishment.punishedUsername(), punishment.punishedDiscriminator()));
+      if (display.notified) {
+        sb.append(
+          punishment.dmNotificationMessageId() != null
+            ? " " + SYMBOL_NOTIFIED
+            : ""
+        );
+      }
+      embed.addField("Issued to", sb.toString(), false);
+    }
     if (display.reason) ifPresent(punishment.reason(), reason -> embed.addField("Reason", reason, false));
     if (display.stale && Boolean.TRUE.equals(punishment.stale())) {
       ifPresent(punishment.staleAt(), at -> embed.addField("Stale time", TimestampFormat.LONG_DATE_TIME.format(at), false));

@@ -13,4 +13,6 @@ public interface ExtendedRepository<P extends AbstractPartial, M extends Abstrac
   @NotNull Mono<M> update(final @NotNull ObjectId _id, final @NotNull P partial);
 
   @NotNull Mono<M> update(final @NotNull ObjectId _id, final @NotNull Update update);
+
+  @NotNull Mono<M> refresh(final @NotNull M that);
 }

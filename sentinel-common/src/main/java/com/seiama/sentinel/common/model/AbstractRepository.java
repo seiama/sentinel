@@ -37,4 +37,9 @@ public abstract class AbstractRepository<P extends AbstractPartial, M extends Ab
       this.model
     ).flatMap(result -> this.template.findById(_id, this.model));
   }
+
+  @Override
+  public @NotNull Mono<M> refresh(final @NotNull M that) {
+    return this.template.findById(that._id(), this.model);
+  }
 }
