@@ -12,7 +12,6 @@ import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.User;
 import discord4j.core.object.entity.channel.TextChannel;
 import discord4j.rest.http.client.ClientException;
-
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
