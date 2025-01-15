@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.seiama.sentinel.common.annotation.MongoPrimaryId;
 import discord4j.common.util.Snowflake;
+import java.util.Set;
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -29,8 +30,15 @@ public interface GuildModel {
       @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
       public record Punishments(
         boolean enabled,
+        Permissions permissions,
         Appeals appeals
       ) {
+        @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+        public record Permissions(
+          Set<Snowflake> punish
+        ) {
+        }
+
         @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
         public record Appeals(
           boolean enabled,

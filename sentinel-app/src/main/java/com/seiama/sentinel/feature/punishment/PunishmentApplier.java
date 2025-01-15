@@ -1,6 +1,7 @@
 package com.seiama.sentinel.feature.punishment;
 
 import com.seiama.sentinel.command.Options;
+import com.seiama.sentinel.common.model.GuildRepository;
 import com.seiama.sentinel.common.model.PunishmentModel;
 import com.seiama.sentinel.common.model.PunishmentRepository;
 import com.seiama.sentinel.feature.punishment.display.PunishmentMessages;
@@ -9,6 +10,7 @@ import discord4j.common.util.Snowflake;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.core.object.command.Interaction;
 import discord4j.core.object.entity.Guild;
+import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.User;
 import discord4j.discordjson.possible.Possible;
 import java.time.Instant;
@@ -48,26 +50,31 @@ public final class PunishmentApplier {
   public static @NotNull Mono<?> apply(
     final ChatInputInteractionEvent event,
     final Guild guild,
+    final GuildRepository guilds,
     final PunishmentRepository punishments,
     final PunishmentModel.Type type,
     final PunishmentAction action
   ) {
     final Interaction interaction = event.getInteraction();
-    return event.deferReply().then(Options.user(event, Options.MEMBER)
-      .orElse(Mono.empty())
-      .zipWhen(user -> punishments.insert(PunishmentModel.Complete.create(
-        guild.getId(),
-        type,
-        Instant.now(),
-        interaction.getUser(),
-        user,
-        Options.string(event, Options.REASON)
-          .orElse(null),
-        false
-      )))
-      .flatMap(TupleUtils.function((user, punishment) -> Mono.whenDelayError(
-        notifyAndApply(guild, user, punishments, punishment, action),
-        event.editReply().withContent(Possible.of(Optional.of(PunishmentMessages.punishmentPunisherResponse(punishment))))
-      ))));
+    final Member member = interaction.getMember().orElseThrow();
+    return event.deferReply().then(
+      Options.user(event, Options.MEMBER)
+        .orElse(Mono.empty())
+        .filterWhen(Punishments.mayPunish(guilds, guild, member))
+        .zipWhen(user -> punishments.insert(PunishmentModel.Complete.create(
+          guild.getId(),
+          type,
+          Instant.now(),
+          interaction.getUser(),
+          user,
+          Options.string(event, Options.REASON)
+            .orElse(null),
+          false
+        )))
+        .flatMap(TupleUtils.function((user, punishment) -> Mono.whenDelayError(
+          notifyAndApply(guild, user, punishments, punishment, action),
+          event.editReply().withContent(Possible.of(Optional.of(PunishmentMessages.punishmentPunisherResponse(punishment))))
+        )))
+    );
   }
 }

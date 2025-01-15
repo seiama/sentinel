@@ -40,6 +40,7 @@ public final class Discord implements ImporterPunishmentSource {
   public static class User {
     public long id;
     public String username;
+    public String global_name;
     public String display_name;
     public String avatar;
     public String avatar_decoration;
@@ -51,6 +52,7 @@ public final class Discord implements ImporterPunishmentSource {
       return MoreObjects.toStringHelper(this)
         .add("id", this.id)
         .add("username", this.username)
+        .add("global_name", this.global_name)
         .add("display_name", this.display_name)
         .add("avatar", this.avatar)
         .add("avatar_decoration", this.avatar_decoration)

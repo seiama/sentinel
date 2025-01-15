@@ -49,6 +49,14 @@ public final class PunishmentMessages {
     );
   }
 
+  public static String punishmentUpdated(final PunishmentModel.Complete punishment) {
+    return String.format("Punishment `%s` has been updated.", punishment._id());
+  }
+
+  public static String punishmentMarkedStale(final PunishmentModel.Complete punishment) {
+    return String.format("Punishment `%s` has been marked stale.", punishment._id());
+  }
+
   public static String punishmentPunishedReason(final PunishmentModel.Complete punishment) {
     return String.format("(%s) %s", punishment._id(), punishment.reason());
   }
