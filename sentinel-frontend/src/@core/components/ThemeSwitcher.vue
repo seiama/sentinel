@@ -7,9 +7,15 @@ const props = defineProps<{
 }>()
 
 const vuetifyTheme = useTheme()
+const userTheme = localStorage.getItem('theme')
 const { state: currentTheme, next: getNextThemeName, index: currentThemeIndex } = useCycleList(props.themes.map(t => t.name), { initialValue: vuetifyTheme.global.name.value })
+
+currentTheme.value = userTheme ? userTheme : 'light'
+vuetifyTheme.global.name.value = currentTheme.value
 const changeTheme = () => {
-  vuetifyTheme.global.name.value = getNextThemeName()
+  let theme = getNextThemeName()
+  vuetifyTheme.global.name.value = theme
+  localStorage.setItem('theme', theme)
 }
 
 const getThemeIcon = computedWithControl(vuetifyTheme.global.name, () => {
