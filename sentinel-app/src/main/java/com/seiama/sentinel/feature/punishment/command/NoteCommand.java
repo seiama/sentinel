@@ -6,6 +6,7 @@ import com.seiama.sentinel.common.model.Feature;
 import com.seiama.sentinel.common.model.PunishmentModel;
 import com.seiama.sentinel.feature.punishment.PunishmentAction;
 import com.seiama.sentinel.feature.punishment.Punishments;
+import com.seiama.sentinel.feature.punishment.creator.ChatInteractionPunishmentCreator;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.core.object.command.ApplicationCommandOption;
@@ -20,7 +21,6 @@ import reactor.core.publisher.Mono;
 @Component
 public final class NoteCommand implements GuildCommand {
   private static final String NAME = "note";
-
   private final Punishments punishments;
 
   @Autowired
@@ -65,6 +65,6 @@ public final class NoteCommand implements GuildCommand {
 
   @Override
   public @NotNull Mono<?> on(final @NotNull GatewayDiscordClient client, final @NotNull ChatInputInteractionEvent event, final @NotNull Guild guild) {
-    return this.punishments.command(event, guild, PunishmentModel.Type.NOTE, PunishmentAction.note());
+    return this.punishments.createUsing(new ChatInteractionPunishmentCreator(event, guild, PunishmentModel.Type.NOTE, PunishmentAction.note()));
   }
 }
