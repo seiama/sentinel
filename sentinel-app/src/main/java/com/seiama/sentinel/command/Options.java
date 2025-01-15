@@ -12,6 +12,7 @@ public final class Options {
   public static final String DELETE_MESSAGES = "delete_messages";
   public static final String DESCRIPTION = "description";
   public static final String MEMBER = "member";
+  public static final String MESSAGE = "message";
   public static final String NAME = "name";
   public static final String PUNISHMENT = "punishment";
   public static final String REASON = "reason";
@@ -55,7 +56,7 @@ public final class Options {
   }
 
   @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-  private static Optional<String> string(final Optional<ApplicationCommandInteractionOption> option) {
+  public static Optional<String> string(final Optional<ApplicationCommandInteractionOption> option) {
     return option
       .flatMap(ApplicationCommandInteractionOption::getValue)
       .map(ApplicationCommandInteractionOptionValue::asString);

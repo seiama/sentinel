@@ -25,7 +25,8 @@ public interface GuildModel {
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public record Features(
       Punishments punishments,
-      Factoids factoids
+      Factoids factoids,
+      ModMail modmail
     ) {
       @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
       public record Punishments(
@@ -56,6 +57,14 @@ public interface GuildModel {
       @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
       public record Factoids(
         boolean enabled
+      ) {
+      }
+
+      @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+      public record ModMail(
+        boolean enabled,
+        Snowflake notificationChannel,
+        Snowflake threadChannel
       ) {
       }
     }

@@ -7,6 +7,7 @@ import org.jetbrains.annotations.Nullable;
 public interface Emoji {
   ReactionEmoji.Unicode CLOCK1 = ReactionEmoji.unicode("🕐");
   ReactionEmoji.Unicode HAMMER = ReactionEmoji.unicode("🔨");
+  ReactionEmoji.Unicode PENCIL = ReactionEmoji.unicode("📝");
   ReactionEmoji.Unicode PERSON_SHRUGGING = ReactionEmoji.unicode("🤷");
   ReactionEmoji.Unicode TADA = ReactionEmoji.unicode("🎉");
   ReactionEmoji.Unicode WARNING = ReactionEmoji.unicode("⚠️");
