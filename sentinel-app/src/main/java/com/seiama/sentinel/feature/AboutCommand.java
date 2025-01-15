@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 @Component
-public class AboutCommand implements GlobalCommand {
+public final class AboutCommand implements GlobalCommand {
   private static final String NAME = "about";
   private final GitProperties git;
 
