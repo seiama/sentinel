@@ -104,7 +104,7 @@ public class Appeals implements Listener {
 
   private static final String VOTE_BUTTON_PREFIX = "appeal-vote:";
   private static final Map<String, AppealModel.Vote> VOTE_BUTTONS = AppealModel.Vote.all()
-    .collect(Collectors.toMap(vote -> VOTE_BUTTON_PREFIX + vote.words().button(), Function.identity()));
+    .collect(Collectors.toMap(vote -> VOTE_BUTTON_PREFIX + vote.strings().button(), Function.identity()));
   private static final Map<AppealModel.Vote, Function3<String, ReactionEmoji, String, Button>> VOTE_BUTTON_FACTORY = Map.of(
     AppealModel.Vote.YES, Button::success,
     AppealModel.Vote.NO, Button::danger,
@@ -353,7 +353,7 @@ public class Appeals implements Listener {
                       .withEphemeral(true)
                       .withContent("%s You can't cast \"%s\" on this vote as you are the one who created this punishment.".formatted(
                         Emoji.NO.asFormat(),
-                        vote.words().name()
+                        vote.strings().name()
                       ))
                   );
               }
@@ -411,9 +411,9 @@ public class Appeals implements Listener {
     return ActionRow.of(
       AppealModel.Vote.all()
         .map(vote -> VOTE_BUTTON_FACTORY.get(vote).apply(
-          VOTE_BUTTON_PREFIX + vote.words().button(),
+          VOTE_BUTTON_PREFIX + vote.strings().button(),
           vote.emoji(),
-          String.format("%s (%d)", vote.words().name(), votes.getOrDefault(vote.name(), List.of()).size())
+          String.format("%s (%d)", vote.strings().name(), votes.getOrDefault(vote.name(), List.of()).size())
         ))
         .toList()
     );
@@ -550,11 +550,11 @@ public class Appeals implements Listener {
       final UnaryOperator<EmbedCreateSpec.Builder> embedForBoth = embed -> {
         return embed
           .color(Color.of(this.result.color()))
-          .title("Appeal " + this.result.words().name());
+          .title("Appeal " + this.result.strings().name());
       };
       final EmbedData embedForPunished = this.createEmbedForPunished(embedForBoth.apply(EmbedCreateSpec.builder())).asRequest();
       final EmbedData embedForStaff = this.createEmbedForStaff(embedForBoth.apply(EmbedCreateSpec.builder())).asRequest();
-      final String reasonForActionLog = "Appeal has been " + this.result.words().name();
+      final String reasonForActionLog = "Appeal has been " + this.result.strings().name();
       return Appeals.this.guilds.findByGuild(this.model.guild())
         .flatMap(guildModel -> Mono.when(
           Mono.when(
@@ -621,7 +621,7 @@ public class Appeals implements Listener {
         case DENIED -> "The appeal was denied." + this.nextAttemptMayBeMadeAt("The");
         case CANCELLED -> "The appeal was cancelled.";
       });
-      embed.addField(this.result.words().nameForStartOfSentence() + " by", Mention.userWithId(this.user.getId(), this.user.getUsername(), this.user.getDiscriminator()), false);
+      embed.addField(this.result.strings().nameForStartOfSentence() + " by", Mention.userWithId(this.user.getId(), this.user.getUsername(), this.user.getDiscriminator()), false);
       if (this.reason != null) {
         embed.addField("Reason", this.reason, false);
       }

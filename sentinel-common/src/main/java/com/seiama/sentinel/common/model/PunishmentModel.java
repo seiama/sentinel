@@ -178,21 +178,21 @@ public interface PunishmentModel {
   }
 
   enum Type {
-    BAN(SharedConstants.COLOR_RED, true, new Words("ban", "banned"), Emoji.DOT_RED),
-    KICK(SharedConstants.COLOR_GREY, true, new Words("kick", "kicked"), Emoji.DOT_GREY),
-    MUTE(SharedConstants.COLOR_PURPLE, true, new Words("mute", "muted"), Emoji.DOT_PURPLE),
-    NOTE(SharedConstants.COLOR_BLUE, false, new Words("note", "noted"), Emoji.DOT_BLUE),
-    WARN(SharedConstants.COLOR_ORANGE, true, new Words("warn", "warned"), Emoji.DOT_ORANGE);
+    BAN(SharedConstants.COLOR_RED, true, new Strings("ban", "banned"), Emoji.DOT_RED),
+    KICK(SharedConstants.COLOR_GREY, true, new Strings("kick", "kicked"), Emoji.DOT_GREY),
+    MUTE(SharedConstants.COLOR_PURPLE, true, new Strings("mute", "muted"), Emoji.DOT_PURPLE),
+    NOTE(SharedConstants.COLOR_BLUE, false, new Strings("note", "noted"), Emoji.DOT_BLUE),
+    WARN(SharedConstants.COLOR_ORANGE, true, new Strings("warn", "warned"), Emoji.DOT_ORANGE);
 
     private final int color;
     private final boolean notification;
-    private final Words words;
+    private final Strings strings;
     private final ReactionEmoji emoji;
 
-    Type(final int color, final boolean notification, final Words words, final ReactionEmoji emoji) {
+    Type(final int color, final boolean notification, final Strings strings, final ReactionEmoji emoji) {
       this.color = color;
       this.notification = notification;
-      this.words = words;
+      this.strings = strings;
       this.emoji = emoji;
     }
 
@@ -204,15 +204,15 @@ public interface PunishmentModel {
       return this.notification;
     }
 
-    public Words words() {
-      return this.words;
+    public Strings strings() {
+      return this.strings;
     }
 
     public ReactionEmoji emoji() {
       return this.emoji;
     }
 
-    public record Words(
+    public record Strings(
       String name,
       String actioned
     ) {

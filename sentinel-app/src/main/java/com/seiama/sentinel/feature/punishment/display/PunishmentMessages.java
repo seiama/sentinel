@@ -2,6 +2,7 @@ package com.seiama.sentinel.feature.punishment.display;
 
 import com.seiama.sentinel.common.discord.Discord;
 import com.seiama.sentinel.common.discord.Emoji;
+import com.seiama.sentinel.common.discord.Mention;
 import com.seiama.sentinel.common.model.PunishmentModel;
 import com.seiama.sentinel.feature.punishment.search.PunishmentSearchResult;
 import discord4j.common.util.TimestampFormat;
@@ -33,7 +34,7 @@ public final class PunishmentMessages {
         EmbedCreateSpec.builder()
           .color(Color.of(punishment.type().color()))
           .author(Discord.author(guild).orElse(null))
-          .title("You've been " + punishment.type().words().actioned() + ".")
+          .title("You've been " + punishment.type().strings().actioned() + ".")
           .addField("Reason", Objects.requireNonNullElse(punishment.reason(), REASON_NOT_SPECIFIED), false)
           .footer("Punishment: " + punishment._id(), null)
           .build()
@@ -42,14 +43,17 @@ public final class PunishmentMessages {
   }
 
   public static String punishmentPunisherResponse(final PunishmentModel.Complete punishment) {
+    final @Nullable String reason = punishment.reason();
     return String.format(
-      "(`%s`) // %s (`%d`) has been %s by %s (`%d`)",
+      "(`%s`) // %s has been %s by %s (`%d`)%s",
       punishment._id(),
-      MentionUtil.forUser(punishment.punishedId()),
-      punishment.punishedId().asLong(),
-      punishment.type().words().actioned(),
+      Mention.userWithId(punishment.punishedId(), punishment.punishedUsername(), punishment.punishedDiscriminator()),
+      punishment.type().strings().actioned(),
       MentionUtil.forUser(punishment.punisherId()),
-      punishment.punisherId().asLong()
+      punishment.punisherId().asLong(),
+      reason != null
+        ? "\n**Reason**: " + reason
+        : ""
     );
   }
 
@@ -93,7 +97,7 @@ public final class PunishmentMessages {
         return String.format(
           "%s %s (`%s`) %s%s",
           punishment.type().emoji().asFormat(),
-          punishment.type().words().actioned(),
+          punishment.type().strings().actioned(),
           punishment._id(),
           TimestampFormat.LONG_DATE_TIME.format(punishment.date()),
           sb

@@ -89,24 +89,24 @@ public interface AppealModel {
   }
 
   enum Vote {
-    YES(true, false, Emoji.YES, new Words("yes", "Yes")),
-    NO(true, false, Emoji.NO, new Words("no", "No")),
-    ABSTAIN(true, false, Emoji.PERSON_SHRUGGING, new Words("abstain", "Abstain")),
-    LATER(true, false, Emoji.CLOCK1, new Words("later", "Later")),
-    VETO(false, true, Emoji.HAMMER, new Words("veto", "Veto"));
+    YES(true, false, Emoji.YES, new Strings("yes", "Yes")),
+    NO(true, false, Emoji.NO, new Strings("no", "No")),
+    ABSTAIN(true, false, Emoji.PERSON_SHRUGGING, new Strings("abstain", "Abstain")),
+    LATER(true, false, Emoji.CLOCK1, new Strings("later", "Later")),
+    VETO(false, true, Emoji.HAMMER, new Strings("veto", "Veto"));
 
     static final Vote[] VALUES = values();
 
     private final boolean canVoteWithIfPunisher;
     private final boolean requiresReason;
     private final ReactionEmoji emoji;
-    private final Words words;
+    private final Strings strings;
 
-    Vote(final boolean canVoteWithIfPunisher, final boolean requiresReason, final ReactionEmoji emoji, final Words words) {
+    Vote(final boolean canVoteWithIfPunisher, final boolean requiresReason, final ReactionEmoji emoji, final Strings strings) {
       this.canVoteWithIfPunisher = canVoteWithIfPunisher;
       this.requiresReason = requiresReason;
       this.emoji = emoji;
-      this.words = words;
+      this.strings = strings;
     }
 
     public static Stream<Vote> all() {
@@ -135,11 +135,11 @@ public interface AppealModel {
       return this.emoji;
     }
 
-    public Words words() {
-      return this.words;
+    public Strings strings() {
+      return this.strings;
     }
 
-    public record Words(
+    public record Strings(
       String button,
       String name
     ) {
@@ -155,27 +155,27 @@ public interface AppealModel {
   }
 
   enum Result {
-    ACCEPTED(SharedConstants.COLOR_GREEN, new Words("accepted", "Accepted")),
-    DENIED(SharedConstants.COLOR_RED, new Words("denied", "Denied")),
-    CANCELLED(SharedConstants.COLOR_ORANGE, new Words("cancelled", "Cancelled"));
+    ACCEPTED(SharedConstants.COLOR_GREEN, new Strings("accepted", "Accepted")),
+    DENIED(SharedConstants.COLOR_RED, new Strings("denied", "Denied")),
+    CANCELLED(SharedConstants.COLOR_ORANGE, new Strings("cancelled", "Cancelled"));
 
     private final int color;
-    private final Words words;
+    private final Strings strings;
 
-    Result(final int color, final Words words) {
+    Result(final int color, final Strings strings) {
       this.color = color;
-      this.words = words;
+      this.strings = strings;
     }
 
     public int color() {
       return this.color;
     }
 
-    public Words words() {
-      return this.words;
+    public Strings strings() {
+      return this.strings;
     }
 
-    public record Words(
+    public record Strings(
       String name,
       String nameForStartOfSentence
     ) {
