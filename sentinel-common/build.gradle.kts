@@ -3,7 +3,7 @@ plugins {
 }
 
 dependencies {
-  api("com.discord4j:discord4j-core:3.3.0-20230329.235612-77")
+  api("com.discord4j:discord4j-core:3.3.0-20230516.003010-85")
   api("com.fasterxml.jackson.core:jackson-databind:2.14.2")
   api("com.google.guava:guava:31.1-jre")
   api("com.seiama:commons:1.0.0-SNAPSHOT")

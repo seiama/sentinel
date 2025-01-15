@@ -11,7 +11,7 @@ tasks.named<Jar>(JavaPlugin.JAR_TASK_NAME) {
 
 dependencies {
   implementation(project(":sentinel-common"))
-  implementation("com.discord4j:discord4j-core:3.3.0-20230329.235612-77")
+  implementation("com.discord4j:discord4j-core:3.3.0-20230516.003010-85")
   implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.12.7")
   implementation("com.google.guava:guava:31.1-jre")
   implementation("com.seiama:commons:1.0.0-SNAPSHOT")
