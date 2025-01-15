@@ -23,21 +23,21 @@ class DiscriminatorTest {
 
   @ParameterizedTest
   @CsvSource({
-    "0,false,true",
-    "0000,true,false",
-    "0001,true,false",
-    "1000,true,false"
+    "0,true,false",
+    "0000,false,true",
+    "0001,false,true",
+    "1000,false,true"
   })
-  void testWrite(final String value, final boolean present, final boolean absent) {
+  void testWrite(final String value, final boolean migrated, final boolean unmigrated) {
     final Discriminator discriminator = new Discriminator(value);
-    final AtomicBoolean onPresent = new AtomicBoolean();
-    final AtomicBoolean onAbsent = new AtomicBoolean();
+    final AtomicBoolean onMigrated = new AtomicBoolean();
+    final AtomicBoolean onUnmigrated = new AtomicBoolean();
     assertDoesNotThrow(() -> Discriminator.write(
       discriminator,
-      va -> onPresent.setPlain(true),
-      () -> onAbsent.setPlain(true)
+      () -> onMigrated.setPlain(true),
+      va -> onUnmigrated.setPlain(true)
     ));
-    assertEquals(present, onPresent.get());
-    assertEquals(absent, onAbsent.get());
+    assertEquals(migrated, onMigrated.get());
+    assertEquals(unmigrated, onUnmigrated.get());
   }
 }
