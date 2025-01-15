@@ -37,12 +37,20 @@
       >
         {{ item.raw.type }}
       </v-chip>
-      <v-icon class='float-end' @click='filter("type", item.raw.type)' icon="mdi-search-web"></v-icon>
+      <v-tooltip :text="`Include only punishments of type ${item.raw.type}`" location="start">
+        <template v-slot:activator="{ props }">
+          <v-icon v-bind="props" class='float-end' @click='filter("type", item.raw.type)' icon="mdi-search-web"></v-icon>
+        </template>
+      </v-tooltip>
     </template>
     <template v-slot:item.punished_username="{ item }">
       {{ item.raw.punished_username }}#{{ item.raw.punished_discriminator }}
-      <v-icon class='float-end' @click='filter("punished_id", item.raw.punished_id)' icon="mdi-search-web">
-      </v-icon>
+      <v-tooltip :text="`Include only punishments issued to ${item.raw.punished_username}#${item.raw.punished_discriminator}`" location="start">
+        <template v-slot:activator="{ props }">
+          <v-icon v-bind="props" class='float-end' @click='filter("punished_id", item.raw.punished_id)' icon="mdi-search-web">
+          </v-icon>
+        </template>
+      </v-tooltip>
     </template>
     <template v-slot:item.stale="{ item }">
       <v-switch
@@ -53,8 +61,12 @@
     </template>
     <template v-slot:item.punisher_username="{ item }">
       {{ item.raw.punisher_username }}#{{ item.raw.punisher_discriminator }}
-      <v-icon class='float-end' @click='filter("punisher_id", item.raw.punisher_id)' icon="mdi-search-web">
-      </v-icon>
+      <v-tooltip :text="`Include only punishments issued by ${item.raw.punisher_username}#${item.raw.punisher_discriminator}`" location="start">
+        <template v-slot:activator="{ props }">
+          <v-icon v-bind="props" class='float-end' @click='filter("punisher_id", item.raw.punisher_id)' icon="mdi-search-web">
+          </v-icon>
+        </template>
+      </v-tooltip>
     </template>
     <template v-slot:expanded-row='{ columns, item }'>
       <td :colspan='columns.length'>
