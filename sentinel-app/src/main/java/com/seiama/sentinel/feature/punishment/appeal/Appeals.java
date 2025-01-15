@@ -139,7 +139,7 @@ public class Appeals implements Listener {
             final ObjectId appealId = new ObjectId();
             final GuildModel.Complete.Features.Punishments.Appeals config = guildModel.features().punishments().appeals();
             final Member member = event.getMember();
-            final Mono<PunishmentModel.Complete> getPunishment = this.punishments.findByPunishedIdAndTypeAndStaleIsNotOrderByDateDesc(member.getId(), PunishmentModel.Type.BAN, true);
+            final Flux<PunishmentModel.Complete> getActiveBans = this.punishments.findAllByGuildAndPunishedIdAndTypeAndStaleIsNotOrderByDateDesc(event.getGuildId(), member.getId(), PunishmentModel.Type.BAN, false);
             final Mono<PunishmentModel.Complete> kickUserForNoActivePunishment = event.getGuild()
               .flatMap(guild -> guild.kick(member.getId(), null))
               .then(Mono.empty());
@@ -170,7 +170,8 @@ public class Appeals implements Listener {
                 .build()
             );
             return Reactive.zipSequence(
-                getPunishment
+                getActiveBans
+                  .next()
                   .switchIfEmpty(kickUserForNoActivePunishment),
                 createAppealChannel,
                 createAppealThread,

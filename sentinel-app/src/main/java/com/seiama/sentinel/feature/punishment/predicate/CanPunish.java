@@ -1,14 +1,20 @@
 package com.seiama.sentinel.feature.punishment.predicate;
 
+import com.seiama.sentinel.common.model.GuildModel;
 import com.seiama.sentinel.common.model.GuildRepository;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Member;
+import discord4j.core.object.entity.User;
+import discord4j.rest.http.client.ClientException;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.function.Function;
 import org.jetbrains.annotations.Nullable;
 import org.reactivestreams.Publisher;
+import reactor.core.publisher.Mono;
+import reactor.function.TupleUtils;
 
-public final class CanPunish<T> implements Function<T, Publisher<Boolean>> {
+public final class CanPunish<T> implements Function<User, Publisher<Boolean>> {
   private final GuildRepository guilds;
   private final Guild guild;
   private final @Nullable Member member;
@@ -20,11 +26,23 @@ public final class CanPunish<T> implements Function<T, Publisher<Boolean>> {
   }
 
   @Override
-  public Publisher<Boolean> apply(final T t1) {
+  public Publisher<Boolean> apply(final User punished) {
     return this.guilds.findByGuild(this.guild.getId())
-      .map(model -> this.member != null && !Collections.disjoint(
-        this.member.getRoleIds(),
-        model.features().punishments().permissions().punish()
-      ));
+      .zipWhen(model ->
+        this.guild.getMemberById(punished.getId())
+          .map(Optional::of)
+          .onErrorResume(ClientException.class, e -> Mono.just(Optional.empty()))
+      )
+      .map(TupleUtils.function(this::apply));
+  }
+
+  private boolean apply(final GuildModel.Complete model, final Optional<Member> punished) {
+    return this.member != null && !Collections.disjoint(
+      this.member.getRoleIds(),
+      model.features().punishments().permissions().punish()
+    ) && punished.map(member -> Collections.disjoint(
+      member.getRoleIds(),
+      model.features().punishments().permissions().exempt()
+    )).orElse(punished.isEmpty());
   }
 }

@@ -64,6 +64,10 @@ public final class PunishmentMessages {
     );
   }
 
+  public static String mayNotPunish() {
+    return "%s That user may not be punished.".formatted(Emoji.NO.asFormat());
+  }
+
   public static EmbedCreateSpec punishmentSearchEmbed(final PunishmentSearchResult result) {
     final EmbedCreateSpec.Builder embed = EmbedCreateSpec.builder();
     embed.author(Discord.author(result.user()).orElse(null));

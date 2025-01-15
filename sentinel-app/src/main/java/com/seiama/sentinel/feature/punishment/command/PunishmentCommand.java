@@ -11,7 +11,7 @@ import com.seiama.sentinel.common.model.PunishmentRepository;
 import com.seiama.sentinel.feature.punishment.display.PunishmentDisplay;
 import com.seiama.sentinel.feature.punishment.display.PunishmentDisplayStyle;
 import com.seiama.sentinel.feature.punishment.display.PunishmentMessages;
-import com.seiama.sentinel.feature.punishment.predicate.CanPunish;
+import com.seiama.sentinel.feature.punishment.predicate.CanQueryAndMutate;
 import com.seiama.sentinel.feature.punishment.search.PunishmentSearchResult;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
@@ -155,7 +155,7 @@ public final class PunishmentCommand implements GuildCommand {
     return event.deferReply().then(Command.executeOne(event, Map.of(
       SHOW, option -> {
         return Mono.justOrEmpty(Options.string(option, Options.PUNISHMENT).orElse(null))
-          .filterWhen(new CanPunish<>(this.guilds, guild, punisher))
+          .filterWhen(new CanQueryAndMutate<>(this.guilds, guild, punisher))
           .handle(AsObjectId.INSTANCE)
           .flatMap(this.punishments::findById)
           .flatMap(punishment -> event.editReply().withEmbeds(PunishmentDisplay.punishment(punishment, PunishmentDisplayStyle.FULL)))
@@ -163,7 +163,7 @@ public final class PunishmentCommand implements GuildCommand {
       },
       REASON, option -> {
         return Mono.justOrEmpty(Options.string(option, Options.PUNISHMENT).orElse(null))
-          .filterWhen(new CanPunish<>(this.guilds, guild, punisher))
+          .filterWhen(new CanQueryAndMutate<>(this.guilds, guild, punisher))
           .handle(AsObjectId.INSTANCE)
           .zipWith(Mono.justOrEmpty(Options.string(option, Options.REASON).orElse(null)))
           .flatMap(TupleUtils.function((id, reason) -> {
@@ -179,7 +179,7 @@ public final class PunishmentCommand implements GuildCommand {
       },
       STALE, option -> {
         return Mono.justOrEmpty(Options.string(option, Options.PUNISHMENT).orElse(null))
-          .filterWhen(new CanPunish<>(this.guilds, guild, punisher))
+          .filterWhen(new CanQueryAndMutate<>(this.guilds, guild, punisher))
           .handle(AsObjectId.INSTANCE)
           .zipWith(Mono.just(Options.string(option, Options.REASON)))
           .flatMap(TupleUtils.function((id, reason) -> {
@@ -190,7 +190,7 @@ public final class PunishmentCommand implements GuildCommand {
       },
       SEARCH, option -> {
         return Mono.justOrEmpty(option.getOption(USER).orElse(null))
-          .filterWhen(new CanPunish<>(this.guilds, guild, punisher))
+          .filterWhen(new CanQueryAndMutate<>(this.guilds, guild, punisher))
           .flatMap(user -> Options.user(user, Options.USER).orElseGet(Mono::empty))
           .flatMap(user -> this.punishments.findAllByPunishedId(user.getId()).collectList().zipWith(Mono.just(user)))
           .map(TupleUtils.function((punishment, user) -> new PunishmentSearchResult(user, punishment)))

@@ -6,7 +6,7 @@ import com.seiama.sentinel.command.Options;
 import com.seiama.sentinel.common.discord.Emoji;
 import com.seiama.sentinel.common.model.Feature;
 import com.seiama.sentinel.common.model.GuildRepository;
-import com.seiama.sentinel.feature.punishment.predicate.CanPunish;
+import com.seiama.sentinel.feature.punishment.predicate.CanQueryAndMutate;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.core.object.command.ApplicationCommandOption;
@@ -86,7 +86,7 @@ public final class AppealCommand implements GuildCommand {
     return event.deferReply().then(Command.executeOne(event, Map.of(
       ACCEPT, option -> {
         return this.appeals.findByAppealThread(interaction.getChannelId())
-          .filterWhen(new CanPunish<>(this.guilds, guild, member))
+          .filterWhen(new CanQueryAndMutate<>(this.guilds, guild, member))
           .switchIfEmpty(event.editReply().withContentOrNull(Appeals.NO_APPEAL_ASSOCIATED_WITH_THIS_CHANNEL).then(Mono.empty()))
           .filter(model -> model.result() == null)
           .switchIfEmpty(event.editReply().withContentOrNull(Appeals.NO_ACTIVE_APPEAL).then(Mono.empty()))
@@ -97,7 +97,7 @@ public final class AppealCommand implements GuildCommand {
       },
       DENY, option -> {
         return Mono.just(Options.string(option, Options.REASON))
-          .filterWhen(new CanPunish<>(this.guilds, guild, member))
+          .filterWhen(new CanQueryAndMutate<>(this.guilds, guild, member))
           .zipWith(this.appeals.findByAppealThread(interaction.getChannelId()))
           .switchIfEmpty(event.editReply().withContentOrNull(Appeals.NO_APPEAL_ASSOCIATED_WITH_THIS_CHANNEL).then(Mono.empty()))
           .filter(t2 -> t2.getT2().result() == null)
