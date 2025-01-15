@@ -13,6 +13,8 @@ import com.seiama.sentinel.common.model.UserIdentity;
 import com.seiama.sentinel.feature.punishment.Punishments;
 import com.seiama.sentinel.feature.punishment.display.PunishmentDisplay;
 import com.seiama.sentinel.feature.punishment.display.PunishmentDisplayStyle;
+import com.seiama.sentinel.feature.punishment.display.PunishmentMessages;
+import com.seiama.sentinel.feature.punishment.search.PunishmentSearchResult;
 import com.seiama.sentinel.reactive.Reactive;
 import discord4j.common.util.Snowflake;
 import discord4j.core.DiscordClient;
@@ -148,21 +150,6 @@ class StartHandler implements Function<MemberJoinEvent, Publisher<Void>> {
                   .asRequest()
               ),
               appealDiscussionThreadChannel.createMessage(
-                MessageCreateSpec.builder()
-                  .addEmbed(
-                    EmbedCreateSpec.builder()
-                      .title("Voting")
-                      .description("Please cast your vote using one of the buttons below. If you wish to change your vote, simply click a different button.")
-                      .build()
-                  )
-                  .addComponent(Appeals.createVoteButtons(Map.of()))
-                  .build()
-                  .asRequest()
-              ).flatMap(voteMessage -> Mono.when(
-                rest.getChannelService().addPinnedMessage(appealDiscussionThread.id().asLong(), voteMessage.id().asLong()),
-                this.appeals.update(model._id(), (AppealModel.Partial.VoteMessage) () -> Snowflake.of(voteMessage.id()))
-              )),
-              appealDiscussionThreadChannel.createMessage(
                 EmbedCreateSpec.builder()
                   .color(Color.of(SharedConstants.COLOR_BLUE))
                   .title("Appeal channel")
@@ -170,6 +157,33 @@ class StartHandler implements Function<MemberJoinEvent, Publisher<Void>> {
                   .build()
                   .asRequest()
               ).flatMap(voteMessage -> rest.getChannelService().addPinnedMessage(appealDiscussionThread.id().asLong(), voteMessage.id().asLong())),
+              this.punishmentOps.repository().findAllByGuildAndPunishedIdOrderByDateDesc(punishment.guild(), member.getId())
+                .filter(item -> item.type() != PunishmentModel.Type.NOTE)
+                .collectList()
+                .map(punishments -> new PunishmentSearchResult(member, punishments))
+                .flatMap(psr -> {
+                  return appealDiscussionThreadChannel.createMessage(
+                    MessageCreateSpec.builder()
+                      .addEmbed(
+                        PunishmentMessages.punishmentSearchEmbed(psr, "Punishment history")
+                      )
+                      .build()
+                      .asRequest()
+                  ).flatMap(voteMessage -> Mono.when(
+                    rest.getChannelService().addPinnedMessage(appealDiscussionThread.id().asLong(), voteMessage.id().asLong()),
+                    this.appeals.update(model._id(), (AppealModel.Partial.VoteMessage) () -> Snowflake.of(voteMessage.id()))
+                  ));
+                }),
+              appealDiscussionThreadChannel.createMessage(
+                MessageCreateSpec.builder()
+                  .addAllEmbeds(Appeals.createVoteSummary(Map.of()))
+                  .addComponent(Appeals.createVoteButtons(Map.of()))
+                  .build()
+                  .asRequest()
+              ).flatMap(voteMessage -> Mono.when(
+                rest.getChannelService().addPinnedMessage(appealDiscussionThread.id().asLong(), voteMessage.id().asLong()),
+                this.appeals.update(model._id(), (AppealModel.Partial.VoteMessage) () -> Snowflake.of(voteMessage.id()))
+              )),
               rest.getChannelById(config.appealThreadsChannel()).createMessage(
                 EmbedCreateSpec.builder()
                   .color(Color.of(Appeals.NEW_APPEAL_NOTIFICATION_COLOR))

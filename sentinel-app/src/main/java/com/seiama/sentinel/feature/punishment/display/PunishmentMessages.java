@@ -79,10 +79,10 @@ public final class PunishmentMessages {
     return "%s That user may not be punished.".formatted(Emoji.NO.asFormat());
   }
 
-  public static EmbedCreateSpec punishmentSearchEmbed(final PunishmentSearchResult result) {
+  public static EmbedCreateSpec punishmentSearchEmbed(final PunishmentSearchResult result, final String title) {
     final EmbedCreateSpec.Builder embed = EmbedCreateSpec.builder();
     embed.author(Discord.author(result.user()).orElse(null));
-    embed.title("Punishment search results");
+    embed.title(title);
     final String description = result.punishments().stream()
       .map(punishment -> {
         final StringBuilder sb = new StringBuilder();

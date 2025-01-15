@@ -201,7 +201,7 @@ public final class PunishmentCommand implements GuildCommand {
           .flatMap(user -> Options.user(user, OptionNames.USER).orElseGet(Mono::empty))
           .flatMap(user -> this.punishments.findAllByGuildAndPunishedIdOrderByDateDesc(guild.getId(), user.getId()).collectList().zipWith(Mono.just(user)))
           .map(TupleUtils.function((punishment, user) -> new PunishmentSearchResult(user, punishment)))
-          .flatMap(result -> event.editReply().withEmbeds(PunishmentMessages.punishmentSearchEmbed(result)));
+          .flatMap(result -> event.editReply().withEmbeds(PunishmentMessages.punishmentSearchEmbed(result, "Punishment search results")));
       }
     )));
   }
