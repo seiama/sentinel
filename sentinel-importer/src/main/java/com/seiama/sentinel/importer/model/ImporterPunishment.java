@@ -49,7 +49,7 @@ public final class ImporterPunishment {
     "reason",
     "automatic",
     "expunged",
-    "stale", "staleAutomatic", "staleAt", "staleById", "staleByUsername", "staleByDiscriminator", "staleReason",
+    "stale", "staleAt", "staleById", "staleByUsername", "staleByDiscriminator", "staleReason", "staleAutomatic",
     "importBy", "importId", "importAt"
   })
   public static final class Values {
@@ -67,13 +67,13 @@ public final class ImporterPunishment {
     public @Nullable Boolean automatic;
     public @Nullable Boolean expunged;
     public @Nullable Boolean stale;
-    public @Nullable Boolean staleAutomatic;
     @JsonSerialize(using = InstantExtendedJsonSerializer.class)
     public @Nullable Instant staleAt;
     public @Nullable Long staleById;
     public @Nullable String staleByUsername;
     public @Nullable String staleByDiscriminator;
     public @Nullable String staleReason;
+    public @Nullable Boolean staleAutomatic;
     public @Nullable String importBy;
     public @Nullable String importId;
     @JsonSerialize(using = InstantExtendedJsonSerializer.class)
