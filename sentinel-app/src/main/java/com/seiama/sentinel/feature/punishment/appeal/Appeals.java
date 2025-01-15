@@ -50,6 +50,7 @@ import discord4j.discordjson.json.PermissionsEditRequest;
 import discord4j.discordjson.json.StartThreadWithoutMessageRequest;
 import discord4j.discordjson.json.ThreadModifyRequest;
 import discord4j.discordjson.possible.Possible;
+import discord4j.rest.RestClient;
 import discord4j.rest.entity.RestChannel;
 import discord4j.rest.util.Color;
 import discord4j.rest.util.Permission;
@@ -67,6 +68,7 @@ import org.bson.types.ObjectId;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -112,14 +114,16 @@ public class Appeals implements Listener {
   private final Punishments punishmentOps;
   private final AppealRepository appeals;
   private final TemporaryMessageLinkRepository messageLinks;
+  private final RestClient relayRest;
 
   @Autowired
-  private Appeals(final GuildRepository guilds, final PunishmentRepository punishments, final Punishments punishmentOps, final AppealRepository appeals, final TemporaryMessageLinkRepository messageLinks) {
+  private Appeals(final GuildRepository guilds, final PunishmentRepository punishments, final Punishments punishmentOps, final AppealRepository appeals, final TemporaryMessageLinkRepository messageLinks, final @Qualifier("relayRest") RestClient relayRest) {
     this.guilds = guilds;
     this.punishments = punishments;
     this.punishmentOps = punishmentOps;
     this.appeals = appeals;
     this.messageLinks = messageLinks;
+    this.relayRest = relayRest;
   }
 
   @Override
@@ -288,7 +292,7 @@ public class Appeals implements Listener {
           .flatMap(TupleUtils.function((guild, model, targetChannelId) -> {
             return model.get()
               .map(targetChannelId)
-              .flatMap(channelId -> client.rest().getChannelById(channelId).createMessage(this.createMessage(message.getData(), message.getAuthor(), guild)))
+              .flatMap(channelId -> this.relayRest.getChannelById(channelId).createMessage(this.createMessage(message.getData(), message.getAuthor(), guild)))
               .flatMap(newMessage -> this.messageLinks.save(new TemporaryMessageLink(
                 guild.getT2()._id(),
                 message.getChannelId(),
@@ -306,7 +310,7 @@ public class Appeals implements Listener {
               .flatMap(TupleUtils.function((guild, message) -> {
                 return this.guilds.findById(targetIds.guild())
                   .flatMap(guildModel -> {
-                    return client.rest().getMessageById(targetIds.targetChannelId(), targetIds.targetMessageId()).edit(
+                    return this.relayRest.getMessageById(targetIds.targetChannelId(), targetIds.targetMessageId()).edit(
                       MessageEditRequest.builder()
                         .embeds(Possible.of(Optional.of(List.of(
                           this.createMessage(message.getData(), message.getAuthor(), Tuples.of(guild, guildModel))
@@ -320,7 +324,7 @@ public class Appeals implements Listener {
       client.on(MessageDeleteEvent.class, event -> {
         return this.messageLinks.findBySourceMessageId(event.getMessageId().asLong())
           .flatMap(targetIds -> {
-            return client.rest().getChannelService().deleteMessage(targetIds.targetChannelId().asLong(), targetIds.targetMessageId().asLong(), null);
+            return this.relayRest.getChannelService().deleteMessage(targetIds.targetChannelId().asLong(), targetIds.targetMessageId().asLong(), null);
           });
       }),
       client.on(ButtonInteractionEvent.class, event -> {
