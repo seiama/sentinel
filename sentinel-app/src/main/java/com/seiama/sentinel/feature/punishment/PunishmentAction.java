@@ -4,6 +4,7 @@ import com.seiama.sentinel.command.Options;
 import com.seiama.sentinel.common.model.PunishmentModel;
 import com.seiama.sentinel.common.model.PunishmentRepository;
 import com.seiama.sentinel.feature.punishment.display.PunishmentMessages;
+import discord4j.common.util.Snowflake;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.core.object.command.Interaction;
 import discord4j.core.object.entity.Guild;
@@ -29,6 +30,7 @@ public final class PunishmentAction {
     PunishmentMessages.punishmentPunishedReason(punishment)
   );
   public static final Function3<Guild, User, PunishmentModel.Complete, Mono<Void>> WARN = (guild, user, punishment) -> Mono.empty();
+  private static final boolean ACTUALLY_APPLY_PUNISHMENT = true;
 
   private PunishmentAction() {
   }
@@ -36,12 +38,22 @@ public final class PunishmentAction {
   private static @NotNull Mono<?> notifyAndApply(
     final Guild guild,
     final User user,
+    final PunishmentRepository punishments,
     final PunishmentModel.Complete punishment,
     final Function3<Guild, User, PunishmentModel.Complete, Mono<Void>> action
   ) {
     return Mono.whenDelayError(
-      user.getPrivateChannel().flatMap(channel -> channel.createMessage(PunishmentMessages.punishmentPunishedDirectMessageEmbed(punishment, guild))),
-      action.apply(guild, user, punishment)
+      user.getPrivateChannel()
+        .flatMap(channel -> channel.createMessage(PunishmentMessages.punishmentPunishedDirectMessageEmbed(punishment, guild)))
+        .flatMap(message -> punishments.update(punishment, new PunishmentModel.Partial.DirectMessageNotified() {
+          @Override
+          public Snowflake dmNotificationMessageId() {
+            return message.getId();
+          }
+        }))
+        // we don't actually care if we can't send a notification to the user
+        .onErrorResume(t -> Mono.empty()),
+      ACTUALLY_APPLY_PUNISHMENT ? action.apply(guild, user, punishment) : Mono.empty()
     );
   }
 
@@ -66,7 +78,7 @@ public final class PunishmentAction {
         false
       )))
       .flatMap(TupleUtils.function((user, punishment) -> Mono.whenDelayError(
-        notifyAndApply(guild, user, punishment, action),
+        notifyAndApply(guild, user, punishments, punishment, action),
         event.editReply().withContent(Possible.of(Optional.of(PunishmentMessages.punishmentPunisherResponse(punishment))))
       ))));
   }

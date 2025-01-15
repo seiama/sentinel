@@ -46,6 +46,12 @@ public interface PunishmentModel {
       @JsonProperty @Nullable Boolean staleAutomatic();
       @JsonProperty @MongoId @Nullable ObjectId staleAppeal();
     }
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    interface DirectMessageNotified extends Partial {
+      @JsonProperty Snowflake dmNotificationMessageId();
+    }
   }
 
   @Document(collection = COLLECTION)
@@ -78,7 +84,8 @@ public interface PunishmentModel {
     @MongoId @Nullable ObjectId staleAppeal,
     @Nullable String importBy,
     @Nullable String importId,
-    @MongoDate @Nullable Instant importAt
+    @MongoDate @Nullable Instant importAt,
+    @Nullable Snowflake dmNotificationMessageId
   ) implements AbstractModel, Partial.Reason, Partial.Expunged, Partial.Stale {
     public static @NotNull Complete create(
       final @NotNull Snowflake guild,
@@ -110,6 +117,7 @@ public interface PunishmentModel {
         null,
         null,
         false,
+        null,
         null,
         null,
         null,
