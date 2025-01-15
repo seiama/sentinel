@@ -1,0 +1,55 @@
+package com.seiama.sentinel.command;
+
+import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
+import discord4j.core.object.command.ApplicationCommandInteractionOption;
+import discord4j.core.object.command.ApplicationCommandInteractionOptionValue;
+import discord4j.core.object.entity.User;
+import discord4j.discordjson.json.ApplicationCommandOptionData;
+import discord4j.discordjson.json.ImmutableApplicationCommandOptionData;
+import java.util.Optional;
+import java.util.function.UnaryOperator;
+import reactor.core.publisher.Mono;
+
+public final class Options {
+  public static final String MEMBER = "member";
+  public static final String PUNISHMENT = "punishment";
+  public static final String REASON = "reason";
+  public static final String USER = "user";
+
+  private Options() {
+  }
+
+  public static ApplicationCommandOptionData option(final UnaryOperator<ImmutableApplicationCommandOptionData.Builder> op) {
+    return op.apply(ApplicationCommandOptionData.builder()).build();
+  }
+
+  public static Optional<Mono<User>> user(final ChatInputInteractionEvent event, final String name) {
+    return user(event.getOption(name));
+  }
+
+  public static Optional<Mono<User>> user(final ApplicationCommandInteractionOption option, final String name) {
+    return user(option.getOption(name));
+  }
+
+  @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+  private static Optional<Mono<User>> user(final Optional<ApplicationCommandInteractionOption> option) {
+    return option
+      .flatMap(ApplicationCommandInteractionOption::getValue)
+      .map(ApplicationCommandInteractionOptionValue::asUser);
+  }
+
+  public static Optional<String> string(final ChatInputInteractionEvent event, final String name) {
+    return string(event.getOption(name));
+  }
+
+  public static Optional<String> string(final ApplicationCommandInteractionOption option, final String name) {
+    return string(option.getOption(name));
+  }
+
+  @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+  private static Optional<String> string(final Optional<ApplicationCommandInteractionOption> option) {
+    return option
+      .flatMap(ApplicationCommandInteractionOption::getValue)
+      .map(ApplicationCommandInteractionOptionValue::asString);
+  }
+}

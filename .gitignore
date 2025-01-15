@@ -1,0 +1,12 @@
+/.gradle/
+/.idea/
+/build/
+/build-logic/.gradle/
+/build-logic/build/
+/run/
+/sentinel-api/build/
+/sentinel-app/build/
+/sentinel-common/build/
+/sentinel-frontend/node_modules/
+/sentinel-importer/build/
+/*.iml
