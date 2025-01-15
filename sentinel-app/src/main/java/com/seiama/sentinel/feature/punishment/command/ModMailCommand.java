@@ -36,6 +36,7 @@ public class ModMailCommand implements GuildCommand {
     return ApplicationCommandRequest.builder()
       .name(NAME)
       .description("Sends a message privately to the moderators")
+      .defaultPermission(false)
       .addOption(
         ApplicationCommandOptionData.builder()
           .name(Options.MESSAGE)

@@ -38,6 +38,7 @@ public final class KickMessageCommand implements MessageCommand {
     return ApplicationCommandRequest.builder()
       .name(NAME)
       .type(ApplicationCommand.Type.MESSAGE.getValue())
+      .defaultPermission(false)
       .build();
   }
 
