@@ -75,7 +75,7 @@ public final class BanCommand implements GuildCommand {
 
   @Override
   public Mono<?> on(final GatewayDiscordClient client, final ChatInputInteractionEvent event, final Guild guild) {
-    return this.punishments.createUsing(new ChatInteractionPunishmentCreator(event, guild, PunishmentModel.Type.BAN, PunishmentAction.ban(
+    return this.punishments.createUsing(new ChatInteractionPunishmentCreator(client, event, guild, PunishmentModel.Type.BAN, PunishmentAction.ban(
       Options.bool(event, OptionNames.DELETE_MESSAGES).orElse(true)
     )));
   }

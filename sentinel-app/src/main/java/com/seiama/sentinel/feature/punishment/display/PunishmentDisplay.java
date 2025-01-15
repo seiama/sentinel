@@ -7,6 +7,7 @@ import com.seiama.sentinel.common.model.PunishmentModel;
 import com.seiama.sentinel.common.model.UserIdentity;
 import discord4j.common.util.TimestampFormat;
 import discord4j.core.spec.EmbedCreateSpec;
+import discord4j.core.util.MentionUtil;
 import discord4j.rest.util.Color;
 import java.util.function.Consumer;
 import org.jspecify.annotations.NullMarked;
@@ -33,7 +34,7 @@ public final class PunishmentDisplay {
       sb.append(UserDisplay.render(UserDisplay.Renderer.MENTION_WITH_TRAILING_BACKTICK_WRAPPED_USERNAME_AND_ID, punishment.punished()));
       if (display.notified) {
         sb.append(
-          punishment.dmNotificationMessageId() != null
+          punishment.wasNotified()
             ? " " + SYMBOL_NOTIFIED
             : ""
         );
@@ -45,6 +46,9 @@ public final class PunishmentDisplay {
       Thyme.PRETTY_TIME.print(Thyme.ymwdhmsDuration(punishment.date(), punishment.date().plus(duration))),
       TimestampFormat.LONG_DATE_TIME.format(punishment.date().plus(duration))
     ), false));
+    if (display == PunishmentDisplayStyle.LOG) {
+      ifPresent(punishment.privateNotificationThreadId(), thread -> embed.addField("Notification Thread", MentionUtil.forChannel(thread), false));
+    }
     if (display.stale && Boolean.TRUE.equals(punishment.stale())) {
       ifPresent(punishment.staleAt(), at -> embed.addField("Stale time", TimestampFormat.LONG_DATE_TIME.format(at), false));
       ifPresent(punishment.staleById(), id -> embed.addField("Stale by", UserDisplay.render(UserDisplay.Renderer.MENTION_WITH_TRAILING_BACKTICK_WRAPPED_USERNAME_AND_ID, new UserIdentity(id, punishment.staleByUsername(), punishment.staleByDiscriminator())), false));

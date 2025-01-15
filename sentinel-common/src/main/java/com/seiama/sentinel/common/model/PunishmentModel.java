@@ -127,6 +127,12 @@ public interface PunishmentModel {
     interface DirectMessageNotified extends Partial {
       @JsonProperty Snowflake dmNotificationMessageId();
     }
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    interface PrivateThreadNotified extends Partial {
+      @JsonProperty Snowflake privateNotificationThreadId();
+    }
   }
 
   @Document(collection = COLLECTION)
@@ -164,7 +170,8 @@ public interface PunishmentModel {
     @Nullable String importBy,
     @Nullable String importId,
     @MongoDate @Nullable Instant importAt,
-    @Nullable Snowflake dmNotificationMessageId
+    @Nullable Snowflake dmNotificationMessageId,
+    @Nullable Snowflake privateNotificationThreadId
   ) implements AbstractModel, Partial.Reason, Partial.Expunged, Partial.Stale {
     public UserIdentity punisher() {
       return new UserIdentity(this.punisherId, this.punisherUsername, this.punisherDiscriminator);
@@ -216,26 +223,33 @@ public interface PunishmentModel {
         null,
         null,
         null,
+        null,
         null
       );
+    }
+
+    public boolean wasNotified() {
+      return this.dmNotificationMessageId != null || this.privateNotificationThreadId != null;
     }
   }
 
   enum Type {
-    BAN(SharedConstants.COLOR_RED, true, new Strings("ban", "banned"), Emoji.DOT_RED),
-    KICK(SharedConstants.COLOR_GREY, true, new Strings("kick", "kicked"), Emoji.DOT_GREY),
-    MUTE(SharedConstants.COLOR_PURPLE, true, new Strings("mute", "muted"), Emoji.DOT_PURPLE),
-    NOTE(SharedConstants.COLOR_BLUE, false, new Strings("note", "noted"), Emoji.DOT_BLUE),
-    WARN(SharedConstants.COLOR_ORANGE, true, new Strings("warn", "warned"), Emoji.DOT_ORANGE);
+    BAN(SharedConstants.COLOR_RED, true, true, new Strings("ban", "banned"), Emoji.DOT_RED),
+    KICK(SharedConstants.COLOR_GREY, true, true, new Strings("kick", "kicked"), Emoji.DOT_GREY),
+    MUTE(SharedConstants.COLOR_PURPLE, true, false, new Strings("mute", "muted"), Emoji.DOT_PURPLE),
+    NOTE(SharedConstants.COLOR_BLUE, false, false, new Strings("note", "noted"), Emoji.DOT_BLUE),
+    WARN(SharedConstants.COLOR_ORANGE, true, false, new Strings("warn", "warned"), Emoji.DOT_ORANGE);
 
     private final int color;
     private final boolean notification;
+    private final boolean terminal;
     private final Strings strings;
     private final ReactionEmoji emoji;
 
-    Type(final int color, final boolean notification, final Strings strings, final ReactionEmoji emoji) {
+    Type(final int color, final boolean notification, final boolean terminal, final Strings strings, final ReactionEmoji emoji) {
       this.color = color;
       this.notification = notification;
+      this.terminal = terminal;
       this.strings = strings;
       this.emoji = emoji;
     }
@@ -246,6 +260,10 @@ public interface PunishmentModel {
 
     public boolean notification() {
       return this.notification;
+    }
+
+    public boolean terminal() {
+      return this.terminal;
     }
 
     public Strings strings() {

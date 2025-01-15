@@ -66,6 +66,6 @@ public final class WarnCommand implements GuildCommand {
 
   @Override
   public Mono<?> on(final GatewayDiscordClient client, final ChatInputInteractionEvent event, final Guild guild) {
-    return this.punishments.createUsing(new ChatInteractionPunishmentCreator(event, guild, PunishmentModel.Type.WARN, PunishmentAction.warn()));
+    return this.punishments.createUsing(new ChatInteractionPunishmentCreator(client, event, guild, PunishmentModel.Type.WARN, PunishmentAction.warn()));
   }
 }

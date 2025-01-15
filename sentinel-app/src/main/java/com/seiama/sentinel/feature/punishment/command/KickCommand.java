@@ -66,6 +66,6 @@ public final class KickCommand implements GuildCommand {
 
   @Override
   public Mono<?> on(final GatewayDiscordClient client, final ChatInputInteractionEvent event, final Guild guild) {
-    return this.punishments.createUsing(new ChatInteractionPunishmentCreator(event, guild, PunishmentModel.Type.KICK, PunishmentAction.kick()));
+    return this.punishments.createUsing(new ChatInteractionPunishmentCreator(client, event, guild, PunishmentModel.Type.KICK, PunishmentAction.kick()));
   }
 }

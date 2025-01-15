@@ -8,6 +8,7 @@ import com.seiama.sentinel.feature.punishment.PunishmentAction;
 import com.seiama.sentinel.feature.punishment.Punishments;
 import com.seiama.sentinel.feature.punishment.display.PunishmentMessages;
 import com.seiama.sentinel.feature.punishment.predicate.CanPunish;
+import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.core.object.command.Interaction;
 import discord4j.core.object.entity.Guild;
@@ -21,12 +22,14 @@ import reactor.core.publisher.Mono;
 
 @NullMarked
 public final class ChatInteractionPunishmentCreator implements Punishments.Creator {
+  private final GatewayDiscordClient client;
   private final ChatInputInteractionEvent event;
   private final Guild guild;
   private final PunishmentModel.Type type;
   private final PunishmentAction<User, PunishmentModel.Complete> action;
 
-  public ChatInteractionPunishmentCreator(final ChatInputInteractionEvent event, final Guild guild, final PunishmentModel.Type type, final PunishmentAction<User, PunishmentModel.Complete> action) {
+  public ChatInteractionPunishmentCreator(final GatewayDiscordClient client, final ChatInputInteractionEvent event, final Guild guild, final PunishmentModel.Type type, final PunishmentAction<User, PunishmentModel.Complete> action) {
+    this.client = client;
     this.event = event;
     this.guild = guild;
     this.type = type;
@@ -52,6 +55,7 @@ public final class ChatInteractionPunishmentCreator implements Punishments.Creat
           .then(Mono.empty())
       )
       .flatMap(punished -> punishments.create(
+        this.client,
         this.guild,
         PunishmentModel.Complete.create(
           this.guild.getId(),
