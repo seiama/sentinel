@@ -9,6 +9,7 @@ import reactor.core.publisher.Mono;
 
 public final class Options {
   public static final String CONTENT = "content";
+  public static final String DELETE_MESSAGES = "delete_messages";
   public static final String DESCRIPTION = "description";
   public static final String MEMBER = "member";
   public static final String NAME = "name";
@@ -32,6 +33,17 @@ public final class Options {
     return option
       .flatMap(ApplicationCommandInteractionOption::getValue)
       .map(ApplicationCommandInteractionOptionValue::asUser);
+  }
+
+  public static Optional<Boolean> bool(final ChatInputInteractionEvent event, final String name) {
+    return bool(event.getOption(name));
+  }
+
+  @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+  private static Optional<Boolean> bool(final Optional<ApplicationCommandInteractionOption> option) {
+    return option
+      .flatMap(ApplicationCommandInteractionOption::getValue)
+      .map(ApplicationCommandInteractionOptionValue::asBoolean);
   }
 
   public static Optional<String> string(final ChatInputInteractionEvent event, final String name) {

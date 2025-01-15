@@ -8,13 +8,16 @@ import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.interaction.ChatInputAutoCompleteEvent;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
+import discord4j.core.event.domain.interaction.MessageInteractionEvent;
 import discord4j.discordjson.json.ApplicationCommandRequest;
 import discord4j.rest.service.ApplicationService;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -29,16 +32,19 @@ class Commands implements Listener {
   private final ApplicationService applicationService;
   private final Set<GlobalCommand> globalCommands;
   private final Set<GuildCommand> guildCommands;
+  private final Set<MessageCommand> messageCommands;
   private final Map<String, GlobalCommand> globalCommandsByName = new HashMap<>();
   private final Table<Snowflake, String, GuildCommand> guildCommandsByGuildAndName = HashBasedTable.create();
+  private final Table<Snowflake, String, MessageCommand> messageCommandsByGuildAndName = HashBasedTable.create();
 
   @Autowired
-  Commands(final @Qualifier("applicationId") long applicationId, final GuildRepository guilds, final ApplicationService applicationService, final Set<GlobalCommand> globalCommands, final Set<GuildCommand> guildCommands) {
+  Commands(final @Qualifier("applicationId") long applicationId, final GuildRepository guilds, final ApplicationService applicationService, final Set<GlobalCommand> globalCommands, final Set<GuildCommand> guildCommands, final Set<MessageCommand> messageCommands) {
     this.applicationId = applicationId;
     this.guilds = guilds;
     this.applicationService = applicationService;
     this.globalCommands = globalCommands;
     this.guildCommands = guildCommands;
+    this.messageCommands = messageCommands;
   }
 
   @Override
@@ -59,10 +65,17 @@ class Commands implements Listener {
             commands.add(command);
           }
         }
+        final Set<MessageCommand> messages = new HashSet<>();
+        for (final MessageCommand command : this.messageCommands) {
+          if (command.feature().enabledForGuild(model)) {
+            this.messageCommandsByGuildAndName.put(model.guild(), command.name(), command);
+            messages.add(command);
+          }
+        }
         return new GuildRequests(
           model.guild().asLong(),
-          commands
-            .stream()
+          Stream.of(commands, messages)
+            .flatMap(Collection::stream)
             .map(Command::request)
             .toList()
         );
@@ -92,6 +105,15 @@ class Commands implements Listener {
               });
           })
         );
+      }),
+      client.on(MessageInteractionEvent.class, event -> {
+        return Mono.defer(() -> {
+          return event.getInteraction().getGuild()
+            .flatMap(guild -> {
+              return Mono.justOrEmpty(this.messageCommandsByGuildAndName.get(guild.getId(), event.getCommandName()))
+                .flatMap(command -> command.on(client, event, guild));
+            });
+        });
       }),
       client.on(ChatInputAutoCompleteEvent.class, event -> {
         return Mono.when(
