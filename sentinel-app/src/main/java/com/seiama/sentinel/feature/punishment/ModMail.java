@@ -144,7 +144,7 @@ public class ModMail implements Listener {
         embed.description(description.toString());
         if (message != null) {
           message.getAuthor()
-            .map(author -> Mention.userWithId(author.getId(), author.getUsername(), author.getDiscriminator()))
+            .map(Mention::userWithId)
             .ifPresent(author -> embed.addField("Author", author, false));
           embed.addField("Message", Links.message(guild, message), false);
         }

@@ -256,7 +256,7 @@ public class Appeals implements Listener {
                     EmbedCreateSpec.builder()
                       .color(Color.of(NEW_APPEAL_NOTIFICATION_COLOR))
                       .title("A new appeal has been created")
-                      .description(String.format("A new appeal has been created by %s.", Mention.userWithId(member.getId(), member.getUsername(), member.getDiscriminator())))
+                      .description(String.format("A new appeal has been created by %s.", Mention.userWithId(member)))
                       .addField("Appeal channel", MentionUtil.forChannel(Snowflake.of(appealThread.id())), false)
                       .addField("Discussion channel", MentionUtil.forChannel(Snowflake.of(appealDiscussionThread.id())), false)
                       .build()
@@ -621,7 +621,7 @@ public class Appeals implements Listener {
         case DENIED -> "The appeal was denied." + this.nextAttemptMayBeMadeAt("The");
         case CANCELLED -> "The appeal was cancelled.";
       });
-      embed.addField(this.result.strings().nameForStartOfSentence() + " by", Mention.userWithId(this.user.getId(), this.user.getUsername(), this.user.getDiscriminator()), false);
+      embed.addField(this.result.strings().nameForStartOfSentence() + " by", Mention.userWithId(this.user), false);
       if (this.reason != null) {
         embed.addField("Reason", this.reason, false);
       }
