@@ -6,9 +6,11 @@ import com.seiama.sentinel.command.GuildCommand;
 import com.seiama.sentinel.command.OptionNames;
 import com.seiama.sentinel.command.Options;
 import com.seiama.sentinel.common.discord.Emoji;
+import com.seiama.sentinel.common.model.FactoidModel;
 import com.seiama.sentinel.common.model.Feature;
 import com.seiama.sentinel.common.model.JavaDocModel;
 import com.seiama.sentinel.common.model.JavaDocRepository;
+import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.interaction.ChatInputAutoCompleteEvent;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
@@ -33,7 +35,7 @@ import reactor.core.publisher.Mono;
 
 @Component
 @NullMarked
-public class JavaDocCommand implements GuildCommand {
+public final class JavaDocCommand implements GuildCommand {
 
   private static final String NAME = "javadocs";
 
@@ -130,7 +132,22 @@ public class JavaDocCommand implements GuildCommand {
                   }
                 }))
                 // TODO: the user javadoc can be /javadoc-{name} and need register that
-                .switchIfEmpty(this.javadocs.insert(new JavaDocModel.Complete(new ObjectId(), guild.getId(), name, url)))
+                .switchIfEmpty(this.javadocs.insert(new JavaDocModel.Complete(new ObjectId(), guild.getId(), name, url, null)))
+                .flatMap(model -> {
+                  if (model.commandId() == null) {
+                    return this.appAction((applicationId, service) -> service.createGuildApplicationCommand(
+                      applicationId,
+                      guild.getId().asLong(),
+                      model.asRequest()
+                    )).flatMap(data -> this.javadocs.update(model, new JavaDocModel.Partial.SetCommandId() {
+                      @Override
+                      public Snowflake commandId() {
+                        return Snowflake.of(data.id());
+                      }
+                    }));
+                  }
+                  return Mono.empty();
+                })
                 .then(event.editReply().withContentOrNull(Emoji.YES.asFormat()));
             });
         },
@@ -139,8 +156,7 @@ public class JavaDocCommand implements GuildCommand {
             .flatMap(name -> {
               return this.javadocs.findByGuildAndName(guild.getId(), name)
                 .switchIfEmpty(event.editReply().withContentOrNull("%s Could not find a javadoc with name `%s`.".formatted(Emoji.NO.asFormat(), name)).then(Mono.empty()))
-                // TODO: implement the slash command id here
-                .flatMap(model -> this.appAction((id, service) -> service.deleteGuildApplicationCommand(id, guild.getId().asLong(), 0L)).thenReturn(model))
+                .flatMap(model -> this.appAction((id, service) -> service.deleteGuildApplicationCommand(id, guild.getId().asLong(), model.commandId().asLong())).thenReturn(model))
                 .flatMap(this.javadocs::delete)
                 .then(event.editReply().withContentOrNull(Emoji.YES.asFormat()));
             });
