@@ -38,6 +38,7 @@ public interface GuildModel {
     public record Features(
       Punishments punishments,
       Factoids factoids,
+      Factoids javadocs,
       ModMail modmail,
       Logging logging
     ) {
@@ -70,6 +71,12 @@ public interface GuildModel {
 
       @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
       public record Factoids(
+        boolean enabled
+      ) implements IsEnabled {
+      }
+
+      @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+      public record JavaDocs(
         boolean enabled
       ) implements IsEnabled {
       }

@@ -38,6 +38,11 @@ public class DiscordConfiguration extends AbstractDiscordConfiguration {
     return RestClient.create(System.getenv(DISCORD_TOKEN_FACTOIDS));
   }
 
+  @Bean("javadocsRest")
+  RestClient javadocsRest() {
+    return RestClient.create(System.getenv(DISCORD_TOKEN_FACTOIDS));
+  }
+
   @Bean("relayRest")
   RestClient relayRest() {
     return RestClient.create(System.getenv(DISCORD_TOKEN_RELAY));
