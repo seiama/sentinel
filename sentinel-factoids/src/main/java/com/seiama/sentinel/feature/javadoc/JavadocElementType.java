@@ -1,6 +1,6 @@
 package com.seiama.sentinel.feature.javadoc;
 
-public enum JavaDocElementType {
+public enum JavadocElementType {
   CLASS("class"),
   INTERFACE("interface"),
   ANNOTATION("annotation"),
@@ -9,7 +9,7 @@ public enum JavaDocElementType {
 
   private final String name;
 
-  JavaDocElementType(String name) {
+  JavadocElementType(String name) {
     this.name = name;
   }
 

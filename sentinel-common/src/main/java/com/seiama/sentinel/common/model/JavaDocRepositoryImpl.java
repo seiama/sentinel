@@ -6,9 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 
 @NullMarked
-public class JavaDocRepositoryImpl extends AbstractRepository<JavaDocModel.Partial, JavaDocModel.Complete> implements JavaDocRepositoryCustom {
+public class JavaDocRepositoryImpl extends AbstractRepository<JavadocModel.Partial, JavadocModel.Complete> implements JavaDocRepositoryCustom {
   @Autowired
   public JavaDocRepositoryImpl(final ObjectMapper mapper, final ReactiveMongoTemplate template) {
-    super(JavaDocModel.Complete.class, mapper, template);
+    super(JavadocModel.Complete.class, mapper, template);
   }
 }

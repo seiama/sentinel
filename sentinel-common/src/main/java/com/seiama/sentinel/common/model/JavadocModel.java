@@ -15,7 +15,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 @NullMarked
-public interface JavaDocModel {
+public interface JavadocModel {
 
   String COLLECTION = "javadocs";
 
@@ -26,13 +26,13 @@ public interface JavaDocModel {
 
   interface Partial extends AbstractPartial {
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-    interface SetUrl extends JavaDocModel.Partial {
+    interface SetUrl extends JavadocModel.Partial {
       @JsonProperty
       String url();
     }
 
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-    interface SetCommandId extends JavaDocModel.Partial {
+    interface SetCommandId extends JavadocModel.Partial {
       @JsonProperty
       Snowflake commandId();
     }

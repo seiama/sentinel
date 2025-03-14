@@ -6,10 +6,9 @@ import com.seiama.sentinel.command.GuildCommand;
 import com.seiama.sentinel.command.OptionNames;
 import com.seiama.sentinel.command.Options;
 import com.seiama.sentinel.common.discord.Emoji;
-import com.seiama.sentinel.common.model.FactoidModel;
 import com.seiama.sentinel.common.model.Feature;
-import com.seiama.sentinel.common.model.JavaDocModel;
-import com.seiama.sentinel.common.model.JavaDocRepository;
+import com.seiama.sentinel.common.model.JavadocModel;
+import com.seiama.sentinel.common.model.JavadocRepository;
 import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.interaction.ChatInputAutoCompleteEvent;
@@ -35,20 +34,20 @@ import reactor.core.publisher.Mono;
 
 @Component
 @NullMarked
-public final class JavaDocCommand implements GuildCommand {
+public final class JavadocCommand implements GuildCommand {
 
   private static final String NAME = "javadocs";
 
   private static final String SET = "set";
   private static final String REMOVE = "remove";
 
-  private final JavaDocRepository javadocs;
+  private final JavadocRepository javadocs;
   private final RestClient rest;
   private final org.springframework.web.client.RestClient http;
   private final ObjectMapper mapper;
 
   @Autowired
-  private JavaDocCommand(final JavaDocRepository javadocs, final @Qualifier("javadocsRest") RestClient rest, final org.springframework.web.client.RestClient.Builder http, final ObjectMapper mapper) {
+  private JavadocCommand(final JavadocRepository javadocs, final @Qualifier("javadocsRest") RestClient rest, final org.springframework.web.client.RestClient.Builder http, final ObjectMapper mapper) {
     this.javadocs = javadocs;
     this.rest = rest;
     this.http = http.build();
@@ -125,21 +124,21 @@ public final class JavaDocCommand implements GuildCommand {
               final String url = Options.string(option, OptionNames.JAVADOC).orElseThrow(); // This is mandatory in all cases
               // TODO: need parse that url to check if is a javadoc in fist place
               return this.javadocs.findByGuildAndName(guild.getId(), name)
-                .flatMap(model -> this.javadocs.update(model, new JavaDocModel.Partial.SetUrl() {
+                .flatMap(model -> this.javadocs.update(model, new JavadocModel.Partial.SetUrl() {
                   @Override
                   public String url() {
                     return url;
                   }
                 }))
                 // TODO: the user javadoc can be /javadoc-{name} and need register that
-                .switchIfEmpty(this.javadocs.insert(new JavaDocModel.Complete(new ObjectId(), guild.getId(), name, url, null)))
+                .switchIfEmpty(this.javadocs.insert(new JavadocModel.Complete(new ObjectId(), guild.getId(), name, url, null)))
                 .flatMap(model -> {
                   if (model.commandId() == null) {
                     return this.appAction((applicationId, service) -> service.createGuildApplicationCommand(
                       applicationId,
                       guild.getId().asLong(),
                       model.asRequest()
-                    )).flatMap(data -> this.javadocs.update(model, new JavaDocModel.Partial.SetCommandId() {
+                    )).flatMap(data -> this.javadocs.update(model, new JavadocModel.Partial.SetCommandId() {
                       @Override
                       public Snowflake commandId() {
                         return Snowflake.of(data.id());

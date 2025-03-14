@@ -1,22 +1,22 @@
 package com.seiama.sentinel.feature.javadoc;
 
 import com.seiama.sentinel.common.model.GuildRepository;
-import com.seiama.sentinel.common.model.JavaDocRepository;
+import com.seiama.sentinel.common.model.JavadocRepository;
 import org.jspecify.annotations.NullMarked;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 @NullMarked
-public class JavaDocs {
+public class Javadocs {
 
   private final GuildRepository guilds;
-  private final JavaDocRepository javaDocs;
+  private final JavadocRepository javaDocs;
 
   @Autowired
-  private JavaDocs(final GuildRepository guilds, final JavaDocRepository javaDocs) {
+  private Javadocs(final GuildRepository guilds, final JavadocRepository javadocs) {
     this.guilds = guilds;
-    this.javaDocs = javaDocs;
+    this.javaDocs = javadocs;
   }
 
   // TODO: Save here the javadocs links and add methods to parse that links into more detailed things

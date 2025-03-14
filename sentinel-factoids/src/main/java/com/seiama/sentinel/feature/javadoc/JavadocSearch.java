@@ -13,13 +13,13 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public class JavaDocSearch {
+public class JavadocSearch {
 
   private final String url;
   private final Document document;
-  private final List<JavaDocItemPartial> elements = new ArrayList<>();
+  private final List<JavadocItemPartial> elements = new ArrayList<>();
 
-  public JavaDocSearch(final String url) {
+  public JavadocSearch(final String url) {
     this.url = url;
     this.document = this.fetchIndexsDocument(url);
     Elements indexItemElements = this.document.select("a[href][title]");
@@ -32,7 +32,7 @@ public class JavaDocSearch {
       Pattern pattern = Pattern.compile("^(?:https?://[^/]+/)?(?:[^/]+/\\d+(?:\\.\\d+)*/)?([^/]+(?:/[^/]+)*)/[^/]+\\.html$");
       Matcher matcher = pattern.matcher(indexHref);
       final String jdElementPackage = (matcher.find()) ? matcher.group(1).replaceAll("/", ".") : "---";
-      this.elements.add(new JavaDocItemPartial(urlDocs, jdElementName, jdElementType, jdElementPackage));
+      this.elements.add(new JavadocItemPartial(urlDocs, jdElementName, jdElementType, jdElementPackage));
     }
   }
 
@@ -44,7 +44,7 @@ public class JavaDocSearch {
     }
   }
 
-  public List<JavaDocItemPartial> search(final String keyword, final @Nullable JavaDocElementType type) {
-    return this.elements.stream().filter(javaDocItemPartial -> javaDocItemPartial.name().toLowerCase().contains(keyword) && (type == null || javaDocItemPartial.type().toLowerCase().contains(type.getName()))).toList();
+  public List<JavadocItemPartial> search(final String keyword, final @Nullable JavadocElementType type) {
+    return this.elements.stream().filter(javadocItemPartial -> javadocItemPartial.name().toLowerCase().contains(keyword) && (type == null || javadocItemPartial.type().toLowerCase().contains(type.getName()))).toList();
   }
 }

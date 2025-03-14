@@ -3,8 +3,8 @@ package com.seiama.sentinel.feature.javadoc;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.seiama.sentinel.common.Listener;
-import com.seiama.sentinel.common.model.JavaDocModel;
-import com.seiama.sentinel.common.model.JavaDocRepository;
+import com.seiama.sentinel.common.model.JavadocModel;
+import com.seiama.sentinel.common.model.JavadocRepository;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.ReactiveEventAdapter;
 import discord4j.core.event.domain.interaction.ChatInputAutoCompleteEvent;
@@ -18,18 +18,18 @@ import reactor.core.publisher.Mono;
 
 @Component
 @NullMarked
-public class JavaDocs implements Listener {
-  private final JavaDocRepository javadocs;
-  private final Cache<String, JavaDocSearch> cacheJavaDocs;
+public class Javadocs implements Listener {
+  private final JavadocRepository javadocs;
+  private final Cache<String, JavadocSearch> cacheJavadocs;
 
   @Autowired
-  public JavaDocs(final JavaDocRepository javadocs) {
+  public Javadocs(final JavadocRepository javadocs) {
     this.javadocs = javadocs;
-    this.cacheJavaDocs = CacheBuilder.newBuilder().expireAfterWrite(Duration.ofHours(1)).build();
+    this.cacheJavadocs = CacheBuilder.newBuilder().expireAfterWrite(Duration.ofHours(1)).build();
     javadocs.findAll().doOnEach(completeSignal -> {
-      JavaDocModel.Complete complete = completeSignal.get();
-      JavaDocSearch javaDocSearch = new JavaDocSearch(complete.url());
-      cacheJavaDocs.put(complete.name(), javaDocSearch);
+      JavadocModel.Complete complete = completeSignal.get();
+      JavadocSearch javaDocSearch = new JavadocSearch(complete.url());
+      cacheJavadocs.put(complete.name(), javaDocSearch);
     }).subscribe();
   }
 

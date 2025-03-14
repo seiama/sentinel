@@ -1,6 +1,6 @@
 package com.seiama.sentinel.feature.javadoc;
 
-public record JavaDocItemPartial(
+public record JavadocItemPartial(
   String url,
   String type,
   String packagePath,
