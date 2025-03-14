@@ -76,7 +76,7 @@ public interface GuildModel {
       }
 
       @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-      public record JavaDocs(
+      public record Javadocs(
         boolean enabled
       ) implements IsEnabled {
       }
