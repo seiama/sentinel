@@ -38,7 +38,7 @@ public interface GuildModel {
     public record Features(
       Punishments punishments,
       Factoids factoids,
-      Factoids javadocs,
+      Javadocs javadocs,
       ModMail modmail,
       Logging logging
     ) {
