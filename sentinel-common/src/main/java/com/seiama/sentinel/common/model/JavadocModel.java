@@ -53,9 +53,13 @@ public interface JavadocModel {
     public static final String REQUEST_OPTION_JAVADOC_KEYWORD = "javadoc-keyword";
     public static final String REQUEST_OPTION_JAVADOC_ELEMENT_TYPE = "javadoc-element-type";
 
+    public String commandName() {
+      return "javadoc-".concat(this.name());
+    }
+
     public ApplicationCommandRequest asRequest() {
       return ApplicationCommandRequest.builder()
-        .name(this.name())
+        .name(this.commandName())
         .description("Search in " + this.name() + " JavaDocs")
         .addOption(ApplicationCommandOptionData.builder()
           .name(REQUEST_OPTION_JAVADOC_KEYWORD)

@@ -130,7 +130,6 @@ public final class JavadocCommand implements GuildCommand {
                     return url;
                   }
                 }))
-                // TODO: the user javadoc can be /javadoc-{name} and need register that
                 .switchIfEmpty(this.javadocs.insert(new JavadocModel.Complete(new ObjectId(), guild.getId(), name, url, null)))
                 .flatMap(model -> {
                   if (model.commandId() == null) {
