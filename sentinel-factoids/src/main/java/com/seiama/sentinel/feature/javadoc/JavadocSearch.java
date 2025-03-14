@@ -3,6 +3,7 @@ package com.seiama.sentinel.feature.javadoc;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.jsoup.Jsoup;
@@ -21,7 +22,7 @@ public class JavadocSearch {
 
   public JavadocSearch(final String url) {
     this.url = url;
-    this.document = this.fetchIndexsDocument(url);
+    this.document = this.fetchDocument(url.concat("allclasses-index.html"));
     Elements indexItemElements = this.document.select("a[href][title]");
     for (Element indexItemElement : indexItemElements) {
       final String indexHref = indexItemElement.attr("href");
@@ -32,11 +33,11 @@ public class JavadocSearch {
       Pattern pattern = Pattern.compile("^(?:https?://[^/]+/)?(?:[^/]+/\\d+(?:\\.\\d+)*/)?([^/]+(?:/[^/]+)*)/[^/]+\\.html$");
       Matcher matcher = pattern.matcher(indexHref);
       final String jdElementPackage = (matcher.find()) ? matcher.group(1).replaceAll("/", ".") : "---";
-      this.elements.add(new JavadocItemPartial(urlDocs, jdElementName, jdElementType, jdElementPackage));
+      this.elements.add(new JavadocItemPartial(urlDocs, jdElementType, jdElementPackage, jdElementName));
     }
   }
 
-  private Document fetchIndexsDocument(String url) {
+  private Document fetchDocument(String url) {
     try {
       return Jsoup.connect(url).followRedirects(true).get();
     } catch (IOException e) {
@@ -45,6 +46,21 @@ public class JavadocSearch {
   }
 
   public List<JavadocItemPartial> search(final String keyword, final @Nullable JavadocElementType type) {
-    return this.elements.stream().filter(javadocItemPartial -> javadocItemPartial.name().toLowerCase().contains(keyword) && (type == null || javadocItemPartial.type().toLowerCase().contains(type.getName()))).toList();
+    return this.elements.stream().filter(javadocItemPartial -> javadocItemPartial.name().toLowerCase().contains(keyword) && (type == null || type == JavadocElementType.UNKNOW || javadocItemPartial.type().toLowerCase().contains(type.getName()))).toList();
+  }
+
+  public JavadocItem getJavadocItem(final JavadocItemPartial javadocItemPartial) {
+    Document document = this.fetchDocument(javadocItemPartial.url());
+    Element documentClassDescElement = document.selectFirst("#class-description");
+    final String jdElementDescription = Optional.ofNullable(document.selectFirst(".block")).map(Element::wholeText).orElse("");
+    final boolean jdElementDeprecated = documentClassDescElement != null && documentClassDescElement.selectFirst(".deprecated-label") != null;
+    String jdElementDeprecatedMessage = "";
+    if (jdElementDeprecated) {
+      Element docClassDeprecatedMessage = documentClassDescElement.selectFirst(".deprecation-comment");
+      if (docClassDeprecatedMessage != null) {
+        jdElementDeprecatedMessage = docClassDeprecatedMessage.wholeText();
+      }
+    }
+    return new JavadocItem(javadocItemPartial.url(), javadocItemPartial.type(), javadocItemPartial.packagePath(), javadocItemPartial.name(), jdElementDescription, jdElementDeprecated, jdElementDeprecatedMessage);
   }
 }
