@@ -10,4 +10,6 @@ public interface JavadocRepository extends ReactiveMongoRepository<JavadocModel.
   Flux<JavadocModel.Complete> findAllByGuild(final Snowflake guild);
 
   Mono<JavadocModel.Complete> findByGuildAndName(final Snowflake guild, final String name);
+
+  Mono<JavadocModel.Complete> findByGuildAndCommandId(final Snowflake guild, final Snowflake commandId);
 }
