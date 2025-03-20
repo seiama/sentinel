@@ -17,7 +17,6 @@ import discord4j.discordjson.json.ApplicationCommandOptionChoiceData;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Objects;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.reactivestreams.Publisher;
@@ -38,13 +37,11 @@ public class Javadocs implements Listener {
     this.javadocs = javadocs;
     this.cacheJavadocs = CacheBuilder.newBuilder().expireAfterWrite(Duration.ofHours(1)).build();
     this.cacheItems = CacheBuilder.newBuilder().expireAfterWrite(Duration.ofMinutes(10)).build();
-    // TODO: This is bad i just make this for test, need move to a valid workflow for preload
-    javadocs.findAll().switchIfEmpty(Flux.empty()).collectList().blockOptional().ifPresent(list -> {
-      list.forEach(complete -> {
-        JavadocSearch javaDocSearch = new JavadocSearch(complete.url());
-        cacheJavadocs.put(complete.name(), javaDocSearch);
-      });
-    });
+    this.javadocs.findAll().map(complete -> {
+      JavadocSearch javaDocSearch = new JavadocSearch(complete.url());
+      cacheJavadocs.put(complete.name(), javaDocSearch);
+      return javaDocSearch;
+    }).subscribe();
   }
 
   @Override
@@ -56,13 +53,18 @@ public class Javadocs implements Listener {
         return event.getInteraction()
           .getGuild()
           .flatMap(guild -> javadocs.findByGuildAndCommandId(guild.getId(), event.getCommandId()))
-          .mapNotNull(complete -> Objects.requireNonNull(cacheJavadocs.getIfPresent(complete.name())))
-          // TODO: Handle cases where the cache not has the element and need "find" again
-          .switchIfEmpty(Mono.empty())
+          .map(complete -> {
+            JavadocSearch javadocSearch = cacheJavadocs.getIfPresent(complete.name());
+            if (javadocSearch == null) {
+              javadocSearch = new JavadocSearch(complete.url());
+              cacheJavadocs.put(complete.name(), javadocSearch);
+            }
+            return javadocSearch;
+          })
           .map(javadocSearch -> {
-            final JavadocElementType javadocElementType = event.getOption(JavadocModel.Complete.REQUEST_OPTION_JAVADOC_ELEMENT_TYPE).flatMap(ApplicationCommandInteractionOption::getValue).map(ApplicationCommandInteractionOptionValue::asString).map(String::toUpperCase).map(JavadocElementType::valueOf).orElse(null);
             final String term = event.getOption(JavadocModel.Complete.REQUEST_OPTION_JAVADOC_KEYWORD).flatMap(ApplicationCommandInteractionOption::getValue).map(ApplicationCommandInteractionOptionValue::asString).orElseThrow();
-            JavadocItemPartial javadocItemPartial = cacheItems.getIfPresent(term); // TODO: This too need check if still exists
+            JavadocItemPartial javadocItemPartial = cacheItems.getIfPresent(term);
+            assert javadocItemPartial != null; // Cache still has this
             return javadocSearch.getJavadocItem(javadocItemPartial);
           })
           .flatMap(javadocItem -> {
@@ -97,8 +99,6 @@ public class Javadocs implements Listener {
           // TODO: Maybe this can be improvement?
           final String javadocName = event.getCommandName().replace("javadoc-", "");
           final JavadocElementType javadocElementType = event.getOption(JavadocModel.Complete.REQUEST_OPTION_JAVADOC_ELEMENT_TYPE).flatMap(ApplicationCommandInteractionOption::getValue).map(ApplicationCommandInteractionOptionValue::asString).map(String::toUpperCase).map(JavadocElementType::fromString).orElse(JavadocElementType.UNKNOW);
-
-          System.out.println(JavadocModel.Complete.REQUEST_OPTION_JAVADOC_KEYWORD + " -> " + javadocName);
 
           JavadocSearch jdSearch = cacheJavadocs.getIfPresent(javadocName);
           if (jdSearch == null) {
