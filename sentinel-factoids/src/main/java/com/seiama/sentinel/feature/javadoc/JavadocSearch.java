@@ -29,7 +29,7 @@ public class JavadocSearch {
       final String indexHref = indexItemElement.attr("href");
       final String urlDocs = (indexHref.startsWith("https") ? indexHref : url + indexHref);
       final String jdElementName = indexItemElement.text();
-      final String jdElementType = indexItemElement.attr("title").split(" ")[0];
+      final String jdElementType = indexItemElement.attr("title").split("\\s+")[0];
 
       Pattern pattern = Pattern.compile("^(?:https?://[^/]+/)?(?:[^/]+/\\d+(?:\\.\\d+)*/)?([^/]+(?:/[^/]+)*)/[^/]+\\.html$");
       Matcher matcher = pattern.matcher(indexHref);
