@@ -2,6 +2,7 @@ package com.seiama.sentinel.feature.javadoc;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -29,7 +30,7 @@ public class JavadocSearch {
       final String indexHref = indexItemElement.attr("href");
       final String urlDocs = (indexHref.startsWith("https") ? indexHref : url + indexHref);
       final String jdElementName = indexItemElement.text();
-      final String jdElementType = indexItemElement.attr("title").split("\\s+")[0];
+      final String jdElementType = Arrays.stream(indexItemElement.attr("title").split("\\s+")).findFirst().orElse("");
 
       Pattern pattern = Pattern.compile("^(?:https?://[^/]+/)?(?:[^/]+/\\d+(?:\\.\\d+)*/)?([^/]+(?:/[^/]+)*)/[^/]+\\.html$");
       Matcher matcher = pattern.matcher(indexHref);
