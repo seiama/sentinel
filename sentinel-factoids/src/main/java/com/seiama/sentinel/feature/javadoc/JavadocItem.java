@@ -23,7 +23,7 @@ public record JavadocItem(
       interactionResponseBuilder.content("> This element is deprecated: ```" + (this.deprecatedMessage().isBlank() ? "no deprecation message set." : this.deprecatedMessage()) + "```");
     }
     EmbedCreateSpec.Builder embedBuilder = EmbedCreateSpec.builder();
-    embedBuilder.color(Color.CINNABAR)
+    embedBuilder.color(Color.CYAN)
       .title(this.name)
       .description(this.description)
       .addField(EmbedCreateFields.Field.of("Type:", this.type, true))
