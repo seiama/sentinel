@@ -17,6 +17,7 @@ import discord4j.discordjson.json.ApplicationCommandOptionChoiceData;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Locale;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.reactivestreams.Publisher;
@@ -67,14 +68,7 @@ public class Javadocs implements Listener {
             assert javadocItemPartial != null; // Cache still has this
             return javadocSearch.getJavadocItem(javadocItemPartial);
           })
-          .flatMap(javadocItem -> {
-            InteractionApplicationCommandCallbackSpec.Builder builder = InteractionApplicationCommandCallbackSpec.builder();
-            if (javadocItem.deprecated()) {
-              builder.content("This element is deprecated: ```" + (javadocItem.deprecatedMessage().isBlank() ? "no deprecation message set." : javadocItem.deprecatedMessage()) + "```");
-            }
-            builder.embeds(EmbedCreateSpec.builder().description(javadocItem.url()).build());
-            return event.reply(builder.build());
-          });
+          .flatMap(javadocItem -> event.reply(javadocItem.buildInteractionResponse()));
       }
 
       @Override
@@ -86,7 +80,7 @@ public class Javadocs implements Listener {
 
         if (event.getFocusedOption().getName().equals(JavadocModel.Complete.REQUEST_OPTION_JAVADOC_ELEMENT_TYPE)) {
           return Flux.fromStream(Arrays.stream(JavadocElementType.values()))
-            .filter(javadocElementType -> javadocElementType.name().toLowerCase().contains(term))
+            .filter(javadocElementType -> javadocElementType.name().toLowerCase(Locale.ROOT).contains(term))
             .map(item -> ApplicationCommandOptionChoiceData.builder()
               .name(left(item.name(), 100))
               .value(item.name())
