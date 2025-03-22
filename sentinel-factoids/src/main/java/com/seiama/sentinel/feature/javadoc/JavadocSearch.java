@@ -3,6 +3,7 @@ package com.seiama.sentinel.feature.javadoc;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -22,7 +23,7 @@ public class JavadocSearch {
 
   public JavadocSearch(final String url) {
     this.url = url;
-    this.document = this.fetchDocument(url.concat("allclasses-index.html"));
+    this.document = this.fetchDocument(this.url.concat("allclasses-index.html"));
     Elements indexItemElements = this.document.select("a[href][title]");
     for (Element indexItemElement : indexItemElements) {
       final String indexHref = indexItemElement.attr("href");
@@ -32,7 +33,7 @@ public class JavadocSearch {
 
       Pattern pattern = Pattern.compile("^(?:https?://[^/]+/)?(?:[^/]+/\\d+(?:\\.\\d+)*/)?([^/]+(?:/[^/]+)*)/[^/]+\\.html$");
       Matcher matcher = pattern.matcher(indexHref);
-      final String jdElementPackage = (matcher.find()) ? matcher.group(1).replaceAll("/", ".") : "---";
+      final String jdElementPackage = matcher.find() ? matcher.group(1).replaceAll("/", ".") : "---";
       this.elements.add(new JavadocItemPartial(urlDocs, jdElementType, jdElementPackage, jdElementName));
     }
   }
@@ -46,7 +47,7 @@ public class JavadocSearch {
   }
 
   public List<JavadocItemPartial> search(final String keyword, final @Nullable JavadocElementType type) {
-    return this.elements.stream().filter(javadocItemPartial -> javadocItemPartial.name().toLowerCase().contains(keyword) && (type == null || type == JavadocElementType.UNKNOW || javadocItemPartial.type().toLowerCase().contains(type.getName()))).toList();
+    return this.elements.stream().filter(javadocItemPartial -> javadocItemPartial.name().toLowerCase(Locale.ROOT).contains(keyword) && (type == null || type == JavadocElementType.UNKNOW || javadocItemPartial.type().toLowerCase(Locale.ROOT).contains(type.getName()))).toList();
   }
 
   public JavadocItem getJavadocItem(final JavadocItemPartial javadocItemPartial) {
