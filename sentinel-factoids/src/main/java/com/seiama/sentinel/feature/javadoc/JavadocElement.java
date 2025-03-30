@@ -134,7 +134,7 @@ public final class JavadocElement {
       .title(this.partial.displayTitle())
       .description(description);
 
-    if (this.elementType == JavadocElementType.PACKAGE) {
+    if (this.elementType != JavadocElementType.PACKAGE) {
       embedBuilder.addField(EmbedCreateFields.Field.of("Package:", this.partial.packageName(), true));
     }
 
