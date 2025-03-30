@@ -11,13 +11,16 @@ import discord4j.core.event.domain.interaction.ChatInputAutoCompleteEvent;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.core.object.command.ApplicationCommandInteractionOption;
 import discord4j.core.object.command.ApplicationCommandInteractionOptionValue;
-import discord4j.core.spec.EmbedCreateSpec;
-import discord4j.core.spec.InteractionApplicationCommandCallbackSpec;
 import discord4j.discordjson.json.ApplicationCommandOptionChoiceData;
+import java.net.URI;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Locale;
+import java.util.stream.Stream;
+import net.maisikoleni.javadoc.entities.SearchableEntity;
+import net.maisikoleni.javadoc.search.RankedTrieSearchEngine;
+import net.maisikoleni.javadoc.service.JavadocImpl;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.reactivestreams.Publisher;
@@ -29,19 +32,21 @@ import reactor.core.publisher.Mono;
 @Component
 @NullMarked
 public class Javadocs implements Listener {
+  private final RankedTrieSearchEngine.RankedConcurrentTrieGenerator commonGenerator = RankedTrieSearchEngine.RankedConcurrentTrieGenerator.of();
+  private final BasicJavadocIndexes basicJavadocIndexes = new BasicJavadocIndexes();
   private final JavadocRepository javadocs;
-  private final Cache<String, JavadocSearch> cacheJavadocs;
+  private final Cache<String, JavaDocSearchEngine> cacheSearchEngine;
   private final Cache<String, JavadocItemPartial> cacheItems;
 
   @Autowired
   public Javadocs(final JavadocRepository javadocs) {
     this.javadocs = javadocs;
-    this.cacheJavadocs = CacheBuilder.newBuilder().expireAfterWrite(Duration.ofHours(1)).build();
+    this.cacheSearchEngine = CacheBuilder.newBuilder().expireAfterWrite(Duration.ofHours(1)).build();
     this.cacheItems = CacheBuilder.newBuilder().expireAfterWrite(Duration.ofMinutes(10)).build();
     this.javadocs.findAll().map(complete -> {
-      JavadocSearch javaDocSearch = new JavadocSearch(complete.url());
-      cacheJavadocs.put(complete.name(), javaDocSearch);
-      return javaDocSearch;
+      JavaDocSearchEngine javaDocSearchEngine = this.buildEngine(complete);
+      cacheSearchEngine.put(complete.name(), javaDocSearchEngine);
+      return javaDocSearchEngine;
     }).subscribe();
   }
 
@@ -55,10 +60,10 @@ public class Javadocs implements Listener {
           .getGuild()
           .flatMap(guild -> javadocs.findByGuildAndCommandId(guild.getId(), event.getCommandId()))
           .map(complete -> {
-            JavadocSearch javadocSearch = cacheJavadocs.getIfPresent(complete.name());
+            JavaDocSearchEngine javadocSearch = cacheSearchEngine.getIfPresent(complete.name());
             if (javadocSearch == null) {
-              javadocSearch = new JavadocSearch(complete.url());
-              cacheJavadocs.put(complete.name(), javadocSearch);
+              javadocSearch = buildEngine(complete);
+              cacheSearchEngine.put(complete.name(), javadocSearch);
             }
             return javadocSearch;
           })
@@ -66,7 +71,7 @@ public class Javadocs implements Listener {
             final String term = event.getOption(JavadocModel.Complete.REQUEST_OPTION_JAVADOC_KEYWORD).flatMap(ApplicationCommandInteractionOption::getValue).map(ApplicationCommandInteractionOptionValue::asString).orElseThrow();
             JavadocItemPartial javadocItemPartial = cacheItems.getIfPresent(term);
             assert javadocItemPartial != null; // Cache still has this
-            return javadocSearch.getJavadocItem(javadocItemPartial);
+            return getJavadocElement(javadocItemPartial);
           })
           .flatMap(javadocItem -> event.reply(javadocItem.buildInteractionResponse()));
       }
@@ -79,8 +84,8 @@ public class Javadocs implements Listener {
         }
 
         if (event.getFocusedOption().getName().equals(JavadocModel.Complete.REQUEST_OPTION_JAVADOC_ELEMENT_TYPE)) {
-          return Flux.fromStream(Arrays.stream(JavadocElementType.values()))
-            .filter(javadocElementType -> javadocElementType.name().toLowerCase(Locale.ROOT).contains(term))
+          return Flux.fromStream(Arrays.stream(JavadocComponentType.values()))
+            .filter(javadocComponentType -> javadocComponentType.name().toLowerCase(Locale.ROOT).contains(term))
             .map(item -> ApplicationCommandOptionChoiceData.builder()
               .name(left(item.name(), 100))
               .value(item.name())
@@ -92,17 +97,28 @@ public class Javadocs implements Listener {
         } else if (event.getFocusedOption().getName().equals(JavadocModel.Complete.REQUEST_OPTION_JAVADOC_KEYWORD)) {
           // TODO: Maybe this can be improvement?
           final String javadocName = event.getCommandName().replace("javadoc-", "");
-          final JavadocElementType javadocElementType = event.getOption(JavadocModel.Complete.REQUEST_OPTION_JAVADOC_ELEMENT_TYPE).flatMap(ApplicationCommandInteractionOption::getValue).map(ApplicationCommandInteractionOptionValue::asString).map(String::toUpperCase).map(JavadocElementType::fromString).orElse(JavadocElementType.UNKNOW);
+          final JavadocComponentType javadocComponentType = event.getOption(JavadocModel.Complete.REQUEST_OPTION_JAVADOC_ELEMENT_TYPE).flatMap(ApplicationCommandInteractionOption::getValue).map(ApplicationCommandInteractionOptionValue::asString).map(String::toUpperCase).map(JavadocComponentType::fromString).orElse(JavadocComponentType.UNKNOW);
 
-          JavadocSearch jdSearch = cacheJavadocs.getIfPresent(javadocName);
+          JavaDocSearchEngine jdSearch = cacheSearchEngine.getIfPresent(javadocName);
           if (jdSearch == null) {
             return event.respondWithSuggestions(Collections.emptyList());
           }
 
-          return Flux.fromIterable(jdSearch.search(term, javadocElementType))
+          Stream<? extends SearchableEntity> searchableEntities = switch (javadocComponentType) {
+            case MODULE -> jdSearch.searchEngine().searchGroupedByType(term).modules();
+            case PACKAGE -> jdSearch.searchEngine().searchGroupedByType(term).packages();
+            case TYPE -> jdSearch.searchEngine().searchGroupedByType(term).types();
+            case MEMBER -> jdSearch.searchEngine().searchGroupedByType(term).members();
+            case TAG -> jdSearch.searchEngine().searchGroupedByType(term).tags();
+            default -> jdSearch.searchEngine().search(term);
+          };
+
+          Stream<JavadocItemPartial> searchableJavaDocPartial = searchableEntities.map(searchableEntity -> JavadocItemPartial.fromSearchableEntity(jdSearch.javadoc().baseUrl(), searchableEntity));
+
+          return Flux.fromStream(searchableJavaDocPartial)
             .doOnNext(next -> cacheItems.put(String.valueOf(next.hashCode()), next)) // this is awful, but also...
             .map(item -> ApplicationCommandOptionChoiceData.builder()
-              .name(left(item.nameSuggest(), 100))
+              .name(left(item.displayName(), 100))
               .value(String.valueOf(item.hashCode()))
               .build())
             .cast(ApplicationCommandOptionChoiceData.class)
@@ -114,6 +130,17 @@ public class Javadocs implements Listener {
       }
 
     }).then();
+  }
+
+  private JavaDocSearchEngine buildEngine(JavadocModel.Complete complete) {
+    JavadocImpl javadocImpl = new JavadocImpl(complete.name(), complete.name(), "", URI.create(complete.url()), this.basicJavadocIndexes);
+    IndexWithBaseUrl indexWithBaseUrl = new IndexWithBaseUrl(javadocImpl.baseUrl(), javadocImpl.index());
+
+    return new JavaDocSearchEngine(javadocImpl, new RankedTrieSearchEngine(indexWithBaseUrl.index(), this.commonGenerator));
+  }
+
+  private JavadocElement getJavadocElement(final JavadocItemPartial javadocItemPartial) {
+    return new JavadocElement(javadocItemPartial);
   }
 
   private String left(final @Nullable String string, final int length) {
