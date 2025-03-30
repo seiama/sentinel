@@ -8,23 +8,23 @@ import discord4j.core.spec.EmbedCreateFields;
 import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.core.spec.InteractionApplicationCommandCallbackSpec;
 import discord4j.rest.util.Color;
-import java.util.List;
 import java.util.Locale;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public final class JavadocElement {
   private final JavadocItemPartial partial;
-  @Nullable
-  private List<Element> descriptionElements;
-  @Nullable
-  private Element deprecationElement;
   private JavadocElementType elementType = JavadocElementType.UNKNOWN;
+  @Nullable
+  private String deprecation;
+  @Nullable
+  private String description;
   @Nullable
   private String modifiers;
   @Nullable
@@ -37,12 +37,12 @@ public final class JavadocElement {
 
     if (this.partial.type() == JavadocModel.Complete.ComponentType.PACKAGE) {
       this.elementType = JavadocElementType.PACKAGE;
-      this.descriptionElements = document.select("#package-description > div.block");
-      this.deprecationElement = document.selectFirst("#package-description > div.deprecation-block");
+      this.description = this.readDescription(document.selectFirst("#package-description"));
+      this.deprecation = this.readDeprecation(document.selectFirst("#package-description"));
     } else if (this.partial.type() == JavadocModel.Complete.ComponentType.TYPE) {
       this.elementType = JavadocElementType.CLASS;
-      this.descriptionElements = document.select("#class-description > div.block");
-      this.deprecationElement = document.selectFirst("#class-description > div.deprecation-block");
+      this.description = this.readDescription(document.selectFirst("#class-description"));
+      this.deprecation = this.readDeprecation(document.selectFirst("#class-description"));
       this.modifiers = this.readModifiers(document);
       Element headerClassElement = document.selectFirst("div.header > h1.title");
       if (headerClassElement != null) {
@@ -64,8 +64,8 @@ public final class JavadocElement {
         this.processDetailElements(document, ClassDetailType.METHOD, element -> {
           if (this.partial.urlDecoded().contains(element.id())) {
             this.elementType = JavadocElementType.METHOD;
-            this.descriptionElements = element.select("div.block");
-            this.deprecationElement = element.selectFirst("div.deprecation-block");
+            this.description = this.readDescription(element);
+            this.deprecation = this.readDeprecation(element);
             this.modifiers = this.readModifiers(element);
             this.returnType = this.readMethodReturnType(element);
           }
@@ -73,8 +73,8 @@ public final class JavadocElement {
         this.processDetailElements(document, ClassDetailType.CONSTRUCTOR, element -> {
           if (this.partial.urlDecoded().contains(element.id())) {
             this.elementType = JavadocElementType.CONSTRUCTOR;
-            this.descriptionElements = element.select("div.block");
-            this.deprecationElement = element.selectFirst("div.deprecation-block");
+            this.description = this.readDescription(element);
+            this.deprecation = this.readDeprecation(element);
             this.modifiers = this.readModifiers(element);
           }
         });
@@ -83,15 +83,15 @@ public final class JavadocElement {
         this.processDetailElements(document, ClassDetailType.FIELD, element -> {
           if (element.id().equals(this.partial.name())) {
             this.elementType = JavadocElementType.FIELD;
-            this.descriptionElements = element.select("div.block");
-            this.deprecationElement = element.selectFirst("div.deprecation-block");
+            this.description = this.readDescription(element);
+            this.deprecation = this.readDeprecation(element);
           }
         });
         this.processDetailElements(document, ClassDetailType.ENUM_CONSTANTS, element -> {
           if (element.id().equals(this.partial.name())) {
             this.elementType = JavadocElementType.ENUM_ELEMENT;
-            this.descriptionElements = element.select("div.block");
-            this.deprecationElement = element.selectFirst("div.deprecation-block");
+            this.description = this.readDescription(element);
+            this.deprecation = this.readDeprecation(element);
           }
         });
       }
@@ -111,7 +111,45 @@ public final class JavadocElement {
   }
 
   @Nullable
-  private String readModifiers(Element element) {
+  private String readDeprecation(@Nullable Element element) {
+    if (element == null) {
+      return null;
+    }
+    Element deprecationElement = element.selectFirst("div.deprecation-block");
+    if (deprecationElement != null) {
+        String deprecationMessage = "";
+        Element deprecationLabelElement = deprecationElement.selectFirst("span.deprecated-label");
+        if (deprecationLabelElement != null) {
+          deprecationMessage = deprecationMessage.concat(JSoupUtils.formatText(deprecationLabelElement.attr("style", "font-weight:bold").outerHtml(), this.partial.url())).concat("\n");
+        }
+        Element deprecationBlockElement = deprecationElement.selectFirst("div.deprecation-comment");
+        if (deprecationBlockElement != null) {
+          deprecationMessage = deprecationMessage.concat(JSoupUtils.formatText(deprecationBlockElement, this.partial.url()));
+        } else {
+          deprecationMessage = deprecationMessage.concat("not deprecation message was set");
+        }
+        return deprecationMessage;
+    }
+    return null;
+  }
+
+  @Nullable
+  private String readDescription(@Nullable Element element) {
+    if (element == null) {
+      return null;
+    }
+    Elements elementsDescription = element.select("div.block");
+    if (!elementsDescription.isEmpty()) {
+      return description = JSoupUtils.formatText(elementsDescription.stream().map(Element::outerHtml).collect(Collectors.joining("\n")), this.partial.url());
+    }
+    return null;
+  }
+
+  @Nullable
+  private String readModifiers(@Nullable Element element) {
+    if (element == null) {
+      return null;
+    }
     Element elementModifiers = element.selectFirst("div[class$=\"-signature\"] > span.modifiers");
     if (elementModifiers != null) {
       return elementModifiers.text().replaceAll("\\b(?!public|private|static|final|protected)\\w+\\b|[@#%&*]", "").trim();
@@ -130,22 +168,20 @@ public final class JavadocElement {
 
   public InteractionApplicationCommandCallbackSpec buildInteractionResponse() {
     InteractionApplicationCommandCallbackSpec.Builder interactionResponseBuilder = InteractionApplicationCommandCallbackSpec.builder();
-    if (this.deprecationElement != null) {
-      Element deprecationElement = this.deprecationElement.selectFirst("div.deprecation-block");
-      String deprecationMessage = (deprecationElement != null) ? JSoupUtils.formatText(deprecationElement, this.partial.url()) : "```This element is deprecated```";
+
+    if (this.deprecation != null) {
       EmbedCreateSpec.Builder embedDeprecatedMessageBuilder = EmbedCreateSpec.builder();
       embedDeprecatedMessageBuilder.color(Color.RED);
-      embedDeprecatedMessageBuilder.description(deprecationMessage);
+      embedDeprecatedMessageBuilder.description(this.deprecation);
       interactionResponseBuilder.addEmbed(embedDeprecatedMessageBuilder.build());
     }
-    String description = "";
-    if (this.descriptionElements != null) {
-      description = JSoupUtils.formatText(this.descriptionElements.stream().map(Element::outerHtml).collect(Collectors.joining("\n")), this.partial.url());
-    }
+
     EmbedCreateSpec.Builder embedBuilder = EmbedCreateSpec.builder();
-    embedBuilder.color(Color.CYAN)
-      .title(this.partial.displayTitle())
-      .description(description);
+    embedBuilder.color(Color.CYAN).title(this.partial.displayTitle());
+
+    if (this.description != null) {
+      embedBuilder.description(this.description);
+    }
 
     if (this.elementType != JavadocElementType.PACKAGE) {
       embedBuilder.addField(EmbedCreateFields.Field.of("Package:", this.partial.packageName(), true));
