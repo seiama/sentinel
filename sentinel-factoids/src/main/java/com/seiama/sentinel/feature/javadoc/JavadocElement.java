@@ -27,6 +27,8 @@ public final class JavadocElement {
   private JavadocElementType elementType = JavadocElementType.UNKNOWN;
   @Nullable
   private String modifiers;
+  @Nullable
+  private String returnType;
 
   public JavadocElement(JavadocItemPartial partial) {
     this.partial = partial;
@@ -65,6 +67,7 @@ public final class JavadocElement {
             this.descriptionElements = element.select("div.block");
             this.deprecationElement = element.selectFirst("div.deprecation-block");
             this.modifiers = this.readModifiers(element);
+            this.returnType = this.readMethodReturnType(element);
           }
         });
         this.processDetailElements(document, ClassDetailType.CONSTRUCTOR, element -> {
@@ -116,6 +119,15 @@ public final class JavadocElement {
     return null;
   }
 
+  @Nullable
+  private String readMethodReturnType(Element element) {
+    Element elementReturnType = element.selectFirst("div.member-signature > span.return-type");
+    if (elementReturnType != null) {
+      return JSoupUtils.formatText(elementReturnType, this.partial.url());
+    }
+    return null;
+  }
+
   public InteractionApplicationCommandCallbackSpec buildInteractionResponse() {
     InteractionApplicationCommandCallbackSpec.Builder interactionResponseBuilder = InteractionApplicationCommandCallbackSpec.builder();
     if (this.deprecationElement != null) {
@@ -143,6 +155,10 @@ public final class JavadocElement {
 
     if (this.modifiers != null) {
       embedBuilder.addField(EmbedCreateFields.Field.of("Modifiers:", this.modifiers, true));
+    }
+
+    if (this.returnType != null) {
+      embedBuilder.addField(EmbedCreateFields.Field.of("Return:", this.returnType, true));
     }
 
     interactionResponseBuilder.addEmbed(embedBuilder.build());
