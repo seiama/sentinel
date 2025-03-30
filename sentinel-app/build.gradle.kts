@@ -18,6 +18,7 @@ dependencies {
   implementation("io.r2dbc:r2dbc-h2")
   implementation("it.unimi.dsi:fastutil:8.5.15")
   implementation("net.time4j:time4j-base:5.9.3")
+  implementation("org.jsoup:jsoup:1.19.1")
   implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
   implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
   implementation("org.springframework.boot:spring-boot-starter-web")

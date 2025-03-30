@@ -5,8 +5,12 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import discord4j.common.util.Snowflake;
 import discord4j.core.object.command.ApplicationCommandOption;
+import discord4j.discordjson.json.ApplicationCommandOptionChoiceData;
 import discord4j.discordjson.json.ApplicationCommandOptionData;
 import discord4j.discordjson.json.ApplicationCommandRequest;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.stream.Collectors;
 import org.bson.types.ObjectId;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -91,11 +95,47 @@ public interface JavadocModel {
             .description("The type of element to search")
             .required(true)
             .type(ApplicationCommandOption.Type.STRING.getValue())
-            .autocomplete(true)
+            .choices(ComponentType.asOptionChoices())
             .build())
           .addOption(this.searchOptionRequest())
           .build())
         .build();
+    }
+
+    public enum ComponentType {
+      ALL("all"),
+      MODULE("module"),
+      PACKAGE("package"),
+      TYPE("type"),
+      MEMBER("member"),
+      TAG("tag");
+
+      private final String name;
+
+      ComponentType(String name) {
+        this.name = name;
+      }
+
+      public String getName() {
+        return this.name;
+      }
+
+      public ApplicationCommandOptionChoiceData asOptionChoice() {
+        return ApplicationCommandOptionChoiceData.builder().name(this.name).value(this.toString()).build();
+      }
+
+      public static ComponentType fromString(String name) {
+        for (ComponentType type : values()) {
+          if (type.name.equalsIgnoreCase(name)) {
+            return type;
+          }
+        }
+        return ALL;
+      }
+
+      public static Collection<ApplicationCommandOptionChoiceData> asOptionChoices() {
+        return Arrays.stream(values()).filter(componentType -> componentType != ALL).map(ComponentType::asOptionChoice).collect(Collectors.toList());
+      }
     }
   }
 

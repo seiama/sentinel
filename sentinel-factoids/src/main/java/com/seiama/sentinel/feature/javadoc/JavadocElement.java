@@ -1,5 +1,6 @@
 package com.seiama.sentinel.feature.javadoc;
 
+import com.seiama.sentinel.common.model.JavadocModel;
 import com.seiama.sentinel.feature.javadoc.utils.JSoupUtils;
 import discord4j.core.object.component.ActionRow;
 import discord4j.core.object.component.Button;
@@ -32,11 +33,11 @@ public final class JavadocElement {
 
     Document document = JSoupUtils.fetchDocument(this.partial.url());
 
-    if (this.partial.type() == JavadocComponentType.PACKAGE) {
+    if (this.partial.type() == JavadocModel.Complete.ComponentType.PACKAGE) {
       this.elementType = JavadocElementType.PACKAGE;
       this.descriptionElements = document.select("#package-description > div.block");
       this.deprecationElement = document.selectFirst("#package-description > div.deprecation-block");
-    } else if (this.partial.type() == JavadocComponentType.TYPE) {
+    } else if (this.partial.type() == JavadocModel.Complete.ComponentType.TYPE) {
       this.elementType = JavadocElementType.CLASS;
       this.descriptionElements = document.select("#class-description > div.block");
       this.deprecationElement = document.selectFirst("#class-description > div.deprecation-block");
@@ -56,7 +57,7 @@ public final class JavadocElement {
           }
         }
       }
-    } else if (this.partial.type() == JavadocComponentType.MEMBER) {
+    } else if (this.partial.type() == JavadocModel.Complete.ComponentType.MEMBER) {
       if (this.partial.url().contains("(")) {
         this.processDetailElements(document, ClassDetailType.METHOD, element -> {
           if (this.partial.urlDecoded().contains(element.id())) {

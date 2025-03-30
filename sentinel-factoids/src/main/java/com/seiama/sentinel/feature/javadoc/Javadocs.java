@@ -17,7 +17,6 @@ import discord4j.core.object.command.ApplicationCommandOption;
 import discord4j.discordjson.json.ApplicationCommandOptionChoiceData;
 import java.net.URI;
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -99,19 +98,8 @@ public class Javadocs implements Listener {
           .flatMap(guild -> javadocs.findByGuildAndCommandId(guild.getId(), event.getCommandId()))
           .map(complete -> getEngine(complete))
           .flatMap(jdSearch -> {
-            if (event.getFocusedOption().getName().equals(JavadocModel.Complete.REQUEST_OPTION_JAVADOC_ELEMENT_TYPE)) {
-              return Flux.fromStream(Arrays.stream(JavadocComponentType.values()))
-                .filter(javadocComponentType -> javadocComponentType != JavadocComponentType.ALL)
-                .map(item -> ApplicationCommandOptionChoiceData.builder()
-                  .name(left(item.name(), 100))
-                  .value(item.name())
-                  .build())
-                .cast(ApplicationCommandOptionChoiceData.class)
-                .take(25)
-                .collectList()
-                .flatMap(event::respondWithSuggestions);
-            } else if (event.getFocusedOption().getName().equals(JavadocModel.Complete.REQUEST_OPTION_JAVADOC_KEYWORD)) {
-              final JavadocComponentType javadocComponentType = event.getOption(JavadocModel.Complete.REQUEST_OPTION_JAVADOC_ELEMENT_TYPE).flatMap(ApplicationCommandInteractionOption::getValue).map(ApplicationCommandInteractionOptionValue::asString).map(String::toUpperCase).map(JavadocComponentType::fromString).orElse(JavadocComponentType.ALL);
+            if (event.getFocusedOption().getName().equals(JavadocModel.Complete.REQUEST_OPTION_JAVADOC_KEYWORD)) {
+              final JavadocModel.Complete.ComponentType javadocComponentType = event.getOptions().stream().filter(option -> option.getType().equals(ApplicationCommandOption.Type.SUB_COMMAND)).findFirst().map(subCommandOption -> subCommandOption.getOption(JavadocModel.Complete.REQUEST_OPTION_JAVADOC_ELEMENT_TYPE).flatMap(ApplicationCommandInteractionOption::getValue).map(ApplicationCommandInteractionOptionValue::asString).map(String::toUpperCase).map(JavadocModel.Complete.ComponentType::fromString).orElse(JavadocModel.Complete.ComponentType.ALL)).orElse(JavadocModel.Complete.ComponentType.ALL);
 
               Stream<? extends SearchableEntity> searchableEntities = switch (javadocComponentType) {
                 case MODULE -> jdSearch.searchEngine().searchGroupedByType(term).modules();

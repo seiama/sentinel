@@ -1,4 +1,4 @@
-package com.seiama.sentinel.feature.javadoc.commands;
+package com.seiama.sentinel.feature.javadoc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.seiama.sentinel.command.Command;
@@ -22,10 +22,14 @@ import discord4j.discordjson.json.ApplicationCommandOptionData;
 import discord4j.discordjson.json.ApplicationCommandRequest;
 import discord4j.rest.RestClient;
 import discord4j.rest.service.ApplicationService;
+import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import org.bson.types.ObjectId;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jspecify.annotations.NullMarked;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -121,8 +125,22 @@ public final class JavadocCommand implements GuildCommand {
         SET, option -> {
           return Mono.justOrEmpty(Options.string(option, OptionNames.NAME))
             .flatMap(name -> {
-              final String url = Options.string(option, OptionNames.JAVADOC).orElseThrow(); // This is mandatory in all cases
-              // TODO: need parse that url to check if is a javadoc in fist place
+              final String url = Options.string(option, OptionNames.JAVADOC).map(strUrl -> {
+                if (!strUrl.endsWith("/")) {
+                  return strUrl + "/";
+                }
+                return strUrl;
+              }).orElseThrow(); // This is mandatory in all cases
+              Document document;
+              try {
+                document = Jsoup.connect(url).followRedirects(true).get();
+              } catch (IOException exception) {
+                return event.editReply().withContentOrNull(Emoji.NO.asFormat() + " we cannot load the url for check");
+              }
+              Element descriptionMetaTag = document.select("meta[name=description]").first();
+              if (descriptionMetaTag == null || !descriptionMetaTag.attr("content").equalsIgnoreCase("package index")) {
+                return event.editReply().withContentOrNull(Emoji.NO.asFormat() + " the url javadoc url `%s` its invalid".formatted(url));
+              }
               return this.javadocs.findByGuildAndName(guild.getId(), name)
                 .flatMap(model -> this.javadocs.update(model, new JavadocModel.Partial.SetUrl() {
                   @Override
