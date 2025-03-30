@@ -143,8 +143,14 @@ public final class JavadocCommand implements GuildCommand {
                         return Snowflake.of(data.id());
                       }
                     }));
+                  } else {
+                    return this.appAction((applicationId, service) -> service.modifyGuildApplicationCommand(
+                      applicationId,
+                      guild.getId().asLong(),
+                      model.commandId().asLong(),
+                      model.asRequest()
+                    ));
                   }
-                  return Mono.empty();
                 })
                 .then(event.editReply().withContentOrNull(Emoji.YES.asFormat()));
             });

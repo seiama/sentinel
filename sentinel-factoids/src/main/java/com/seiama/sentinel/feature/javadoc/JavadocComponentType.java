@@ -8,13 +8,12 @@ import net.maisikoleni.javadoc.entities.Tag;
 import net.maisikoleni.javadoc.entities.Type;
 
 public enum JavadocComponentType {
-  UNKNOW("unknown"),
+  ALL("all"),
   MODULE("module"),
   PACKAGE("package"),
   TYPE("type"),
   MEMBER("member"),
-  TAG("tag"),
-  ;
+  TAG("tag");
 
   private final String name;
 
@@ -32,7 +31,7 @@ public enum JavadocComponentType {
         return type;
       }
     }
-    return UNKNOW;
+    return ALL;
   }
 
   public static JavadocComponentType fromSearchableEntity(SearchableEntity searchableEntity) {
@@ -47,7 +46,7 @@ public enum JavadocComponentType {
     } else if (searchableEntity instanceof Package) {
       return PACKAGE;
     }
-    return UNKNOW;
+    return ALL;
   }
 
 }

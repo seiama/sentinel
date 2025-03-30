@@ -57,23 +57,43 @@ public interface JavadocModel {
       return "javadoc-".concat(this.name());
     }
 
+    public String commandDescription() {
+      return "Search in %s JavaDocs [%s]".formatted(this.name(), this.url());
+    }
+
+    private ApplicationCommandOptionData searchOptionRequest() {
+      return ApplicationCommandOptionData.builder()
+        .name(REQUEST_OPTION_JAVADOC_KEYWORD)
+        .description("The keyword to search for")
+        .required(true)
+        .type(ApplicationCommandOption.Type.STRING.getValue())
+        .autocomplete(true)
+        .build();
+    }
+
     public ApplicationCommandRequest asRequest() {
       return ApplicationCommandRequest.builder()
         .name(this.commandName())
-        .description("Search in " + this.name() + " JavaDocs")
+        .description(this.commandDescription())
         .addOption(ApplicationCommandOptionData.builder()
-          .name(REQUEST_OPTION_JAVADOC_KEYWORD)
-          .description("The keyword to search for")
-          .required(true)
-          .type(ApplicationCommandOption.Type.STRING.getValue())
-          .autocomplete(true)
-          .build())
+          .name("search")
+          .description("Search in the whole javadoc")
+          .type(ApplicationCommandOption.Type.SUB_COMMAND.getValue())
+          .addOption(this.searchOptionRequest())
+          .build()
+        )
         .addOption(ApplicationCommandOptionData.builder()
-          .name(REQUEST_OPTION_JAVADOC_ELEMENT_TYPE)
-          .description("The type of element to search (enum, class, interface, etc)")
-          .required(false)
-          .type(ApplicationCommandOption.Type.STRING.getValue())
-          .autocomplete(true)
+          .name("group-search")
+          .description("Search in the whole javadoc by an specific type of element")
+          .type(ApplicationCommandOption.Type.SUB_COMMAND.getValue())
+          .addOption(ApplicationCommandOptionData.builder()
+            .name(REQUEST_OPTION_JAVADOC_ELEMENT_TYPE)
+            .description("The type of element to search")
+            .required(true)
+            .type(ApplicationCommandOption.Type.STRING.getValue())
+            .autocomplete(true)
+            .build())
+          .addOption(this.searchOptionRequest())
           .build())
         .build();
     }
