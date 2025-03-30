@@ -72,7 +72,6 @@ public record JavadocItemPartial(
 
   public String packageName() {
     String[] parts = this.qualifiedName.split("\\.");
-    System.out.println(parts.length);
     int classNameIndex = -1;
 
     for (int i = 0; i < parts.length; i++) {
