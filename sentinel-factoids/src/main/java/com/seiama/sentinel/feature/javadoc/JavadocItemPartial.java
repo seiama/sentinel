@@ -44,7 +44,7 @@ public record JavadocItemPartial(
       String[] parts = this.qualifiedName.split("\\.");
       int classNameIndex = -1;
 
-      for (int i = 0; i < parts.length - 1; i++) {
+      for (int i = 0; i < parts.length; i++) {
         if (Character.isUpperCase(parts[i].charAt(0))) {
           classNameIndex = i;
           break;
@@ -58,18 +58,24 @@ public record JavadocItemPartial(
       String className = String.join(".", Arrays.copyOfRange(parts, classNameIndex, parts.length - 1));
       String methodFieldName = parts[parts.length - 1];
 
-      return className + (this.type == JavadocComponentType.TYPE ? "." : "#") + methodFieldName;
+      String displayName = className + (this.type == JavadocComponentType.TYPE ? "." : "#") + methodFieldName;
+      if (displayName.startsWith(".")) {
+        displayName = displayName.replaceFirst("\\.", "");
+      }
+
+      return displayName;
     } else if (this.type.equals(JavadocComponentType.PACKAGE)) {
-      return Arrays.stream(this.packageName().split("\\.")).findFirst().orElse(this.qualifiedName);
+      return this.packageName();
     }
-    return "";
+    return this.name();
   }
 
   public String packageName() {
     String[] parts = this.qualifiedName.split("\\.");
+    System.out.println(parts.length);
     int classNameIndex = -1;
 
-    for (int i = 0; i < parts.length - 1; i++) {
+    for (int i = 0; i < parts.length; i++) {
       if (Character.isUpperCase(parts[i].charAt(0))) {
         classNameIndex = i;
         break;
