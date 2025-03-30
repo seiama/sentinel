@@ -8,7 +8,10 @@ public enum JavadocElementType {
   FIELD("Field"),
   CLASS("Class"),
   INTERFACE("Interface"),
-  RECORD("Record"),
+  ENUM_CLASS("Enum Class"),
+  RECORD_CLASS("Record Class"),
+  ANNOTATION_INTERFACE("Annotation Interface"),
+  EXCEPTION_CLASS("Exception Class"),
   UNKNOWN("Unknown");
 
   public final String displayName;

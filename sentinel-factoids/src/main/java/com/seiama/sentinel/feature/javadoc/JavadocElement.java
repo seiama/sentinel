@@ -8,6 +8,7 @@ import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.core.spec.InteractionApplicationCommandCallbackSpec;
 import discord4j.rest.util.Color;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import org.jsoup.nodes.Document;
@@ -39,10 +40,26 @@ public final class JavadocElement {
       this.elementType = JavadocElementType.CLASS;
       this.descriptionElements = document.select("#class-description > div.block");
       this.deprecationElement = document.selectFirst("#class-description > div.deprecation-block");
+      this.modifiers = this.readModifiers(document);
+      Element headerClassElement = document.selectFirst("div.header > h1.title");
+      if (headerClassElement != null) {
+        String headerClassTitle = headerClassElement.attr("title");
+        if (headerClassTitle.contains("Exception")) {
+          this.elementType = JavadocElementType.EXCEPTION_CLASS;
+        } else {
+          String classType = headerClassTitle.replaceAll(" .*", "").toLowerCase(Locale.ROOT);
+          switch (classType) {
+            case "interface" -> this.elementType = JavadocElementType.INTERFACE;
+            case "enum" -> this.elementType = JavadocElementType.ENUM_CLASS;
+            case "record" -> this.elementType = JavadocElementType.RECORD_CLASS;
+            case "annotation" -> this.elementType = JavadocElementType.ANNOTATION_INTERFACE;
+          }
+        }
+      }
     } else if (this.partial.type() == JavadocComponentType.MEMBER) {
       if (this.partial.url().contains("(")) {
         this.processDetailElements(document, ClassDetailType.METHOD, element -> {
-          if (element.id().equals(this.partial.name())) {
+          if (this.partial.urlDecoded().contains(element.id())) {
             this.elementType = JavadocElementType.METHOD;
             this.descriptionElements = element.select("div.block");
             this.deprecationElement = element.selectFirst("div.deprecation-block");
@@ -91,9 +108,9 @@ public final class JavadocElement {
 
   @Nullable
   private String readModifiers(Element element) {
-    Element elementModifiers = element.selectFirst("div.member-signature > span.modifiers");
+    Element elementModifiers = element.selectFirst("div[class$=\"-signature\"] > span.modifiers");
     if (elementModifiers != null) {
-      return elementModifiers.text();
+      return elementModifiers.text().replaceAll("\\b(?!public|private|static|final|protected)\\w+\\b|[@#%&*]", "").trim();
     }
     return null;
   }
@@ -115,9 +132,13 @@ public final class JavadocElement {
     EmbedCreateSpec.Builder embedBuilder = EmbedCreateSpec.builder();
     embedBuilder.color(Color.CYAN)
       .title(this.partial.displayTitle())
-      .description(description)
-      .addField(EmbedCreateFields.Field.of("Package:", this.partial.packageName(), true))
-      .addField(EmbedCreateFields.Field.of("Type:", this.elementType.displayName, true));
+      .description(description);
+
+    if (this.elementType == JavadocElementType.PACKAGE) {
+      embedBuilder.addField(EmbedCreateFields.Field.of("Package:", this.partial.packageName(), true));
+    }
+
+    embedBuilder.addField(EmbedCreateFields.Field.of("Type:", this.elementType.displayName, true));
 
     if (this.modifiers != null) {
       embedBuilder.addField(EmbedCreateFields.Field.of("Modifiers:", this.modifiers, true));
