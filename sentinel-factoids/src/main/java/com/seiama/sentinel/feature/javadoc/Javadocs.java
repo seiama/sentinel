@@ -74,12 +74,16 @@ public class Javadocs implements Listener {
           .flatMap(javadocSearch -> {
             final String term = event.getOptions().stream().filter(option -> option.getType().equals(ApplicationCommandOption.Type.SUB_COMMAND)).findFirst().map(subCommandOption -> subCommandOption.getOption(JavadocModel.Complete.REQUEST_OPTION_JAVADOC_KEYWORD).flatMap(ApplicationCommandInteractionOption::getValue).map(ApplicationCommandInteractionOptionValue::asString).orElseThrow()).orElseThrow();
             JavadocItemPartial javadocItemPartial = cacheItems.getIfPresent(term);
+
             if (javadocItemPartial == null) { // the case if user make cache of element expire when ask for them
-              return event.reply("No javadoc available for term " + term);
-            } else {
-              JavadocElement javadocElement = getJavadocElement(javadocItemPartial);
-              return event.reply(javadocElement.buildInteractionResponse());
+              javadocItemPartial = javadocSearch.searchEngine().search(term).findFirst().map(searchableEntity -> JavadocItemPartial.fromSearchableEntity(javadocSearch.javadoc().baseUrl(), searchableEntity)).orElse(null);
+              if (javadocItemPartial == null) { // if not found any using the term not cached then just tell the user cannot find any
+                return event.reply("No javadoc available for term `%s`".formatted(term));
+              }
             }
+
+            JavadocElement javadocElement = getJavadocElement(javadocItemPartial);
+            return event.reply(javadocElement.buildInteractionResponse());
           });
       }
 
