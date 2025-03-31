@@ -41,7 +41,7 @@ public record JavadocItemPartial(
       final String strClassMethodParams = this.qualifiedName.replaceFirst(packageName, "").replaceFirst("\\.", "");
 
       final Matcher matcher = CLASS_METHOD_PATTERN.matcher(strClassMethodParams);
-      String strFormatedClassMethodParams;
+      final String strFormatedClassMethodParams;
 
       if (matcher.find()) {
         final String strClass = matcher.group(1); // class
