@@ -1,5 +1,6 @@
 package com.seiama.sentinel.feature.javadoc;
 
+import com.google.common.base.Splitter;
 import com.seiama.sentinel.common.model.JavadocModel;
 import java.net.URI;
 import java.net.URLDecoder;
@@ -37,7 +38,7 @@ public record JavadocItemPartial(
   public String displayName() {
     if (this.type.equals(JavadocModel.Complete.ComponentType.TYPE) || this.type.equals(JavadocModel.Complete.ComponentType.MEMBER)) {
       final String packageName = this.packageName();
-      final String strClassMethodParams = this.qualifiedName.replaceFirst(packageName, "").replaceFirst(".", "");
+      final String strClassMethodParams = this.qualifiedName.replaceFirst(packageName, "").replaceFirst("\\.", "");
 
       final Matcher matcher = CLASS_METHOD_PATTERN.matcher(strClassMethodParams);
       String strFormatedClassMethodParams;
@@ -71,7 +72,7 @@ public record JavadocItemPartial(
   }
 
   public String packageNameAbbreviation() {
-    final String[] parts = this.packageName().split("\\.");
+    final Iterable<String> parts = Splitter.on(".").split(this.packageName());
     final StringBuilder abbreviatedName = new StringBuilder();
     for (final String part : parts) {
       abbreviatedName.append(part.charAt(0));
