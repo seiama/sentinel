@@ -115,7 +115,7 @@ public class Javadocs implements Listener {
               return Flux.fromStream(searchableJavaDocPartial)
                 .doOnNext(next -> Javadocs.this.cacheItems.put(String.valueOf(next.hashCode()), next)) // this is awful, but also...
                 .map(item -> ApplicationCommandOptionChoiceData.builder()
-                  .name(Javadocs.this.left(item.displayName(), 100))
+                  .name(Javadocs.this.left(item.displayForChoice(), 100))
                   .value(String.valueOf(item.hashCode()))
                   .build())
                 .cast(ApplicationCommandOptionChoiceData.class)
