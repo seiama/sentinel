@@ -189,7 +189,7 @@ public final class JavadocElement {
 
     embedBuilder.addField(EmbedCreateFields.Field.of("Type:", this.elementType.displayName, true));
 
-    if (this.modifiers != null) {
+    if (this.modifiers != null && !this.modifiers.isBlank()) {
       embedBuilder.addField(EmbedCreateFields.Field.of("Modifiers:", this.modifiers, true));
     }
 
