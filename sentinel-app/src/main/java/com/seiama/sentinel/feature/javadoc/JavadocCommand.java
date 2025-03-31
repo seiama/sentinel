@@ -131,13 +131,13 @@ public final class JavadocCommand implements GuildCommand {
                 }
                 return strUrl;
               }).orElseThrow(); // This is mandatory in all cases
-              Document document;
+              final Document document;
               try {
                 document = Jsoup.connect(url).followRedirects(true).get();
-              } catch (IOException exception) {
+              } catch (final IOException exception) {
                 return event.editReply().withContentOrNull(Emoji.NO.asFormat() + " we cannot load the url for check");
               }
-              Element descriptionMetaTag = document.select("meta[name=description]").first();
+              final Element descriptionMetaTag = document.select("meta[name=description]").first();
               if (descriptionMetaTag == null || !descriptionMetaTag.attr("content").equalsIgnoreCase("package index")) {
                 return event.editReply().withContentOrNull(Emoji.NO.asFormat() + " the url javadoc url `%s` its invalid".formatted(url));
               }

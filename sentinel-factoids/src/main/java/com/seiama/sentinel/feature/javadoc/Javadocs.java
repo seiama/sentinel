@@ -48,14 +48,14 @@ public class Javadocs implements Listener {
       .expireAfterWrite(Duration.ofHours(1))
       .build(new CacheLoader<>() {
         @Override
-        public JavaDocSearchEngine load(ObjectId key) {
-          return buildEngine(Objects.requireNonNull(javadocs.findById(key).block()));
+        public JavaDocSearchEngine load(final ObjectId key) {
+          return Javadocs.this.buildEngine(Objects.requireNonNull(Javadocs.this.javadocs.findById(key).block()));
         }
       });
     this.cacheItems = CacheBuilder.newBuilder().expireAfterWrite(Duration.ofMinutes(10)).build();
     this.javadocs.findAll().map(complete -> {
-      JavaDocSearchEngine javaDocSearchEngine = this.buildEngine(complete);
-      cacheSearchEngine.put(complete._id(), javaDocSearchEngine);
+      final JavaDocSearchEngine javaDocSearchEngine = this.buildEngine(complete);
+      Javadocs.this.cacheSearchEngine.put(complete._id(), javaDocSearchEngine);
       return javaDocSearchEngine;
     }).subscribe();
   }
@@ -65,14 +65,14 @@ public class Javadocs implements Listener {
     return client.on(new ReactiveEventAdapter() {
 
       @Override
-      public Publisher<?> onChatInputInteraction(ChatInputInteractionEvent event) {
+      public Publisher<?> onChatInputInteraction(final ChatInputInteractionEvent event) {
         return event.getInteraction()
           .getGuild()
-          .flatMap(guild -> javadocs.findByGuildAndCommandId(guild.getId(), event.getCommandId()))
-          .map(complete -> getEngine(complete))
+          .flatMap(guild -> Javadocs.this.javadocs.findByGuildAndCommandId(guild.getId(), event.getCommandId()))
+          .map(Javadocs.this::createEngine)
           .flatMap(javadocSearch -> {
             final String term = event.getOptions().stream().filter(option -> option.getType().equals(ApplicationCommandOption.Type.SUB_COMMAND)).findFirst().map(subCommandOption -> subCommandOption.getOption(JavadocModel.Complete.REQUEST_OPTION_JAVADOC_KEYWORD).flatMap(ApplicationCommandInteractionOption::getValue).map(ApplicationCommandInteractionOptionValue::asString).orElseThrow()).orElseThrow();
-            JavadocItemPartial javadocItemPartial = cacheItems.getIfPresent(term);
+            JavadocItemPartial javadocItemPartial = Javadocs.this.cacheItems.getIfPresent(term);
 
             if (javadocItemPartial == null) { // the case if user make cache of element expire when ask for them
               javadocItemPartial = javadocSearch.searchEngine().search(term).findFirst().map(searchableEntity -> JavadocItemPartial.fromSearchableEntity(javadocSearch.javadoc().baseUrl(), searchableEntity)).orElse(null);
@@ -81,13 +81,13 @@ public class Javadocs implements Listener {
               }
             }
 
-            JavadocElement javadocElement = getJavadocElement(javadocItemPartial);
+            final JavadocElement javadocElement = Javadocs.this.createJavadocElement(javadocItemPartial);
             return event.reply(javadocElement.buildInteractionResponse());
           });
       }
 
       @Override
-      public Publisher<?> onChatInputAutoCompleteInteraction(ChatInputAutoCompleteEvent event) {
+      public Publisher<?> onChatInputAutoCompleteInteraction(final ChatInputAutoCompleteEvent event) {
         final String term = event.getFocusedOption().getValue().orElseThrow().asString();
         if (term.isBlank()) {
           return event.respondWithSuggestions(Collections.emptyList());
@@ -95,13 +95,13 @@ public class Javadocs implements Listener {
 
         return event.getInteraction()
           .getGuild()
-          .flatMap(guild -> javadocs.findByGuildAndCommandId(guild.getId(), event.getCommandId()))
-          .map(complete -> getEngine(complete))
+          .flatMap(guild -> Javadocs.this.javadocs.findByGuildAndCommandId(guild.getId(), event.getCommandId()))
+          .map(Javadocs.this::createEngine)
           .flatMap(jdSearch -> {
             if (event.getFocusedOption().getName().equals(JavadocModel.Complete.REQUEST_OPTION_JAVADOC_KEYWORD)) {
               final JavadocModel.Complete.ComponentType javadocComponentType = event.getOptions().stream().filter(option -> option.getType().equals(ApplicationCommandOption.Type.SUB_COMMAND)).findFirst().map(subCommandOption -> subCommandOption.getOption(JavadocModel.Complete.REQUEST_OPTION_JAVADOC_ELEMENT_TYPE).flatMap(ApplicationCommandInteractionOption::getValue).map(ApplicationCommandInteractionOptionValue::asString).map(String::toUpperCase).map(JavadocModel.Complete.ComponentType::fromString).orElse(JavadocModel.Complete.ComponentType.ALL)).orElse(JavadocModel.Complete.ComponentType.ALL);
 
-              Stream<? extends SearchableEntity> searchableEntities = switch (javadocComponentType) {
+              final Stream<? extends SearchableEntity> searchableEntities = switch (javadocComponentType) {
                 case MODULE -> jdSearch.searchEngine().searchGroupedByType(term).modules();
                 case PACKAGE -> jdSearch.searchEngine().searchGroupedByType(term).packages();
                 case TYPE -> jdSearch.searchEngine().searchGroupedByType(term).types();
@@ -110,12 +110,12 @@ public class Javadocs implements Listener {
                 default -> jdSearch.searchEngine().search(term);
               };
 
-              Stream<JavadocItemPartial> searchableJavaDocPartial = searchableEntities.map(searchableEntity -> JavadocItemPartial.fromSearchableEntity(jdSearch.javadoc().baseUrl(), searchableEntity));
+              final Stream<JavadocItemPartial> searchableJavaDocPartial = searchableEntities.map(searchableEntity -> JavadocItemPartial.fromSearchableEntity(jdSearch.javadoc().baseUrl(), searchableEntity));
 
               return Flux.fromStream(searchableJavaDocPartial)
-                .doOnNext(next -> cacheItems.put(String.valueOf(next.hashCode()), next)) // this is awful, but also...
+                .doOnNext(next -> Javadocs.this.cacheItems.put(String.valueOf(next.hashCode()), next)) // this is awful, but also...
                 .map(item -> ApplicationCommandOptionChoiceData.builder()
-                  .name(left(item.displayName(), 100))
+                  .name(Javadocs.this.left(item.displayName(), 100))
                   .value(String.valueOf(item.hashCode()))
                   .build())
                 .cast(ApplicationCommandOptionChoiceData.class)
@@ -131,23 +131,23 @@ public class Javadocs implements Listener {
     }).then();
   }
 
-  private JavaDocSearchEngine getEngine(JavadocModel.Complete complete) {
-    JavaDocSearchEngine javadocSearch = cacheSearchEngine.getIfPresent(complete._id());
+  private JavaDocSearchEngine createEngine(final JavadocModel.Complete complete) {
+    JavaDocSearchEngine javadocSearch = this.cacheSearchEngine.getIfPresent(complete._id());
     if (javadocSearch == null || !Objects.equals(javadocSearch.javadoc().baseUrl().toString(), complete.url())) {
-      javadocSearch = buildEngine(complete);
-      cacheSearchEngine.put(complete._id(), javadocSearch);
+      javadocSearch = this.buildEngine(complete);
+      this.cacheSearchEngine.put(complete._id(), javadocSearch);
     }
     return javadocSearch;
   }
 
-  private JavaDocSearchEngine buildEngine(JavadocModel.Complete complete) {
-    JavadocImpl javadocImpl = new JavadocImpl(complete.name(), complete.name(), "", URI.create(complete.url()), this.basicJavadocIndexes);
-    IndexWithBaseUrl indexWithBaseUrl = new IndexWithBaseUrl(javadocImpl.baseUrl(), javadocImpl.index());
+  private JavaDocSearchEngine buildEngine(final JavadocModel.Complete complete) {
+    final JavadocImpl javadocImpl = new JavadocImpl(complete.name(), complete.name(), "", URI.create(complete.url()), this.basicJavadocIndexes);
+    final IndexWithBaseUrl indexWithBaseUrl = new IndexWithBaseUrl(javadocImpl.baseUrl(), javadocImpl.index());
 
     return new JavaDocSearchEngine(javadocImpl, new RankedTrieSearchEngine(indexWithBaseUrl.index(), this.commonGenerator));
   }
 
-  private JavadocElement getJavadocElement(final JavadocItemPartial javadocItemPartial) {
+  private JavadocElement createJavadocElement(final JavadocItemPartial javadocItemPartial) {
     return new JavadocElement(javadocItemPartial);
   }
 

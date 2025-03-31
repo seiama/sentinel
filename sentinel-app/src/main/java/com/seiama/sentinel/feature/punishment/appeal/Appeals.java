@@ -88,7 +88,7 @@ public class Appeals implements Listener {
 
   private static final String VOTE_BUTTON_PREFIX = "appeal-vote:";
   static final Map<String, AppealModel.Vote> VOTE_BUTTONS = AppealModel.Vote.all()
-    .collect(Collectors.toMap(Appeals::getVoteButtonId, Function.identity()));
+    .collect(Collectors.toMap(Appeals::createVoteButtonId, Function.identity()));
   private static final Map<AppealModel.Vote, Function3<String, ReactionEmoji, String, Button>> VOTE_BUTTON_FACTORY = Map.of(
     AppealModel.Vote.YES, Button::success,
     AppealModel.Vote.NO, Button::danger,
@@ -165,7 +165,7 @@ public class Appeals implements Listener {
       .build();
   }
 
-  static String getVoteButtonId(final AppealModel.Vote vote) {
+  static String createVoteButtonId(final AppealModel.Vote vote) {
     return VOTE_BUTTON_PREFIX + vote.strings().button();
   }
 
@@ -173,7 +173,7 @@ public class Appeals implements Listener {
     return ActionRow.of(
       AppealModel.Vote.all()
         .map(vote -> VOTE_BUTTON_FACTORY.get(vote).apply(
-          getVoteButtonId(vote),
+          createVoteButtonId(vote),
           vote.emoji(),
           String.format("%s (%d)", vote.strings().name(), votes.getOrDefault(vote.name(), List.of()).size())
         ))

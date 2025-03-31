@@ -11,10 +11,9 @@ public enum ClassDetailType {
   public final String detailId;
   public final String displayName;
 
-  ClassDetailType(String detailId, String displayName) {
+  ClassDetailType(final String detailId, final String displayName) {
     this.detailId = detailId;
     this.displayName = displayName;
   }
-
 
 }

@@ -30,10 +30,10 @@ public final class JavadocElement {
   @Nullable
   private String returnType;
 
-  public JavadocElement(JavadocItemPartial partial) {
+  public JavadocElement(final JavadocItemPartial partial) {
     this.partial = partial;
 
-    Document document = JSoupUtils.fetchDocument(this.partial.url());
+    final Document document = JSoupUtils.fetchDocument(this.partial.url());
 
     if (this.partial.type() == JavadocModel.Complete.ComponentType.PACKAGE) {
       this.elementType = JavadocElementType.PACKAGE;
@@ -44,13 +44,13 @@ public final class JavadocElement {
       this.description = this.readDescription(document.selectFirst("#class-description"));
       this.deprecation = this.readDeprecation(document.selectFirst("#class-description"));
       this.modifiers = this.readModifiers(document);
-      Element headerClassElement = document.selectFirst("div.header > h1.title");
+      final Element headerClassElement = document.selectFirst("div.header > h1.title");
       if (headerClassElement != null) {
-        String headerClassTitle = headerClassElement.attr("title");
+        final String headerClassTitle = headerClassElement.attr("title");
         if (headerClassTitle.contains("Exception")) {
           this.elementType = JavadocElementType.EXCEPTION_CLASS;
         } else {
-          String classType = headerClassTitle.replaceAll(" .*", "").toLowerCase(Locale.ROOT);
+          final String classType = headerClassTitle.replaceAll(" .*", "").toLowerCase(Locale.ROOT);
           switch (classType) {
             case "interface" -> this.elementType = JavadocElementType.INTERFACE;
             case "enum" -> this.elementType = JavadocElementType.ENUM_CLASS;
@@ -98,59 +98,59 @@ public final class JavadocElement {
     }
   }
 
-  private void processDetailElements(Document document, ClassDetailType detailType, Consumer<Element> callback) {
-    String detailId = detailType.detailId;
+  private void processDetailElements(final Document document, final ClassDetailType detailType, final Consumer<Element> callback) {
+    final String detailId = detailType.detailId;
 
     // Get main blocks to determine what details are available (field, constructor (constr), method)
-    Element detailsSection = document.getElementById(detailId);
+    final Element detailsSection = document.getElementById(detailId);
     if (detailsSection != null) {
-      for (Element element : detailsSection.select("ul.member-list > li > section.detail")) {
+      for (final Element element : detailsSection.select("ul.member-list > li > section.detail")) {
         callback.accept(element);
       }
     }
   }
 
   @Nullable
-  private String readDeprecation(@Nullable Element element) {
+  private String readDeprecation(final @Nullable Element element) {
     if (element == null) {
       return null;
     }
-    Element deprecationElement = element.selectFirst("div.deprecation-block");
+    final Element deprecationElement = element.selectFirst("div.deprecation-block");
     if (deprecationElement != null) {
-        String deprecationMessage = "";
-        Element deprecationLabelElement = deprecationElement.selectFirst("span.deprecated-label");
-        if (deprecationLabelElement != null) {
-          deprecationMessage = deprecationMessage.concat(JSoupUtils.formatText(deprecationLabelElement.attr("style", "font-weight:bold").outerHtml(), this.partial.url())).concat("\n");
-        }
-        Element deprecationBlockElement = deprecationElement.selectFirst("div.deprecation-comment");
-        if (deprecationBlockElement != null) {
-          deprecationMessage = deprecationMessage.concat(JSoupUtils.formatText(deprecationBlockElement, this.partial.url()));
-        } else {
-          deprecationMessage = deprecationMessage.concat("not deprecation message was set");
-        }
-        return deprecationMessage;
+      String deprecationMessage = "";
+      final Element deprecationLabelElement = deprecationElement.selectFirst("span.deprecated-label");
+      if (deprecationLabelElement != null) {
+        deprecationMessage = deprecationMessage.concat(JSoupUtils.formatText(deprecationLabelElement.attr("style", "font-weight:bold").outerHtml(), this.partial.url())).concat("\n");
+      }
+      final Element deprecationBlockElement = deprecationElement.selectFirst("div.deprecation-comment");
+      if (deprecationBlockElement != null) {
+        deprecationMessage = deprecationMessage.concat(JSoupUtils.formatText(deprecationBlockElement, this.partial.url()));
+      } else {
+        deprecationMessage = deprecationMessage.concat("not deprecation message was set");
+      }
+      return deprecationMessage;
     }
     return null;
   }
 
   @Nullable
-  private String readDescription(@Nullable Element element) {
+  private String readDescription(final @Nullable Element element) {
     if (element == null) {
       return null;
     }
-    Elements elementsDescription = element.select("div.block");
+    final Elements elementsDescription = element.select("div.block");
     if (!elementsDescription.isEmpty()) {
-      return description = JSoupUtils.formatText(elementsDescription.stream().map(Element::outerHtml).collect(Collectors.joining("\n")), this.partial.url());
+      return JSoupUtils.formatText(elementsDescription.stream().map(Element::outerHtml).collect(Collectors.joining("\n")), this.partial.url());
     }
     return null;
   }
 
   @Nullable
-  private String readModifiers(@Nullable Element element) {
+  private String readModifiers(final @Nullable Element element) {
     if (element == null) {
       return null;
     }
-    Element elementModifiers = element.selectFirst("div[class$=\"-signature\"] > span.modifiers");
+    final Element elementModifiers = element.selectFirst("div[class$=\"-signature\"] > span.modifiers");
     if (elementModifiers != null) {
       return elementModifiers.text().replaceAll("\\b(?!public|private|static|final|protected)\\w+\\b|[@#%&*]", "").trim();
     }
@@ -158,8 +158,8 @@ public final class JavadocElement {
   }
 
   @Nullable
-  private String readMethodReturnType(Element element) {
-    Element elementReturnType = element.selectFirst("div.member-signature > span.return-type");
+  private String readMethodReturnType(final Element element) {
+    final Element elementReturnType = element.selectFirst("div.member-signature > span.return-type");
     if (elementReturnType != null) {
       return JSoupUtils.formatText(elementReturnType, this.partial.url());
     }
@@ -167,16 +167,16 @@ public final class JavadocElement {
   }
 
   public InteractionApplicationCommandCallbackSpec buildInteractionResponse() {
-    InteractionApplicationCommandCallbackSpec.Builder interactionResponseBuilder = InteractionApplicationCommandCallbackSpec.builder();
+    final InteractionApplicationCommandCallbackSpec.Builder interactionResponseBuilder = InteractionApplicationCommandCallbackSpec.builder();
 
     if (this.deprecation != null) {
-      EmbedCreateSpec.Builder embedDeprecatedMessageBuilder = EmbedCreateSpec.builder();
+      final EmbedCreateSpec.Builder embedDeprecatedMessageBuilder = EmbedCreateSpec.builder();
       embedDeprecatedMessageBuilder.color(Color.RED);
       embedDeprecatedMessageBuilder.description(this.deprecation);
       interactionResponseBuilder.addEmbed(embedDeprecatedMessageBuilder.build());
     }
 
-    EmbedCreateSpec.Builder embedBuilder = EmbedCreateSpec.builder();
+    final EmbedCreateSpec.Builder embedBuilder = EmbedCreateSpec.builder();
     embedBuilder.color(Color.CYAN).title(this.partial.displayTitle());
 
     if (this.description != null) {

@@ -112,11 +112,11 @@ public interface JavadocModel {
 
       private final String name;
 
-      ComponentType(String name) {
+      ComponentType(final String name) {
         this.name = name;
       }
 
-      public String getName() {
+      public String displayName() {
         return this.name;
       }
 
@@ -124,8 +124,8 @@ public interface JavadocModel {
         return ApplicationCommandOptionChoiceData.builder().name(this.name).value(this.toString()).build();
       }
 
-      public static ComponentType fromString(String name) {
-        for (ComponentType type : values()) {
+      public static ComponentType fromString(final String name) {
+        for (final ComponentType type : values()) {
           if (type.name.equalsIgnoreCase(name)) {
             return type;
           }

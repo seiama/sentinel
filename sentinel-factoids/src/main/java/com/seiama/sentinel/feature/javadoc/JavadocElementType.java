@@ -16,7 +16,7 @@ public enum JavadocElementType {
 
   public final String displayName;
 
-  JavadocElementType(String displayName) {
+  JavadocElementType(final String displayName) {
     this.displayName = displayName;
   }
 }
