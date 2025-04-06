@@ -1,4 +1,4 @@
-package com.seiama.sentinel.feature.javadoc;
+package com.seiama.sentinel.feature.javadoc.classes;
 
 import com.google.common.base.Splitter;
 import com.seiama.sentinel.common.model.JavadocModel;

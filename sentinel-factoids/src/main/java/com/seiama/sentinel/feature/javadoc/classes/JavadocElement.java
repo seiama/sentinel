@@ -1,4 +1,4 @@
-package com.seiama.sentinel.feature.javadoc;
+package com.seiama.sentinel.feature.javadoc.classes;
 
 import com.seiama.sentinel.common.model.JavadocModel;
 import com.seiama.sentinel.feature.javadoc.utils.JavaDocUtils;

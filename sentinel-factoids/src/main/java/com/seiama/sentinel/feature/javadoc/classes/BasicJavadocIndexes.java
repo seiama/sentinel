@@ -1,4 +1,4 @@
-package com.seiama.sentinel.feature.javadoc;
+package com.seiama.sentinel.feature.javadoc.classes;
 
 import java.net.URI;
 import java.util.Map;
