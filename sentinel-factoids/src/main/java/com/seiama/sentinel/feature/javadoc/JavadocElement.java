@@ -1,7 +1,7 @@
 package com.seiama.sentinel.feature.javadoc;
 
 import com.seiama.sentinel.common.model.JavadocModel;
-import com.seiama.sentinel.feature.javadoc.utils.JSoupUtils;
+import com.seiama.sentinel.feature.javadoc.utils.JavaDocUtils;
 import discord4j.core.object.component.ActionRow;
 import discord4j.core.object.component.Button;
 import discord4j.core.spec.EmbedCreateFields;
@@ -33,7 +33,7 @@ public final class JavadocElement {
   public JavadocElement(final JavadocItemPartial partial) {
     this.partial = partial;
 
-    final Document document = JSoupUtils.fetchDocument(this.partial.url());
+    final Document document = JavaDocUtils.fetchDocument(this.partial.url());
 
     if (this.partial.type() == JavadocModel.Complete.ComponentType.PACKAGE) {
       this.elementType = JavadocElementType.PACKAGE;
@@ -120,11 +120,11 @@ public final class JavadocElement {
       String deprecationMessage = "";
       final Element deprecationLabelElement = deprecationElement.selectFirst("span.deprecated-label");
       if (deprecationLabelElement != null) {
-        deprecationMessage = deprecationMessage.concat(JSoupUtils.formatText(deprecationLabelElement.attr("style", "font-weight:bold").outerHtml(), this.partial.url())).concat("\n");
+        deprecationMessage = deprecationMessage.concat(JavaDocUtils.formatText(deprecationLabelElement.attr("style", "font-weight:bold").outerHtml(), this.partial.url())).concat("\n");
       }
       final Element deprecationBlockElement = deprecationElement.selectFirst("div.deprecation-comment");
       if (deprecationBlockElement != null) {
-        deprecationMessage = deprecationMessage.concat(JSoupUtils.formatText(deprecationBlockElement, this.partial.url()));
+        deprecationMessage = deprecationMessage.concat(JavaDocUtils.formatText(deprecationBlockElement, this.partial.url()));
       } else {
         deprecationMessage = deprecationMessage.concat("not deprecation message was set");
       }
@@ -140,7 +140,7 @@ public final class JavadocElement {
     }
     final Elements elementsDescription = element.select("div.block");
     if (!elementsDescription.isEmpty()) {
-      return JSoupUtils.formatText(elementsDescription.stream().map(Element::outerHtml).collect(Collectors.joining("\n")), this.partial.url());
+      return JavaDocUtils.formatText(elementsDescription.stream().map(Element::outerHtml).collect(Collectors.joining("\n")), this.partial.url());
     }
     return null;
   }
@@ -162,7 +162,7 @@ public final class JavadocElement {
   private String readMethodReturnType(final Element element) {
     final Element elementReturnType = element.selectFirst("div.member-signature > span.return-type");
     if (elementReturnType != null) {
-      return JSoupUtils.formatText(elementReturnType, this.partial.url());
+      return JavaDocUtils.formatText(elementReturnType, this.partial.url());
     }
     return null;
   }

@@ -14,7 +14,7 @@ import org.jspecify.annotations.Nullable;
 
 @SuppressWarnings("checkstyle:AvoidEscapedUnicodeCharacters")
 @NullMarked
-public final class JSoupUtils {
+public final class JavaDocUtils {
 
   private static final Remark REMARK;
   private static final String LINK_SPACE_REGEX = "\"\"\"<[(.*?)]((.*))>\"\"\"";
@@ -163,7 +163,7 @@ public final class JSoupUtils {
     return result.toString();
   }
 
-  private JSoupUtils() {
+  private JavaDocUtils() {
   }
 
 }
