@@ -1,5 +1,6 @@
 package com.seiama.sentinel.feature.javadoc.utils;
 
+import com.google.common.base.Splitter;
 import com.overzealous.remark.Options;
 import com.overzealous.remark.Remark;
 import java.io.IOException;
@@ -29,7 +30,7 @@ public final class JavaDocUtils {
     final Options optsRemarkDiscord = Options.github();
     optsRemarkDiscord.inlineLinks = true;
     optsRemarkDiscord.fencedCodeBlocksWidth = 3;
-    optsRemarkDiscord.tables = Options.Tables.REMOVE;
+    optsRemarkDiscord.tables = Options.Tables.LEAVE_AS_HTML; // LEAVE_AS_HTML is the default behaviour, also can be changed to REMOVE for keep the result more clean
     REMARK = new Remark(optsRemarkDiscord);
 
     // superscripts load
@@ -143,7 +144,41 @@ public final class JavaDocUtils {
       markdown.replace("\r", "") // fix codeblocks
         .replace("\n\n```", "\n\n```java")
     ).replaceAll("\n\n"); // remove too many newlines (max 2)
+
+    // put tables into code blocks if REMARK not remove the tables
+    if (REMARK.getConverter().getOptions().tables != Options.Tables.REMOVE) {
+      markdown = formatMarkdownTable(markdown);
+    }
+
     return markdown.replace(LINK_SPACE_REGEX, "\"\"\"\\<[$1]($2)\\>\"\"\"");
+  }
+
+  private static String formatMarkdownTable(final String input) {
+    final Iterable<String> lines = Splitter.on('\n').split(input);
+    final StringBuilder result = new StringBuilder();
+    boolean inTable = false;
+
+    for (final String line : lines) {
+      if (line.trim().startsWith("|") && line.contains("|")) {
+        if (!inTable) {
+          result.append("```\n"); // open the code block
+          inTable = true;
+        }
+        result.append(line.trim()).append("\n");
+      } else {
+        if (inTable) {
+          result.append("```\n"); // close the code block
+          inTable = false;
+        }
+        result.append(line.trim()).append("\n");
+      }
+    }
+
+    if (inTable) {
+      result.append("```\n"); // close the code block if missing close
+    }
+
+    return result.toString();
   }
 
   private static String fixSpaces(final String input) {
