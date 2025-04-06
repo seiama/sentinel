@@ -120,7 +120,7 @@ public class Javadocs implements Listener {
                   .value(String.valueOf(item.hashCode()))
                   .build())
                 .cast(ApplicationCommandOptionChoiceData.class)
-                .take(25)
+                .take(25) // discord only allow max 25 choices
                 .collectList()
                 .flatMap(event::respondWithSuggestions);
             } else {
