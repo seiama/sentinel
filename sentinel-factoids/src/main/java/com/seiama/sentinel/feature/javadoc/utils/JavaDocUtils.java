@@ -29,6 +29,7 @@ public final class JavaDocUtils {
     final Options optsRemarkDiscord = Options.github();
     optsRemarkDiscord.inlineLinks = true;
     optsRemarkDiscord.fencedCodeBlocksWidth = 3;
+    optsRemarkDiscord.tables = Options.Tables.REMOVE;
     REMARK = new Remark(optsRemarkDiscord);
 
     // superscripts load
