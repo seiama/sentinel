@@ -14,6 +14,7 @@ import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.core.object.command.ApplicationCommandInteractionOption;
 import discord4j.core.object.command.ApplicationCommandInteractionOptionValue;
 import discord4j.core.object.command.ApplicationCommandOption;
+import discord4j.core.object.command.ApplicationCommandOptionChoice;
 import discord4j.discordjson.json.ApplicationCommandOptionChoiceData;
 import java.net.URI;
 import java.time.Duration;
@@ -115,7 +116,7 @@ public class Javadocs implements Listener {
               return Flux.fromStream(searchableJavaDocPartial)
                 .doOnNext(next -> Javadocs.this.cacheItems.put(String.valueOf(next.hashCode()), next)) // this is awful, but also...
                 .map(item -> ApplicationCommandOptionChoiceData.builder()
-                  .name(Javadocs.this.left(item.displayForChoice(), 100))
+                  .name(Javadocs.this.left(item.displayForChoice(), ApplicationCommandOptionChoice.MAX_NAME_LENGTH))
                   .value(String.valueOf(item.hashCode()))
                   .build())
                 .cast(ApplicationCommandOptionChoiceData.class)
