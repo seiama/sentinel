@@ -152,6 +152,7 @@ public final class JavadocElement {
     }
     final Element elementModifiers = element.selectFirst("div[class$=\"-signature\"] > span.modifiers");
     if (elementModifiers != null) {
+      // we remove redundant modifiers and clean the response
       return elementModifiers.text().replaceAll("\\b(?!public|private|static|final|protected)\\w+\\b|[@#%&*]", "").trim();
     }
     return null;

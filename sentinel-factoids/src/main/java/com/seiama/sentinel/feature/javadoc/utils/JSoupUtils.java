@@ -136,11 +136,11 @@ public final class JSoupUtils {
   public static String formatText(final String docs, final String url) {
     String markdown = REMARK.convertFragment(fixSpaces(docs), url);
 
-    //remove unnecessary carriage return chars
+    // remove unnecessary carriage return chars
     markdown = FIX_NEW_LINES_PATTERN.matcher(
-      markdown.replace("\r", "") //fix codeblocks
+      markdown.replace("\r", "") // fix codeblocks
         .replace("\n\n```", "\n\n```java")
-    ).replaceAll("\n\n"); //remove too many newlines (max 2)
+    ).replaceAll("\n\n"); // remove too many newlines (max 2)
     return markdown.replace(LINK_SPACE_REGEX, "\"\"\"\\<[$1]($2)\\>\"\"\"");
   }
 
