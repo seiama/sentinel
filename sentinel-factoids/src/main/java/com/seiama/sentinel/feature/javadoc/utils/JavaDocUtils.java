@@ -4,6 +4,7 @@ import com.overzealous.remark.Options;
 import com.overzealous.remark.Remark;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Pattern;
 import org.jsoup.Jsoup;
@@ -150,10 +151,11 @@ public final class JavaDocUtils {
 
   @Nullable
   public static String replaceScriptCharactersOrNull(String input, final Map<Character, Character> mappings) {
-    input = input.toLowerCase();
+    input = input.toLowerCase(Locale.ROOT);
     final StringBuilder result = new StringBuilder();
 
-    for (final char c : input.toCharArray()) {
+    for (int i = 0; i < input.length(); i++) {
+      char c = input.charAt(i);
       if (mappings.containsKey(c)) {
         result.append(mappings.get(c));
       } else {
