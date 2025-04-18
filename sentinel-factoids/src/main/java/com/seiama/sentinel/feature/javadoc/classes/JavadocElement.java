@@ -4,10 +4,14 @@ import com.seiama.sentinel.common.model.JavadocModel;
 import com.seiama.sentinel.feature.javadoc.utils.JavaDocUtils;
 import discord4j.core.object.component.ActionRow;
 import discord4j.core.object.component.Button;
-import discord4j.core.spec.EmbedCreateFields;
-import discord4j.core.spec.EmbedCreateSpec;
+import discord4j.core.object.component.Container;
+import discord4j.core.object.component.Separator;
+import discord4j.core.object.component.TextDisplay;
+import discord4j.core.object.component.TopLevelMessageComponent;
 import discord4j.core.spec.InteractionApplicationCommandCallbackSpec;
 import discord4j.rest.util.Color;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -170,36 +174,44 @@ public final class JavadocElement {
   public InteractionApplicationCommandCallbackSpec buildInteractionResponse() {
     final InteractionApplicationCommandCallbackSpec.Builder interactionResponseBuilder = InteractionApplicationCommandCallbackSpec.builder();
 
-    if (this.deprecation != null) {
-      final EmbedCreateSpec.Builder embedDeprecatedMessageBuilder = EmbedCreateSpec.builder();
-      embedDeprecatedMessageBuilder.color(Color.RED);
-      embedDeprecatedMessageBuilder.description(this.deprecation);
-      interactionResponseBuilder.addEmbed(embedDeprecatedMessageBuilder.build());
-    }
-
-    final EmbedCreateSpec.Builder embedBuilder = EmbedCreateSpec.builder();
-    embedBuilder.color(Color.CYAN).title(this.partial.displayTitle());
-
-    if (this.description != null) {
-      embedBuilder.description(this.description);
-    }
+    final StringBuilder elementDetails = new StringBuilder();
 
     if (this.elementType != JavadocElementType.PACKAGE) {
-      embedBuilder.addField(EmbedCreateFields.Field.of("Package:", this.partial.packageName(), true));
+      elementDetails.append("**Package:** ").append(this.partial.packageName()).append("\n");
     }
 
-    embedBuilder.addField(EmbedCreateFields.Field.of("Type:", this.elementType.displayName, true));
+    elementDetails.append("**Type:** ").append(this.elementType.displayName).append("\n");
 
     if (this.modifiers != null && !this.modifiers.isBlank()) {
-      embedBuilder.addField(EmbedCreateFields.Field.of("Modifiers:", this.modifiers, true));
+      elementDetails.append("**Modifiers:** ").append(this.modifiers).append("\n");
     }
 
     if (this.returnType != null) {
-      embedBuilder.addField(EmbedCreateFields.Field.of("Return:", this.returnType, true));
+      elementDetails.append("**Return:** ").append(this.returnType).append("\n");
     }
 
-    interactionResponseBuilder.addEmbed(embedBuilder.build());
-    interactionResponseBuilder.components(ActionRow.of(Button.link(this.partial.url(), "Go to docs")));
+    final int elementDetailsLastLine = elementDetails.lastIndexOf("\n");
+    if (elementDetailsLastLine >= 0) {
+      elementDetails.delete(elementDetailsLastLine, elementDetails.length());
+    }
+
+    final List<TopLevelMessageComponent> topComponents = new ArrayList<>();
+
+    final TextDisplay titleDisplayComponent = TextDisplay.of("## " + this.partial.displayTitle());
+    final TextDisplay detailsDisplayComponent = TextDisplay.of(elementDetails.toString());
+
+    if (this.description != null) {
+      topComponents.add(Container.of(Color.CYAN, titleDisplayComponent, Separator.of(true), TextDisplay.of(this.description), Separator.of(true, Separator.SpacingSize.LARGE), detailsDisplayComponent));
+    } else {
+      topComponents.add(Container.of(Color.CYAN, titleDisplayComponent, Separator.of(true, Separator.SpacingSize.LARGE), detailsDisplayComponent));
+    }
+
+    if (this.deprecation != null) {
+      topComponents.add(Container.of(Color.RED, TextDisplay.of(this.deprecation)));
+    }
+
+    topComponents.add(ActionRow.of(Button.link(this.partial.url(), "Go to docs")));
+    interactionResponseBuilder.components(topComponents);
     return interactionResponseBuilder.build();
   }
 }

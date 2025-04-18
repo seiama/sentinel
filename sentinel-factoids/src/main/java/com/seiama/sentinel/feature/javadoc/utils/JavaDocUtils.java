@@ -30,7 +30,7 @@ public final class JavaDocUtils {
     final Options optsRemarkDiscord = Options.github();
     optsRemarkDiscord.inlineLinks = true;
     optsRemarkDiscord.fencedCodeBlocksWidth = 3;
-    optsRemarkDiscord.tables = Options.Tables.LEAVE_AS_HTML; // LEAVE_AS_HTML is the default behaviour, also can be changed to REMOVE for keep the result more clean
+    optsRemarkDiscord.tables = Options.Tables.CONVERT_TO_CODE_BLOCK; // LEAVE_AS_HTML is the default behaviour, also can be changed to REMOVE for keep the result more clean
     REMARK = new Remark(optsRemarkDiscord);
 
     // superscripts load
