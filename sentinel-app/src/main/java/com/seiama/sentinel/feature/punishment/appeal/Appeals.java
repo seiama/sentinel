@@ -31,7 +31,6 @@ import discord4j.core.object.component.Button;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.User;
-import discord4j.core.object.reaction.ReactionEmoji;
 import discord4j.core.spec.EmbedCreateFields;
 import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.core.util.MentionUtil;
@@ -89,7 +88,7 @@ public class Appeals implements Listener {
   private static final String VOTE_BUTTON_PREFIX = "appeal-vote:";
   static final Map<String, AppealModel.Vote> VOTE_BUTTONS = AppealModel.Vote.all()
     .collect(Collectors.toMap(Appeals::createVoteButtonId, Function.identity()));
-  private static final Map<AppealModel.Vote, Function3<String, ReactionEmoji, String, Button>> VOTE_BUTTON_FACTORY = Map.of(
+  private static final Map<AppealModel.Vote, Function3<String, discord4j.core.object.emoji.Emoji, String, Button>> VOTE_BUTTON_FACTORY = Map.of(
     AppealModel.Vote.YES, Button::success,
     AppealModel.Vote.NO, Button::danger,
     AppealModel.Vote.ABSTAIN, Button::primary,

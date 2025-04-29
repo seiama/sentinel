@@ -13,7 +13,6 @@ import com.seiama.sentinel.common.discord.Emoji;
 import com.seiama.sentinel.common.jackson.ObjectIdExtendedJsonSerializer;
 import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.User;
-import discord4j.core.object.reaction.ReactionEmoji;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
@@ -244,9 +243,9 @@ public interface PunishmentModel {
     private final boolean notification;
     private final boolean terminal;
     private final Strings strings;
-    private final ReactionEmoji emoji;
+    private final discord4j.core.object.emoji.Emoji emoji;
 
-    Type(final int color, final boolean notification, final boolean terminal, final Strings strings, final ReactionEmoji emoji) {
+    Type(final int color, final boolean notification, final boolean terminal, final Strings strings, final discord4j.core.object.emoji.Emoji emoji) {
       this.color = color;
       this.notification = notification;
       this.terminal = terminal;
@@ -270,7 +269,7 @@ public interface PunishmentModel {
       return this.strings;
     }
 
-    public ReactionEmoji emoji() {
+    public discord4j.core.object.emoji.Emoji emoji() {
       return this.emoji;
     }
 

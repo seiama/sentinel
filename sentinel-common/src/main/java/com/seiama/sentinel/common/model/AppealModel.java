@@ -12,7 +12,6 @@ import com.seiama.sentinel.common.annotation.MongoPrimaryId;
 import com.seiama.sentinel.common.discord.Emoji;
 import com.seiama.sentinel.common.jackson.InstantExtendedJsonSerializer;
 import discord4j.common.util.Snowflake;
-import discord4j.core.object.reaction.ReactionEmoji;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
@@ -101,10 +100,10 @@ public interface AppealModel {
 
     private final boolean canVoteWithIfPunisher;
     private final boolean requiresReason;
-    private final ReactionEmoji emoji;
+    private final discord4j.core.object.emoji.Emoji emoji;
     private final Strings strings;
 
-    Vote(final boolean canVoteWithIfPunisher, final boolean requiresReason, final ReactionEmoji emoji, final Strings strings) {
+    Vote(final boolean canVoteWithIfPunisher, final boolean requiresReason, final discord4j.core.object.emoji.Emoji emoji, final Strings strings) {
       this.canVoteWithIfPunisher = canVoteWithIfPunisher;
       this.requiresReason = requiresReason;
       this.emoji = emoji;
@@ -133,7 +132,7 @@ public interface AppealModel {
       };
     }
 
-    public ReactionEmoji emoji() {
+    public discord4j.core.object.emoji.Emoji emoji() {
       return this.emoji;
     }
 
