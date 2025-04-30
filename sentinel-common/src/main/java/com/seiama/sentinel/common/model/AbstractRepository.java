@@ -1,46 +1,19 @@
 package com.seiama.sentinel.common.model;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.bson.Document;
+import java.util.function.Consumer;
 import org.bson.types.ObjectId;
 import org.jspecify.annotations.NullMarked;
-import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import reactor.core.publisher.Mono;
 
 @NullMarked
-@Repository
-public abstract class AbstractRepository<P extends AbstractPartial, M extends AbstractModel> implements ExtendedRepository<P, M> {
-  protected final Class<M> model;
-  protected final ObjectMapper mapper;
-  protected final ReactiveMongoTemplate template;
-
-  protected AbstractRepository(final Class<M> model, final ObjectMapper mapper, final ReactiveMongoTemplate template) {
-    this.model = model;
-    this.mapper = mapper;
-    this.template = template;
+public interface AbstractRepository<M extends AbstractModel> extends ReactiveMongoRepository<M, ObjectId> {
+  default Mono<M> update(final M model, final Consumer<M> consumer) {
+    consumer.accept(model);
+    return this.save(model);
   }
 
-  @Override
-  public Mono<M> update(final ObjectId _id, final P partial) {
-    return AbstractPartial.toBson(this.mapper, partial)
-      .flatMap(bson -> this.update(_id, Update.fromDocument(new Document("$set", bson))));
-  }
-
-  @Override
-  public Mono<M> update(final ObjectId _id, final Update update) {
-    return this.template.updateFirst(
-      Query.query(Criteria.where(AbstractModel._ID).is(_id)),
-      update,
-      this.model
-    ).flatMap(result -> this.template.findById(_id, this.model));
-  }
-
-  @Override
-  public Mono<M> refresh(final M that) {
-    return this.template.findById(that._id(), this.model);
+  default Mono<M> refresh(final M that) {
+    return this.findById(that._id());
   }
 }

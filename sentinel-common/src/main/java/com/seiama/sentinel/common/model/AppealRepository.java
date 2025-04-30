@@ -10,14 +10,14 @@ import reactor.core.publisher.Mono;
 
 @NullMarked
 @Repository
-public interface AppealRepository extends ReactiveMongoRepository<AppealModel.Complete, ObjectId>, AppealRepositoryCustom {
-  Flux<AppealModel.Complete> findAllByResultIsNull();
+public interface AppealRepository extends AbstractRepository<AppealModel>, ReactiveMongoRepository<AppealModel, ObjectId> {
+  Flux<AppealModel> findAllByResultIsNull();
 
-  Mono<AppealModel.Complete> findByAppealChannel(final Snowflake appealChannel);
+  Mono<AppealModel> findByAppealChannel(final Snowflake appealChannel);
 
-  Mono<AppealModel.Complete> findByAppealThread(final Snowflake appealThread);
+  Mono<AppealModel> findByAppealThread(final Snowflake appealThread);
 
-  Mono<AppealModel.Complete> findByGuildAndUserAndResultIsNull(final Snowflake guild, final Snowflake user);
+  Mono<AppealModel> findByGuildAndUserAndResultIsNull(final Snowflake guild, final Snowflake user);
 
-  Mono<AppealModel.Complete> findByAppealDiscussionThreadAndResultIsNull(final Snowflake appealDiscussionThread);
+  Mono<AppealModel> findByAppealDiscussionThreadAndResultIsNull(final Snowflake appealDiscussionThread);
 }

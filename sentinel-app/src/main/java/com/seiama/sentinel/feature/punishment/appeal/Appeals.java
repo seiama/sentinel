@@ -148,12 +148,12 @@ public class Appeals implements Listener {
     return UserDisplay.render(UserDisplay.Renderer.USERNAME, new UserIdentity(member));
   }
 
-  Mono<AppealModel.Complete> findByAppealThread(final Snowflake channel) {
+  Mono<AppealModel> findByAppealThread(final Snowflake channel) {
     return this.appeals.findByAppealThread(channel);
   }
 
   @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-  static EmbedData createMessage(final MessageData message, final Optional<User> author, final Tuple2<Guild, GuildModel.Complete> guild) {
+  static EmbedData createMessage(final MessageData message, final Optional<User> author, final Tuple2<Guild, GuildModel> guild) {
     return EmbedData.builder()
       .description(message.content())
       .timestamp(message.editedTimestamp().orElse(message.timestamp()))
@@ -209,9 +209,9 @@ public class Appeals implements Listener {
 
   class VoteFinisher {
     final GatewayDiscordClient client;
-    final AppealModel.Complete model;
+    final AppealModel model;
 
-    VoteFinisher(final GatewayDiscordClient client, final AppealModel.Complete model) {
+    VoteFinisher(final GatewayDiscordClient client, final AppealModel model) {
       this.client = client;
       this.model = model;
     }
@@ -241,15 +241,15 @@ public class Appeals implements Listener {
     }
   }
 
-  Mono<Void> accept(final GatewayDiscordClient client, final AppealModel.Complete model, final User user) {
+  Mono<Void> accept(final GatewayDiscordClient client, final AppealModel model, final User user) {
     return this.acceptOrDenyOrCancel(new AppealFinisher(client, model, user, AppealModel.Result.ACCEPTED, null, null));
   }
 
-  Mono<Void> deny(final GatewayDiscordClient client, final AppealModel.Complete model, final User user, final @Nullable String reason, final @Nullable Instant nextAttemptMayBeMadeAt) {
+  Mono<Void> deny(final GatewayDiscordClient client, final AppealModel model, final User user, final @Nullable String reason, final @Nullable Instant nextAttemptMayBeMadeAt) {
     return this.acceptOrDenyOrCancel(new AppealFinisher(client, model, user, AppealModel.Result.DENIED, reason, nextAttemptMayBeMadeAt));
   }
 
-  private Mono<Void> cancel(final GatewayDiscordClient client, final AppealModel.Complete model, final User user) {
+  private Mono<Void> cancel(final GatewayDiscordClient client, final AppealModel model, final User user) {
     return this.acceptOrDenyOrCancel(new AppealFinisher(client, model, user, AppealModel.Result.CANCELLED, null, null));
   }
 
@@ -259,7 +259,7 @@ public class Appeals implements Listener {
 
   class AppealFinisher {
     final GatewayDiscordClient client;
-    final AppealModel.Complete model;
+    final AppealModel model;
     final User user; // (accepted, denied) -> (staff | bot) | (cancelled) -> punished
     final boolean automatic;
     final AppealModel.Result result;
@@ -268,7 +268,7 @@ public class Appeals implements Listener {
 
     AppealFinisher(
       final GatewayDiscordClient client,
-      final AppealModel.Complete model,
+      final AppealModel model,
       final User user,
       final AppealModel.Result result,
       final @Nullable String reason,
@@ -295,21 +295,10 @@ public class Appeals implements Listener {
 
     Mono<Void> create() {
       return Mono.when(
-        Appeals.this.appeals.update(this.model, new AppealModel.Partial.Close() {
-          @Override
-          public AppealModel.Result result() {
-            return AppealFinisher.this.result;
-          }
-
-          @Override
-          public @Nullable String reason() {
-            return AppealFinisher.this.reason;
-          }
-
-          @Override
-          public @Nullable Instant nextAttemptMayBeMadeAt() {
-            return AppealFinisher.this.nextAttemptMayBeMadeAt;
-          }
+        Appeals.this.appeals.update(this.model, m -> {
+          m.setResult(AppealFinisher.this.result);
+          m.setReason(AppealFinisher.this.reason);
+          m.setNextAttemptMayBeMadeAt(AppealFinisher.this.nextAttemptMayBeMadeAt);
         }),
         this.unenforce(),
         this.sendMessagesToChannelsAndThreadsAndThenArchiveAndClose(),
@@ -320,8 +309,8 @@ public class Appeals implements Listener {
 
     private Mono<Void> unenforce() {
       if (this.result == AppealModel.Result.ACCEPTED) {
-        final Mono<PunishmentModel.Complete> updatedPunishment = Appeals.this.punishments.update(this.model.punishment(), PunishmentModel.Partial.Stale.of(Optional.of(this.user), this.reason, this.automatic, this.model._id()));
-        return updatedPunishment
+        return Appeals.this.punishments.findById(this.model.punishment())
+          .flatMap(punishment -> Appeals.this.punishments.update(punishment, m -> m.setStale(Optional.of(this.user), this.reason, this.automatic, this.model._id())))
           .flatMap(punishment -> {
             return this.client.getGuildById(punishment.guild())
               .flatMap(guild -> Appeals.this.punishmentOps.unenforce(guild, punishment, String.format(

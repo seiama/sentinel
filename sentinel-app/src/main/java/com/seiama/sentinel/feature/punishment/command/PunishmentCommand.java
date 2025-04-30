@@ -7,7 +7,6 @@ import com.seiama.sentinel.command.Options;
 import com.seiama.sentinel.common.bson.AsObjectId;
 import com.seiama.sentinel.common.model.Feature;
 import com.seiama.sentinel.common.model.GuildRepository;
-import com.seiama.sentinel.common.model.PunishmentModel;
 import com.seiama.sentinel.common.model.PunishmentRepository;
 import com.seiama.sentinel.feature.punishment.Punishments;
 import com.seiama.sentinel.feature.punishment.display.PunishmentDisplay;
@@ -25,7 +24,6 @@ import discord4j.discordjson.json.ApplicationCommandRequest;
 import java.util.Map;
 import java.util.Optional;
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -174,12 +172,7 @@ public final class PunishmentCommand implements GuildCommand {
           .zipWith(Mono.justOrEmpty(Options.string(option, OptionNames.REASON).orElse(null)))
           .flatMap(TupleUtils.function((id, reason) -> {
             return this.punishments.findById(id)
-              .flatMap(model -> this.punishments.update(model, new PunishmentModel.Partial.Reason() {
-                @Override
-                public @Nullable String reason() {
-                  return reason;
-                }
-              }));
+              .flatMap(model -> this.punishments.update(model, m -> m.setReason(reason)));
           }))
           .flatMap(result -> event.editReply().withContentOrNull(PunishmentMessages.punishmentUpdated(result)));
       },
@@ -190,7 +183,7 @@ public final class PunishmentCommand implements GuildCommand {
           .zipWith(Mono.just(Options.string(option, OptionNames.REASON)))
           .flatMap(TupleUtils.function((id, reason) -> {
             return this.punishments.findById(id)
-              .flatMap(model -> this.punishments.update(model, PunishmentModel.Partial.Stale.of(Optional.of(punisher), reason.orElse(null), false, null)))
+              .flatMap(model -> this.punishments.update(model, m -> m.setStale(Optional.of(punisher), reason.orElse(null), false, null)))
               .flatMap(model -> this.punishmentOps.unenforce(guild, model, String.format("Punishment (%s) has been marked stale.", model._id())).thenReturn(model));
           }))
           .flatMap(result -> event.editReply().withContentOrNull(PunishmentMessages.punishmentMarkedStale(result)).withEmbeds(PunishmentDisplay.punishment(result, PunishmentDisplayStyle.FULL)));

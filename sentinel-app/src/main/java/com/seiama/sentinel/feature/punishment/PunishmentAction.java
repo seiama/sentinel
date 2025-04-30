@@ -27,7 +27,7 @@ public interface PunishmentAction<U, M> extends Function3<Guild, U, M, Mono<Void
     return (guild, user, reason) -> Mono.empty();
   }
 
-  static PunishmentAction<User, PunishmentModel.Complete> ban(final Boolean deleteMessages) {
+  static PunishmentAction<User, PunishmentModel> ban(final Boolean deleteMessages) {
     return ban(
       Boolean.TRUE.equals(deleteMessages)
         ? OptionalInt.of((int) DELETE_MESSAGE_LENGTH.toSeconds())
@@ -36,7 +36,7 @@ public interface PunishmentAction<U, M> extends Function3<Guild, U, M, Mono<Void
   }
 
   @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-  static PunishmentAction<User, PunishmentModel.Complete> ban(final OptionalInt deleteMessageSeconds) {
+  static PunishmentAction<User, PunishmentModel> ban(final OptionalInt deleteMessageSeconds) {
     return (guild, user, punishment) -> {
       final BanQuerySpec.Builder spec = BanQuerySpec.builder()
         .reason(PunishmentMessages.punishmentPunishedReason(punishment));
@@ -58,7 +58,7 @@ public interface PunishmentAction<U, M> extends Function3<Guild, U, M, Mono<Void
     );
   }
 
-  static PunishmentAction<User, PunishmentModel.Complete> kick() {
+  static PunishmentAction<User, PunishmentModel> kick() {
     return (guild, user, punishment) -> guild.kick(
       user.getId(),
       PunishmentMessages.punishmentPunishedReason(punishment)
@@ -66,7 +66,7 @@ public interface PunishmentAction<U, M> extends Function3<Guild, U, M, Mono<Void
   }
 
   // up to 28 days in the future
-  static PunishmentAction<User, PunishmentModel.Complete> mute(final Instant until) {
+  static PunishmentAction<User, PunishmentModel> mute(final Instant until) {
     return (guild, user, punishment) -> guild.getMemberById(user.getId())
       .flatMap(member -> member.edit(
         GuildMemberEditSpec.builder()
@@ -86,11 +86,11 @@ public interface PunishmentAction<U, M> extends Function3<Guild, U, M, Mono<Void
       )).then();
   }
 
-  static PunishmentAction<User, PunishmentModel.Complete> note() {
+  static PunishmentAction<User, PunishmentModel> note() {
     return (guild, user, punishment) -> Mono.empty();
   }
 
-  static PunishmentAction<User, PunishmentModel.Complete> warn() {
+  static PunishmentAction<User, PunishmentModel> warn() {
     return (guild, user, punishment) -> Mono.empty();
   }
 

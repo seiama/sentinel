@@ -25,11 +25,11 @@ public final class PunishmentMessages {
   private PunishmentMessages() {
   }
 
-  public static String enforcingExisting(final PunishmentModel.Complete punishment) {
+  public static String enforcingExisting(final PunishmentModel punishment) {
     return "Enforcing punishment %s".formatted(punishment._id());
   }
 
-  public static MessageCreateSpec punishmentPunishedDirectMessageEmbed(final PunishmentModel.Complete punishment, final @Nullable Guild guild) {
+  public static MessageCreateSpec punishmentPunishedDirectMessageEmbed(final PunishmentModel punishment, final @Nullable Guild guild) {
     return MessageCreateSpec.builder()
       .addEmbed(
         EmbedCreateSpec.builder()
@@ -43,7 +43,7 @@ public final class PunishmentMessages {
       .build();
   }
 
-  public static String punishmentPunisherResponse(final PunishmentModel.Complete punishment) {
+  public static String punishmentPunisherResponse(final PunishmentModel punishment) {
     final @Nullable String reason = punishment.reason();
     return String.format(
       "(`%s`) // %s has been %s by %s (`%d`)%s",
@@ -58,15 +58,15 @@ public final class PunishmentMessages {
     );
   }
 
-  public static String punishmentUpdated(final PunishmentModel.Complete punishment) {
+  public static String punishmentUpdated(final PunishmentModel punishment) {
     return String.format("Punishment `%s` has been updated.", punishment._id());
   }
 
-  public static String punishmentMarkedStale(final PunishmentModel.Complete punishment) {
+  public static String punishmentMarkedStale(final PunishmentModel punishment) {
     return String.format("Punishment `%s` has been marked stale.", punishment._id());
   }
 
-  public static String punishmentPunishedReason(final PunishmentModel.Complete punishment) {
+  public static String punishmentPunishedReason(final PunishmentModel punishment) {
     return "(%s) %s".formatted(
       punishment._id(),
       Objects.requireNonNullElse(punishment.reason(), REASON_NOT_SPECIFIED)

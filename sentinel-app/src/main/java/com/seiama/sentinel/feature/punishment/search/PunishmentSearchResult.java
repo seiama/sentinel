@@ -8,6 +8,6 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public record PunishmentSearchResult(
   User user,
-  List<PunishmentModel.Complete> punishments
+  List<PunishmentModel> punishments
 ) {
 }

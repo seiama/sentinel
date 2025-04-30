@@ -40,7 +40,7 @@ public class Logging implements Listener {
       client.on(MemberJoinEvent.class, event -> {
         return event.getGuild()
           .flatMapMany(guild -> {
-            return this.channelsFor(guild, GuildModel.Complete.Features.Logging.Event.MEMBER_JOIN)
+            return this.channelsFor(guild, GuildModel.Features.Logging.Event.MEMBER_JOIN)
               .flatMap(channel -> {
                 final Member member = event.getMember();
                 final StringBuilder sb = new StringBuilder();
@@ -61,7 +61,7 @@ public class Logging implements Listener {
       client.on(MemberLeaveEvent.class, event -> {
         return event.getGuild()
           .flatMapMany(guild -> {
-            return this.channelsFor(guild, GuildModel.Complete.Features.Logging.Event.MEMBER_LEAVE)
+            return this.channelsFor(guild, GuildModel.Features.Logging.Event.MEMBER_LEAVE)
               .flatMap(channel -> {
                 final StringBuilder sb = new StringBuilder();
                 sb
@@ -80,7 +80,7 @@ public class Logging implements Listener {
     );
   }
 
-  private Flux<TextChannel> channelsFor(final Guild guild, final GuildModel.Complete.Features.Logging.Event event) {
+  private Flux<TextChannel> channelsFor(final Guild guild, final GuildModel.Features.Logging.Event event) {
     return this.guilds.findByGuild(guild.getId())
       .filter(Feature.LOGGING.enabledForGuild())
       .map(model -> model.features().logging())

@@ -9,10 +9,10 @@ import reactor.core.publisher.Mono;
 
 @NullMarked
 @Repository
-public interface GuildRepository extends ReactiveMongoRepository<GuildModel.Complete, ObjectId>, GuildRepositoryCustom {
-  Mono<GuildModel.Complete> findByGuild(final Snowflake id);
+public interface GuildRepository extends ReactiveMongoRepository<GuildModel, ObjectId> {
+  Mono<GuildModel> findByGuild(final Snowflake id);
 
-  Mono<GuildModel.Complete> findByFeaturesPunishmentsAppealsGuild(final Snowflake id);
+  Mono<GuildModel> findByFeaturesPunishmentsAppealsGuild(final Snowflake id);
 
-  Mono<GuildModel.Complete> findByGuildOrFeaturesPunishmentsAppealsGuild(final Snowflake id, final Snowflake appealGuild);
+  Mono<GuildModel> findByGuildOrFeaturesPunishmentsAppealsGuild(final Snowflake id, final Snowflake appealGuild);
 }

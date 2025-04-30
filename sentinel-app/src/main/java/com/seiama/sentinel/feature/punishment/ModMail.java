@@ -88,16 +88,9 @@ public class ModMail implements Listener {
                     )
                     .build()
                 ),
-                this.modmails.update(model, new ModMailModel.Partial.ThreadCreated() {
-                  @Override
-                  public Instant threadCreatedAt() {
-                    return Instant.now();
-                  }
-
-                  @Override
-                  public Snowflake threadCreatedBy() {
-                    return interaction.getUser().getId();
-                  }
+                this.modmails.update(model, m -> {
+                  m.setThreadCreatedAt(Instant.now());
+                  m.setThreadCreatedBy(interaction.getUser().getId());
                 })
               )))
           );
@@ -119,7 +112,7 @@ public class ModMail implements Listener {
 
   public Mono<Void> create(final GatewayDiscordClient client, final Guild guild, final User user, final ModMailModel.Type type, final @Nullable Message message, final String content) {
     return this.guilds.findByGuild(guild.getId())
-      .zipWhen(guildModel -> this.modmails.insert(new ModMailModel.Complete(
+      .zipWhen(guildModel -> this.modmails.insert(new ModMailModel(
         new ObjectId(),
         guild.getId(),
         Instant.now(),

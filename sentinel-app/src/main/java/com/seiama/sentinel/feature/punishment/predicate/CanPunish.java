@@ -38,7 +38,7 @@ public final class CanPunish<T> implements Function<User, Publisher<Boolean>> {
       .map(TupleUtils.function(this::apply));
   }
 
-  private boolean apply(final GuildModel.Complete model, final Optional<Member> punished) {
+  private boolean apply(final GuildModel model, final Optional<Member> punished) {
     return this.member != null && !Collections.disjoint(
       this.member.getRoleIds(),
       model.features().punishments().permissions().punish()

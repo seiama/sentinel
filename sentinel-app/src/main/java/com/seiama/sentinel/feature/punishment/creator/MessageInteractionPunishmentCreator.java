@@ -26,10 +26,10 @@ public final class MessageInteractionPunishmentCreator implements Punishments.Cr
   private final Message message;
   private final Guild guild;
   private final PunishmentModel.Type type;
-  private final PunishmentAction<User, PunishmentModel.Complete> action;
+  private final PunishmentAction<User, PunishmentModel> action;
   private final @Nullable String reason;
 
-  public MessageInteractionPunishmentCreator(final GatewayDiscordClient client, final DeferrableInteractionEvent event, final Message message, final Guild guild, final PunishmentModel.Type type, final PunishmentAction<User, PunishmentModel.Complete> action, final @Nullable String reason) {
+  public MessageInteractionPunishmentCreator(final GatewayDiscordClient client, final DeferrableInteractionEvent event, final Message message, final Guild guild, final PunishmentModel.Type type, final PunishmentAction<User, PunishmentModel> action, final @Nullable String reason) {
     this.client = client;
     this.event = event;
     this.message = message;
@@ -40,12 +40,12 @@ public final class MessageInteractionPunishmentCreator implements Punishments.Cr
   }
 
   @Override
-  public Mono<PunishmentModel.Complete> create(final GuildRepository guilds, final Punishments punishments) {
-    final Mono<PunishmentModel.Complete> deferred = Mono.defer(() -> this.deferred(guilds, punishments));
+  public Mono<PunishmentModel> create(final GuildRepository guilds, final Punishments punishments) {
+    final Mono<PunishmentModel> deferred = Mono.defer(() -> this.deferred(guilds, punishments));
     return this.event.deferReply().then(deferred);
   }
 
-  private Mono<PunishmentModel.Complete> deferred(final GuildRepository guilds, final Punishments punishments) {
+  private Mono<PunishmentModel> deferred(final GuildRepository guilds, final Punishments punishments) {
     final Interaction interaction = this.event.getInteraction();
     final Member punisher = interaction.getMember().orElseThrow();
     return Mono.justOrEmpty(this.message.getAuthor())
@@ -58,7 +58,7 @@ public final class MessageInteractionPunishmentCreator implements Punishments.Cr
       .flatMap(punished -> punishments.create(
         this.client,
         this.guild,
-        PunishmentModel.Complete.create(
+        PunishmentModel.create(
           this.guild.getId(),
           this.type,
           Instant.now(),

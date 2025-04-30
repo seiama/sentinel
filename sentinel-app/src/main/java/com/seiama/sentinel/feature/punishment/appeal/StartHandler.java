@@ -70,10 +70,10 @@ class StartHandler implements Function<MemberJoinEvent, Publisher<Void>> {
       .filter(Feature.APPEALS.enabledForGuild())
       .flatMap(guildModel -> {
         final ObjectId appealId = new ObjectId();
-        final GuildModel.Complete.Features.Punishments.Appeals config = guildModel.features().punishments().appeals();
+        final GuildModel.Features.Punishments.Appeals config = guildModel.features().punishments().appeals();
         final Member member = event.getMember();
-        final Flux<PunishmentModel.Complete> getActiveBans = this.punishmentOps.findActive(guildModel.guild(), member.getId(), PunishmentModel.Type.BAN);
-        final Mono<PunishmentModel.Complete> kickUserForNoActivePunishment = event.getGuild()
+        final Flux<PunishmentModel> getActiveBans = this.punishmentOps.findActive(guildModel.guild(), member.getId(), PunishmentModel.Type.BAN);
+        final Mono<PunishmentModel> kickUserForNoActivePunishment = event.getGuild()
           .flatMap(guild -> guild.kick(member.getId(), "Could not find an active ban."))
           .then(Mono.empty());
         final Mono<TextChannel> createAppealChannel = event.getGuild()
@@ -111,7 +111,7 @@ class StartHandler implements Function<MemberJoinEvent, Publisher<Void>> {
             createAppealDiscussionThread,
             this.relayRest.getSelf()
           )
-          .zipWhen(TupleUtils.function((punishment, channel, appealThread, appealDiscussionThread, relayUser) -> this.appeals.insert(new AppealModel.Complete(
+          .zipWhen(TupleUtils.function((punishment, channel, appealThread, appealDiscussionThread, relayUser) -> this.appeals.insert(new AppealModel(
             appealId,
             punishment.guild(),
             Instant.now(),
@@ -127,7 +127,7 @@ class StartHandler implements Function<MemberJoinEvent, Publisher<Void>> {
             null
           ))))
           .map(tuple -> {
-            final Tuple5<PunishmentModel.Complete, TextChannel, ChannelData, ChannelData, UserData> t1 = tuple.getT1();
+            final Tuple5<PunishmentModel, TextChannel, ChannelData, ChannelData, UserData> t1 = tuple.getT1();
             return Tuples.of(t1.getT1(), t1.getT2(), t1.getT3(), t1.getT4(), t1.getT5(), tuple.getT2());
           })
           .flatMap(TupleUtils.function((punishment, channel, appealThread, appealDiscussionThread, relayUser, model) -> {
@@ -171,7 +171,7 @@ class StartHandler implements Function<MemberJoinEvent, Publisher<Void>> {
                       .asRequest()
                   ).flatMap(voteMessage -> Mono.when(
                     rest.getChannelService().addPinnedMessage(appealDiscussionThread.id().asLong(), voteMessage.id().asLong()),
-                    this.appeals.update(model._id(), (AppealModel.Partial.VoteMessage) () -> Snowflake.of(voteMessage.id()))
+                    this.appeals.update(model, m -> m.setVoteMessage(Snowflake.of(voteMessage.id())))
                   ));
                 }),
               appealDiscussionThreadChannel.createMessage(
@@ -182,7 +182,7 @@ class StartHandler implements Function<MemberJoinEvent, Publisher<Void>> {
                   .asRequest()
               ).flatMap(voteMessage -> Mono.when(
                 rest.getChannelService().addPinnedMessage(appealDiscussionThread.id().asLong(), voteMessage.id().asLong()),
-                this.appeals.update(model._id(), (AppealModel.Partial.VoteMessage) () -> Snowflake.of(voteMessage.id()))
+                this.appeals.update(model, m -> m.setVoteMessage(Snowflake.of(voteMessage.id())))
               )),
               rest.getChannelById(config.appealThreadsChannel()).createMessage(
                 EmbedCreateSpec.builder()

@@ -1,12 +1,7 @@
 package com.seiama.sentinel.common.model;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.seiama.sentinel.common.annotation.MongoDate;
-import com.seiama.sentinel.common.jackson.InstantExtendedJsonSerializer;
 import discord4j.common.util.Snowflake;
 import java.time.Instant;
 import org.bson.types.ObjectId;
@@ -14,52 +9,112 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
 
+@Document(collection = "modmail")
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @NullMarked
-public interface ModMailModel {
-  String COLLECTION = "modmail";
+public class ModMailModel implements AbstractModel {
+  private @Id ObjectId _id;
+  private Snowflake guild;
+  private Instant date;
+  private Type type;
+  private Snowflake creatorId;
+  private String creatorUsername;
+  @Deprecated
+  private @Nullable Discriminator creatorDiscriminator;
+  private Snowflake message;
+  private String content;
+  private @Nullable Instant threadCreatedAt;
+  private @Nullable Snowflake threadCreatedBy;
 
-  interface Fields {
-    @SuppressWarnings("ConstantName")
-    String _ID = AbstractModel._ID;
+  public ModMailModel() {
   }
 
-  interface Partial extends AbstractPartial {
-    @JsonInclude(value = JsonInclude.Include.NON_NULL)
-    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-    @SuppressWarnings("EmptyLineSeparator")
-    interface ThreadCreated extends Partial {
-      @JsonSerialize(using = InstantExtendedJsonSerializer.class)
-      @JsonProperty @MongoDate Instant threadCreatedAt();
-      @JsonProperty Snowflake threadCreatedBy();
-    }
+  public ModMailModel(
+    final ObjectId _id,
+    final Snowflake guild,
+    final Instant date,
+    final Type type,
+    final Snowflake creatorId,
+    final String creatorUsername,
+    final @Nullable Discriminator creatorDiscriminator,
+    final Snowflake message,
+    final String content,
+    final @Nullable Instant threadCreatedAt,
+    final @Nullable Snowflake threadCreatedBy
+  ) {
+    this._id = _id;
+    this.guild = guild;
+    this.date = date;
+    this.type = type;
+    this.creatorId = creatorId;
+    this.creatorUsername = creatorUsername;
+    this.creatorDiscriminator = creatorDiscriminator;
+    this.message = message;
+    this.content = content;
+    this.threadCreatedAt = threadCreatedAt;
+    this.threadCreatedBy = threadCreatedBy;
   }
 
-  @Document(collection = COLLECTION)
-  @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-  record Complete(
-    @Field(Fields._ID)
-    @JsonProperty(Fields._ID)
-    @Id ObjectId _id,
-    Snowflake guild,
-    Instant date,
-    Type type,
-    Snowflake creatorId,
-    String creatorUsername,
-    @Deprecated
-    @Nullable Discriminator creatorDiscriminator,
-    Snowflake message,
-    String content,
-    @MongoDate @Nullable Instant threadCreatedAt,
-    @Nullable Snowflake threadCreatedBy
-  ) implements AbstractModel {
-    public UserIdentity creator() {
-      return new UserIdentity(this.creatorId, this.creatorUsername, this.creatorDiscriminator);
-    }
+  @Override
+  public ObjectId _id() {
+    return this._id;
   }
 
-  enum Type {
+  public Snowflake guild() {
+    return this.guild;
+  }
+
+  public Instant date() {
+    return this.date;
+  }
+
+  public Type type() {
+    return this.type;
+  }
+
+  public Snowflake creatorId() {
+    return this.creatorId;
+  }
+
+  public String creatorUsername() {
+    return this.creatorUsername;
+  }
+
+  public @Nullable Discriminator creatorDiscriminator() {
+    return this.creatorDiscriminator;
+  }
+
+  public UserIdentity creator() {
+    return new UserIdentity(this.creatorId, this.creatorUsername, this.creatorDiscriminator);
+  }
+
+  public Snowflake message() {
+    return this.message;
+  }
+
+  public String content() {
+    return this.content;
+  }
+
+  public @Nullable Instant threadCreatedAt() {
+    return this.threadCreatedAt;
+  }
+
+  public void setThreadCreatedAt(final @Nullable Instant threadCreatedAt) {
+    this.threadCreatedAt = threadCreatedAt;
+  }
+
+  public @Nullable Snowflake threadCreatedBy() {
+    return this.threadCreatedBy;
+  }
+
+  public void setThreadCreatedBy(final @Nullable Snowflake threadCreatedBy) {
+    this.threadCreatedBy = threadCreatedBy;
+  }
+
+  @NullMarked
+  public enum Type {
     MODMAIL(new Strings(
       "A new modmail message has been submitted"
     )),
@@ -77,6 +132,7 @@ public interface ModMailModel {
       return this.strings;
     }
 
+    @NullMarked
     public record Strings(
       String submitted
     ) {

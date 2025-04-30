@@ -51,16 +51,16 @@ class MessageLinkCreateHandler implements Function<MessageCreateEvent, Publisher
       .flatMap(TupleUtils.function((guild, channel) -> {
         final Channel.Type type = channel.getType();
         if (type == Channel.Type.GUILD_TEXT) {
-          return Mono.just(Tuples.<Tuple2<Guild, GuildModel.Complete>, Supplier<Mono<AppealModel.Complete>>, Function<AppealModel.Complete, Snowflake>>of(
+          return Mono.just(Tuples.<Tuple2<Guild, GuildModel>, Supplier<Mono<AppealModel>>, Function<AppealModel, Snowflake>>of(
             guild,
             () -> this.appeals.findByAppealChannel(channel.getId()),
-            AppealModel.Complete::appealThread
+            AppealModel::appealThread
           ));
         } else if (type == Channel.Type.GUILD_PRIVATE_THREAD) {
-          return Mono.just(Tuples.<Tuple2<Guild, GuildModel.Complete>, Supplier<Mono<AppealModel.Complete>>, Function<AppealModel.Complete, Snowflake>>of(
+          return Mono.just(Tuples.<Tuple2<Guild, GuildModel>, Supplier<Mono<AppealModel>>, Function<AppealModel, Snowflake>>of(
             guild,
             () -> this.appeals.findByAppealThread(channel.getId()),
-            AppealModel.Complete::appealChannel
+            AppealModel::appealChannel
           ));
         }
         return Mono.empty();

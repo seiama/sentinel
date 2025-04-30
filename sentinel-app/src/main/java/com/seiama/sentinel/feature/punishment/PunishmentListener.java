@@ -93,7 +93,7 @@ public class PunishmentListener implements Listener {
                   yield this.punishments.create(
                     client,
                     guild,
-                    PunishmentModel.Complete.create(
+                    PunishmentModel.create(
                       guild.getId(),
                       type,
                       Instant.now(),
@@ -112,7 +112,7 @@ public class PunishmentListener implements Listener {
                   yield this.punishments.findActive(guild.getId(), punished.getId(), PunishmentModel.Type.MUTE)
                     .next()
                     .flatMap(model -> {
-                      return this.punishments.repository().update(model, PunishmentModel.Partial.Stale.of(
+                      return this.punishments.repository().update(model, m -> m.setStale(
                         punisher,
                         reason,
                         automatic,
@@ -127,7 +127,7 @@ public class PunishmentListener implements Listener {
                 yield this.punishments.findActive(guild.getId(), punished.getId(), PunishmentModel.Type.BAN)
                   .next()
                   .flatMap(model -> {
-                    return this.punishments.repository().update(model, PunishmentModel.Partial.Stale.of(
+                    return this.punishments.repository().update(model, m -> m.setStale(
                       punisher,
                       reason,
                       automatic,

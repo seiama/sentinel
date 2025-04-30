@@ -27,7 +27,7 @@ public final class ChatInteractionPunishmentCreator implements Punishments.Creat
   private final Guild guild;
   private final PunishmentModel.Type type;
   private final @Nullable Duration duration;
-  private final PunishmentAction<User, PunishmentModel.Complete> action;
+  private final PunishmentAction<User, PunishmentModel> action;
 
   public ChatInteractionPunishmentCreator(
     final GatewayDiscordClient client,
@@ -35,7 +35,7 @@ public final class ChatInteractionPunishmentCreator implements Punishments.Creat
     final Guild guild,
     final PunishmentModel.Type type,
     final @Nullable Duration duration,
-    final PunishmentAction<User, PunishmentModel.Complete> action
+    final PunishmentAction<User, PunishmentModel> action
   ) {
     this.client = client;
     this.event = event;
@@ -46,12 +46,12 @@ public final class ChatInteractionPunishmentCreator implements Punishments.Creat
   }
 
   @Override
-  public Mono<PunishmentModel.Complete> create(final GuildRepository guilds, final Punishments punishments) {
-    final Mono<PunishmentModel.Complete> deferred = Mono.defer(() -> this.deferred(guilds, punishments));
+  public Mono<PunishmentModel> create(final GuildRepository guilds, final Punishments punishments) {
+    final Mono<PunishmentModel> deferred = Mono.defer(() -> this.deferred(guilds, punishments));
     return this.event.deferReply().then(deferred);
   }
 
-  private Mono<PunishmentModel.Complete> deferred(final GuildRepository guilds, final Punishments punishments) {
+  private Mono<PunishmentModel> deferred(final GuildRepository guilds, final Punishments punishments) {
     final Interaction interaction = this.event.getInteraction();
     final Member punisher = interaction.getMember().orElseThrow();
     final @Nullable String reason = this.event.getOptionAsString(OptionNames.REASON).orElse(null);
@@ -65,7 +65,7 @@ public final class ChatInteractionPunishmentCreator implements Punishments.Creat
       .flatMap(punished -> punishments.create(
         this.client,
         this.guild,
-        PunishmentModel.Complete.create(
+        PunishmentModel.create(
           this.guild.getId(),
           this.type,
           Instant.now(),
