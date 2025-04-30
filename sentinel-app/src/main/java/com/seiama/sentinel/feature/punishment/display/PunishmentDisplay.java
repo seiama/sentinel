@@ -1,7 +1,7 @@
 package com.seiama.sentinel.feature.punishment.display;
 
 import com.seiama.sentinel.common.Thyme;
-import com.seiama.sentinel.common.discord.Emoji;
+import com.seiama.sentinel.common.discord.Emojis;
 import com.seiama.sentinel.common.discord.UserDisplay;
 import com.seiama.sentinel.common.model.PunishmentModel;
 import com.seiama.sentinel.common.model.UserIdentity;
@@ -25,8 +25,8 @@ public final class PunishmentDisplay {
     final EmbedCreateSpec.Builder embed = EmbedCreateSpec.builder();
     embed.color(Color.of(punishment.type().color()));
     if (display.type) embed.addField("Type", String.format("%s %s%s", punishment.type().emoji().asFormat(), punishment.type().strings().name(), automaticSuffix(punishment.automatic())), true);
-    if (display.stale) embed.addField("Stale", Emoji.emoji(punishment.stale()).asFormat() + automaticSuffix(punishment.staleAutomatic()), true);
-    if (display.expunged) embed.addField("Expunged", Emoji.emoji(punishment.expunged()).asFormat(), true);
+    if (display.stale) embed.addField("Stale", Emojis.emoji(punishment.stale()).asFormat() + automaticSuffix(punishment.staleAutomatic()), true);
+    if (display.expunged) embed.addField("Expunged", Emojis.emoji(punishment.expunged()).asFormat(), true);
     if (display.time) embed.addField("Time", TimestampFormat.LONG_DATE_TIME.format(punishment.date()), false);
     if (display.issuedBy) embed.addField("Issued by", UserDisplay.render(UserDisplay.Renderer.MENTION_WITH_TRAILING_BACKTICK_WRAPPED_USERNAME_AND_ID, punishment.punisher()), false);
     if (display.issuedTo) {

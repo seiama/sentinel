@@ -1,7 +1,7 @@
 package com.seiama.sentinel.feature.punishment.display;
 
 import com.seiama.sentinel.common.discord.Discord;
-import com.seiama.sentinel.common.discord.Emoji;
+import com.seiama.sentinel.common.discord.Emojis;
 import com.seiama.sentinel.common.discord.UserDisplay;
 import com.seiama.sentinel.common.model.PunishmentModel;
 import com.seiama.sentinel.feature.punishment.search.PunishmentSearchResult;
@@ -76,7 +76,7 @@ public final class PunishmentMessages {
   }
 
   public static String mayNotPunish() {
-    return "%s That user may not be punished.".formatted(Emoji.NO.asFormat());
+    return "%s That user may not be punished.".formatted(Emojis.NO.asFormat());
   }
 
   public static EmbedCreateSpec punishmentSearchEmbed(final PunishmentSearchResult result, final String title) {
@@ -109,7 +109,7 @@ public final class PunishmentMessages {
     if (!description.isEmpty()) {
       embed.description(description);
     } else {
-      embed.description("Squeaky clean record.  " + Emoji.TADA.asFormat());
+      embed.description("Squeaky clean record.  " + Emojis.TADA.asFormat());
     }
     return embed.build();
   }

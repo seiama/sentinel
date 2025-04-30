@@ -3,7 +3,7 @@ package com.seiama.sentinel.feature.punishment.appeal;
 import com.seiama.common.Comparables;
 import com.seiama.sentinel.common.Listener;
 import com.seiama.sentinel.common.discord.Discord;
-import com.seiama.sentinel.common.discord.Emoji;
+import com.seiama.sentinel.common.discord.Emojis;
 import com.seiama.sentinel.common.discord.UserDisplay;
 import com.seiama.sentinel.common.model.AppealModel;
 import com.seiama.sentinel.common.model.AppealRepository;
@@ -28,10 +28,10 @@ import discord4j.core.event.domain.message.MessageUpdateEvent;
 import discord4j.core.object.PermissionOverwrite;
 import discord4j.core.object.component.ActionRow;
 import discord4j.core.object.component.Button;
+import discord4j.core.object.emoji.Emoji;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.User;
-import discord4j.core.object.reaction.ReactionEmoji;
 import discord4j.core.spec.EmbedCreateFields;
 import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.core.util.MentionUtil;
@@ -89,7 +89,7 @@ public class Appeals implements Listener {
   private static final String VOTE_BUTTON_PREFIX = "appeal-vote:";
   static final Map<String, AppealModel.Vote> VOTE_BUTTONS = AppealModel.Vote.all()
     .collect(Collectors.toMap(Appeals::createVoteButtonId, Function.identity()));
-  private static final Map<AppealModel.Vote, Function3<String, ReactionEmoji, String, Button>> VOTE_BUTTON_FACTORY = Map.of(
+  private static final Map<AppealModel.Vote, Function3<String, Emoji, String, Button>> VOTE_BUTTON_FACTORY = Map.of(
     AppealModel.Vote.YES, Button::success,
     AppealModel.Vote.NO, Button::danger,
     AppealModel.Vote.ABSTAIN, Button::primary,
@@ -228,7 +228,7 @@ public class Appeals implements Listener {
           return switch (result) {
             case NONE -> this.client.rest().getChannelById(this.model.appealDiscussionThread()).createMessage(String.format(
               "%s The result of the vote could not be determined at this time and will be recalculated %s.",
-              Emoji.CLOCK1.asFormat(),
+              Emojis.CLOCK1.asFormat(),
               TimestampFormat.LONG_DATE_TIME.format(Instant.now().plus(VOTE_CHECK_INTERVAL))
             ));
             case YES -> Appeals.this.accept(this.client, this.model, user);
@@ -415,7 +415,7 @@ public class Appeals implements Listener {
         embed.addField("Reason", this.reason, false);
       }
       if (this.automatic) {
-        embed.addField("Automatic Decision", Emoji.YES.asFormat(), false);
+        embed.addField("Automatic Decision", Emojis.YES.asFormat(), false);
       }
       return embed.build();
     }
