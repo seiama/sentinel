@@ -4,7 +4,7 @@ import com.seiama.sentinel.command.Command;
 import com.seiama.sentinel.command.GuildCommand;
 import com.seiama.sentinel.command.OptionNames;
 import com.seiama.sentinel.command.Options;
-import com.seiama.sentinel.common.discord.Emoji;
+import com.seiama.sentinel.common.discord.Emojis;
 import com.seiama.sentinel.common.model.Feature;
 import com.seiama.sentinel.common.model.GuildRepository;
 import com.seiama.sentinel.feature.punishment.predicate.CanQueryAndMutate;
@@ -94,7 +94,7 @@ public final class AppealCommand implements GuildCommand {
           .switchIfEmpty(event.editReply().withContentOrNull(Appeals.NO_ACTIVE_APPEAL).then(Mono.empty()))
           .flatMap(model -> {
             return this.appeals.accept(client, model, interaction.getUser())
-              .then(event.editReply().withContentOrNull(Emoji.YES.asFormat() + " Successfully accepted appeal."));
+              .then(event.editReply().withContentOrNull(Emojis.YES.asFormat() + " Successfully accepted appeal."));
           });
       },
       DENY, option -> {
@@ -106,7 +106,7 @@ public final class AppealCommand implements GuildCommand {
           .switchIfEmpty(event.editReply().withContentOrNull(Appeals.NO_ACTIVE_APPEAL).then(Mono.empty()))
           .flatMap(TupleUtils.function((reason, model) -> {
             return this.appeals.deny(client, model, interaction.getUser(), reason.orElse(null), null)
-              .then(event.editReply().withContentOrNull(Emoji.YES.asFormat() + " Successfully denied appeal."));
+              .then(event.editReply().withContentOrNull(Emojis.YES.asFormat() + " Successfully denied appeal."));
           }));
       }
     )));

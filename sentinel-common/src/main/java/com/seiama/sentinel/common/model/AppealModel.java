@@ -9,9 +9,10 @@ import com.seiama.sentinel.common.SharedConstants;
 import com.seiama.sentinel.common.annotation.MongoDate;
 import com.seiama.sentinel.common.annotation.MongoId;
 import com.seiama.sentinel.common.annotation.MongoPrimaryId;
-import com.seiama.sentinel.common.discord.Emoji;
+import com.seiama.sentinel.common.discord.Emojis;
 import com.seiama.sentinel.common.jackson.InstantExtendedJsonSerializer;
 import discord4j.common.util.Snowflake;
+import discord4j.core.object.emoji.Emoji;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
@@ -90,20 +91,20 @@ public interface AppealModel {
   }
 
   enum Vote {
-    YES(true, false, Emoji.YES, new Strings("yes", "Yes")),
-    NO(true, false, Emoji.NO, new Strings("no", "No")),
-    ABSTAIN(true, false, Emoji.PERSON_SHRUGGING, new Strings("abstain", "Abstain")),
-    LATER(true, false, Emoji.CLOCK1, new Strings("later", "Later")),
-    VETO(false, true, Emoji.HAMMER, new Strings("veto", "Veto"));
+    YES(true, false, Emojis.YES, new Strings("yes", "Yes")),
+    NO(true, false, Emojis.NO, new Strings("no", "No")),
+    ABSTAIN(true, false, Emojis.PERSON_SHRUGGING, new Strings("abstain", "Abstain")),
+    LATER(true, false, Emojis.CLOCK1, new Strings("later", "Later")),
+    VETO(false, true, Emojis.HAMMER, new Strings("veto", "Veto"));
 
     static final Vote[] VALUES = values();
 
     private final boolean canVoteWithIfPunisher;
     private final boolean requiresReason;
-    private final discord4j.core.object.emoji.Emoji emoji;
+    private final Emoji emoji;
     private final Strings strings;
 
-    Vote(final boolean canVoteWithIfPunisher, final boolean requiresReason, final discord4j.core.object.emoji.Emoji emoji, final Strings strings) {
+    Vote(final boolean canVoteWithIfPunisher, final boolean requiresReason, final Emoji emoji, final Strings strings) {
       this.canVoteWithIfPunisher = canVoteWithIfPunisher;
       this.requiresReason = requiresReason;
       this.emoji = emoji;
@@ -132,7 +133,7 @@ public interface AppealModel {
       };
     }
 
-    public discord4j.core.object.emoji.Emoji emoji() {
+    public Emoji emoji() {
       return this.emoji;
     }
 

@@ -5,7 +5,7 @@ import com.seiama.sentinel.command.Command;
 import com.seiama.sentinel.command.GuildCommand;
 import com.seiama.sentinel.command.OptionNames;
 import com.seiama.sentinel.command.Options;
-import com.seiama.sentinel.common.discord.Emoji;
+import com.seiama.sentinel.common.discord.Emojis;
 import com.seiama.sentinel.common.model.FactoidModel;
 import com.seiama.sentinel.common.model.FactoidRepository;
 import com.seiama.sentinel.common.model.Feature;
@@ -207,17 +207,17 @@ public final class FactoidCommand implements GuildCommand {
                     return Mono.empty();
                   }
                 })
-                .then(event.editReply().withContentOrNull(Emoji.YES.asFormat()));
+                .then(event.editReply().withContentOrNull(Emojis.YES.asFormat()));
             });
         },
         REMOVE, option -> {
           return Mono.justOrEmpty(Options.string(option, OptionNames.NAME))
             .flatMap(name -> {
               return this.factoids.findByGuildAndName(guild.getId(), name)
-                .switchIfEmpty(event.editReply().withContentOrNull("%s Could not find a factoid with name `%s`.".formatted(Emoji.NO.asFormat(), name)).then(Mono.empty()))
+                .switchIfEmpty(event.editReply().withContentOrNull("%s Could not find a factoid with name `%s`.".formatted(Emojis.NO.asFormat(), name)).then(Mono.empty()))
                 .flatMap(model -> this.appAction((id, service) -> service.deleteGuildApplicationCommand(id, guild.getId().asLong(), model.commandId().asLong())).thenReturn(model))
                 .flatMap(this.factoids::delete)
-                .then(event.editReply().withContentOrNull(Emoji.YES.asFormat()));
+                .then(event.editReply().withContentOrNull(Emojis.YES.asFormat()));
             });
         }
       )));

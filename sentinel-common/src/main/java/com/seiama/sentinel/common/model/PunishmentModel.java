@@ -9,9 +9,10 @@ import com.seiama.sentinel.common.SharedConstants;
 import com.seiama.sentinel.common.annotation.MongoDate;
 import com.seiama.sentinel.common.annotation.MongoId;
 import com.seiama.sentinel.common.annotation.MongoPrimaryId;
-import com.seiama.sentinel.common.discord.Emoji;
+import com.seiama.sentinel.common.discord.Emojis;
 import com.seiama.sentinel.common.jackson.ObjectIdExtendedJsonSerializer;
 import discord4j.common.util.Snowflake;
+import discord4j.core.object.emoji.Emoji;
 import discord4j.core.object.entity.User;
 import java.time.Duration;
 import java.time.Instant;
@@ -233,19 +234,19 @@ public interface PunishmentModel {
   }
 
   enum Type {
-    BAN(SharedConstants.COLOR_RED, true, true, new Strings("ban", "banned"), Emoji.DOT_RED),
-    KICK(SharedConstants.COLOR_GREY, true, true, new Strings("kick", "kicked"), Emoji.DOT_GREY),
-    MUTE(SharedConstants.COLOR_PURPLE, true, false, new Strings("timeout", "timed out"), Emoji.DOT_PURPLE),
-    NOTE(SharedConstants.COLOR_BLUE, false, false, new Strings("note", "noted"), Emoji.DOT_BLUE),
-    WARN(SharedConstants.COLOR_ORANGE, true, false, new Strings("warn", "warned"), Emoji.DOT_ORANGE);
+    BAN(SharedConstants.COLOR_RED, true, true, new Strings("ban", "banned"), Emojis.DOT_RED),
+    KICK(SharedConstants.COLOR_GREY, true, true, new Strings("kick", "kicked"), Emojis.DOT_GREY),
+    MUTE(SharedConstants.COLOR_PURPLE, true, false, new Strings("timeout", "timed out"), Emojis.DOT_PURPLE),
+    NOTE(SharedConstants.COLOR_BLUE, false, false, new Strings("note", "noted"), Emojis.DOT_BLUE),
+    WARN(SharedConstants.COLOR_ORANGE, true, false, new Strings("warn", "warned"), Emojis.DOT_ORANGE);
 
     private final int color;
     private final boolean notification;
     private final boolean terminal;
     private final Strings strings;
-    private final discord4j.core.object.emoji.Emoji emoji;
+    private final Emoji emoji;
 
-    Type(final int color, final boolean notification, final boolean terminal, final Strings strings, final discord4j.core.object.emoji.Emoji emoji) {
+    Type(final int color, final boolean notification, final boolean terminal, final Strings strings, final Emoji emoji) {
       this.color = color;
       this.notification = notification;
       this.terminal = terminal;
@@ -269,7 +270,7 @@ public interface PunishmentModel {
       return this.strings;
     }
 
-    public discord4j.core.object.emoji.Emoji emoji() {
+    public Emoji emoji() {
       return this.emoji;
     }
 

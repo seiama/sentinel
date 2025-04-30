@@ -2,12 +2,13 @@ package com.seiama.sentinel.common.discord;
 
 import discord4j.common.util.Snowflake;
 import discord4j.core.object.emoji.CustomEmoji;
+import discord4j.core.object.emoji.Emoji;
 import discord4j.core.object.emoji.UnicodeEmoji;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public interface Emoji {
+public interface Emojis {
   UnicodeEmoji CLOCK1 = UnicodeEmoji.of("🕐");
   UnicodeEmoji HAMMER = UnicodeEmoji.of("🔨");
   UnicodeEmoji PENCIL = UnicodeEmoji.of("📝");
@@ -25,7 +26,7 @@ public interface Emoji {
   CustomEmoji DOT_PURPLE = CustomEmoji.of(Snowflake.of(1093063904382435381L), "dot_purple", false); // 0x9b59b6
   CustomEmoji DOT_RED = CustomEmoji.of(Snowflake.of(1093063324662513664L), "dot_red", false); // 0xf04747
 
-  static discord4j.core.object.emoji.Emoji emoji(final @Nullable Boolean value) {
+  static Emoji emoji(final @Nullable Boolean value) {
     if (value == null) return NO;
     return value ? YES : NO;
   }

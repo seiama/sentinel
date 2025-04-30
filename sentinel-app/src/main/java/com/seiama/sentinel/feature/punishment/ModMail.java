@@ -2,7 +2,7 @@ package com.seiama.sentinel.feature.punishment;
 
 import com.seiama.sentinel.common.CustomId;
 import com.seiama.sentinel.common.Listener;
-import com.seiama.sentinel.common.discord.Emoji;
+import com.seiama.sentinel.common.discord.Emojis;
 import com.seiama.sentinel.common.discord.Links;
 import com.seiama.sentinel.common.discord.UserDisplay;
 import com.seiama.sentinel.common.model.Discriminator;
@@ -54,7 +54,7 @@ public class ModMail implements Listener {
         final Interaction interaction = event.getInteraction();
         return event.edit()
           .withComponents(ActionRow.of(
-            Button.primary(id.toString(), Emoji.PENCIL, "Create Thread").disabled(true)
+            Button.primary(id.toString(), Emojis.PENCIL, "Create Thread").disabled(true)
           ))
           .then(
             this.modmails.findById(new ObjectId(id.value()))
@@ -83,7 +83,7 @@ public class ModMail implements Listener {
                   MessageEditRequest.builder()
                     .componentsOrNull(
                       ActionRow.of(
-                        Button.link(Links.channel(model.guild(), Snowflake.of(thread.id())), Emoji.PENCIL, "Go To Thread")
+                        Button.link(Links.channel(model.guild(), Snowflake.of(thread.id())), Emojis.PENCIL, "Go To Thread")
                       ).getData()
                     )
                     .build()
@@ -154,7 +154,7 @@ public class ModMail implements Listener {
             MessageCreateSpec.builder()
               .embeds(embed.build())
               .components(ActionRow.of(
-                Button.primary(createThreadButton.toString(), Emoji.PENCIL, "Create Thread")
+                Button.primary(createThreadButton.toString(), Emojis.PENCIL, "Create Thread")
               ))
               .build()
               .asRequest()
