@@ -2,7 +2,6 @@ package com.seiama.sentinel.feature.punishment.command;
 
 import com.seiama.sentinel.command.GuildCommand;
 import com.seiama.sentinel.command.OptionNames;
-import com.seiama.sentinel.command.Options;
 import com.seiama.sentinel.common.model.Feature;
 import com.seiama.sentinel.common.model.ModMailModel;
 import com.seiama.sentinel.feature.punishment.ModMail;
@@ -65,7 +64,7 @@ public class ModMailCommand implements GuildCommand {
         event.getInteraction().getUser(),
         ModMailModel.Type.MODMAIL,
         null,
-        Options.string(event.getOption(OptionNames.MESSAGE)).orElseThrow()
+        event.getOptionAsString(OptionNames.MESSAGE).orElseThrow()
       ))
       .then(event.editReply().withContentOrNull("Your message has been successfully sent."));
   }
