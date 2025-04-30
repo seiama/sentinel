@@ -25,12 +25,6 @@ public record Response(
 ) {
   public InteractionApplicationCommandCallbackReplyMono decorate(final InteractionApplicationCommandCallbackReplyMono mono) {
     if (this.useComponentsV2()) {
-      System.out.println("Use components v2");
-      if (this.wrapComponents().isAbsent()) {
-        System.out.println("No components");
-      }
-      System.out.println("Content: " + this.wrapComponents().get().size());
-      this.wrapComponents().get().forEach(component -> System.out.println("Component: " + component.getType() + " -> " + component.toString()));
       return mono.withComponents(this.wrapComponents());
     }
     return mono
@@ -69,9 +63,6 @@ public record Response(
   }
 
   private boolean useComponentsV2() {
-    return this.components != null && this.components.stream().map(Component::unwrap).anyMatch(componentData -> {
-      System.out.println("Check type: " + componentData.type());
-      return MessageComponent.Type.of(componentData.type()).isRequiredFlag();
-    });
+    return this.components != null && this.components.stream().map(Component::unwrap).anyMatch(componentData -> MessageComponent.Type.of(componentData.type()).isRequiredFlag());
   }
 }
