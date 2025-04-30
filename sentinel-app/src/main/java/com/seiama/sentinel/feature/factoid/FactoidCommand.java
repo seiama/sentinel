@@ -165,6 +165,7 @@ public final class FactoidCommand implements GuildCommand {
                 response = new Response(
                   content.orElse(null),
                   List.of(),
+                  List.of(),
                   List.of()
                 );
               } else {
