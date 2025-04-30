@@ -309,8 +309,8 @@ public class Appeals implements Listener {
 
     private Mono<Void> unenforce() {
       if (this.result == AppealModel.Result.ACCEPTED) {
-        final Mono<PunishmentModel> updatedPunishment = Appeals.this.punishments.update(this.model.punishment(), m -> m.setStale(Optional.of(this.user), this.reason, this.automatic, this.model._id()));
-        return updatedPunishment
+        return Appeals.this.punishments.findById(this.model.punishment())
+          .flatMap(punishment -> Appeals.this.punishments.update(punishment, m -> m.setStale(Optional.of(this.user), this.reason, this.automatic, this.model._id())))
           .flatMap(punishment -> {
             return this.client.getGuildById(punishment.guild())
               .flatMap(guild -> Appeals.this.punishmentOps.unenforce(guild, punishment, String.format(

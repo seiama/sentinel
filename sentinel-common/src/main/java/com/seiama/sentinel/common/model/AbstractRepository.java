@@ -13,11 +13,6 @@ public interface AbstractRepository<M extends AbstractModel> extends ReactiveMon
     return this.save(model);
   }
 
-  @Deprecated
-  default Mono<M> update(final ObjectId _id, final Consumer<M> consumer) {
-    return this.findById(_id).flatMap(entity -> this.update(entity, consumer));
-  }
-
   default Mono<M> refresh(final M that) {
     return this.findById(that._id());
   }

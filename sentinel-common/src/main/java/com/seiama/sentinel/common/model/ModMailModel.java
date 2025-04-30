@@ -2,7 +2,6 @@ package com.seiama.sentinel.common.model;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.seiama.sentinel.common.annotation.MongoDate;
 import discord4j.common.util.Snowflake;
 import java.time.Instant;
 import org.bson.types.ObjectId;
@@ -25,7 +24,7 @@ public class ModMailModel implements AbstractModel {
   private @Nullable Discriminator creatorDiscriminator;
   private Snowflake message;
   private String content;
-  private @MongoDate @Nullable Instant threadCreatedAt;
+  private @Nullable Instant threadCreatedAt;
   private @Nullable Snowflake threadCreatedBy;
 
   public ModMailModel() {
@@ -114,6 +113,7 @@ public class ModMailModel implements AbstractModel {
     this.threadCreatedBy = threadCreatedBy;
   }
 
+  @NullMarked
   public enum Type {
     MODMAIL(new Strings(
       "A new modmail message has been submitted"
@@ -132,6 +132,7 @@ public class ModMailModel implements AbstractModel {
       return this.strings;
     }
 
+    @NullMarked
     public record Strings(
       String submitted
     ) {

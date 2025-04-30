@@ -3,7 +3,6 @@ package com.seiama.sentinel.common.model;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.seiama.sentinel.common.IsEnabled;
-import com.seiama.sentinel.common.annotation.MongoPrimaryId;
 import discord4j.common.util.Snowflake;
 import java.util.List;
 import java.util.Map;
@@ -13,22 +12,25 @@ import org.bson.types.ObjectId;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.MongoId;
 
 @Document(collection = "guilds")
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @NullMarked
 public record GuildModel(
-  @MongoPrimaryId ObjectId _id,
+  @MongoId
+  ObjectId _id,
   Snowflake guild,
   String invite,
   Features features
 ) implements AbstractModel {
-  public <F extends IsEnabled> boolean featureEnabled(final Function<Features, F> featureGetter) {
-    final @Nullable F feature = featureGetter.apply(this.features);
+  public <F extends IsEnabled> boolean featureEnabled(final Function<Features, @Nullable F> featureGetter) {
+    final F feature = featureGetter.apply(this.features);
     return feature != null && feature.enabled();
   }
 
   @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+  @NullMarked
   public record Features(
     Punishments punishments,
     Factoids factoids,
@@ -36,6 +38,7 @@ public record GuildModel(
     Logging logging
   ) {
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    @NullMarked
     public record Punishments(
       boolean enabled,
       Permissions permissions,
@@ -44,6 +47,7 @@ public record GuildModel(
       Appeals appeals
     ) implements IsEnabled {
       @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+      @NullMarked
       public record Permissions(
         Set<Snowflake> punish,
         Set<Snowflake> exempt
@@ -51,6 +55,7 @@ public record GuildModel(
       }
 
       @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+      @NullMarked
       public record Appeals(
         boolean enabled,
         Snowflake guild,
@@ -63,12 +68,14 @@ public record GuildModel(
     }
 
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    @NullMarked
     public record Factoids(
       boolean enabled
     ) implements IsEnabled {
     }
 
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    @NullMarked
     public record ModMail(
       boolean enabled,
       Snowflake notificationChannel,
@@ -77,10 +84,12 @@ public record GuildModel(
     }
 
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    @NullMarked
     public record Logging(
       boolean enabled,
       Map<Snowflake, List<Event>> mapping
     ) implements IsEnabled {
+      @NullMarked
       public enum Event {
         MEMBER_JOIN,
         MEMBER_LEAVE,

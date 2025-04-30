@@ -3,9 +3,6 @@ package com.seiama.sentinel.common.model;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.seiama.sentinel.common.SharedConstants;
-import com.seiama.sentinel.common.annotation.MongoDate;
-import com.seiama.sentinel.common.annotation.MongoId;
-import com.seiama.sentinel.common.annotation.MongoPrimaryId;
 import com.seiama.sentinel.common.discord.Emojis;
 import discord4j.common.util.Snowflake;
 import discord4j.core.object.emoji.Emoji;
@@ -21,19 +18,17 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
-import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.data.mongodb.core.mapping.MongoId;
 
 @Document(collection = "appeals")
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @NullMarked
 public class AppealModel implements AbstractModel {
-  @MongoPrimaryId
+  @MongoId
   private ObjectId _id;
   private Snowflake guild;
-  @MongoDate
   private Instant date;
   private Snowflake user;
-  @MongoId
   private ObjectId punishment;
   private Snowflake appealChannel;
   private Snowflake appealThread;
@@ -44,7 +39,6 @@ public class AppealModel implements AbstractModel {
   private Map<String, Map<Snowflake, @Nullable String>> voteReasons; // cannot key by Vote
   private  @Nullable Result result;
   private @Nullable String reason;
-  @MongoDate
   private @Nullable Instant nextAttemptMayBeMadeAt;
 
   public AppealModel() {
@@ -125,7 +119,6 @@ public class AppealModel implements AbstractModel {
     return this.votes;
   }
 
-  @SuppressWarnings("MethodName")
   public void setVote(final Snowflake user, final Vote vote, final @Nullable String reason) {
     for (final Map.Entry<String, List<Snowflake>> entry : this.votes.entrySet()) {
       entry.getValue().remove(user);
@@ -158,19 +151,7 @@ public class AppealModel implements AbstractModel {
     this.nextAttemptMayBeMadeAt = nextAttemptMayBeMadeAt;
   }
 
-  public interface Fields {
-    String VOTES = "votes";
-    String VOTE_REASONS = "vote_reasons";
-
-    static String votes(final Vote vote) {
-      return VOTES + "." + vote.name();
-    }
-
-    static String voteReasons(final Vote vote, final Snowflake user) {
-      return VOTE_REASONS + "." + vote.name() + "." + user.asString();
-    }
-  }
-
+  @NullMarked
   public enum Vote {
     YES(true, false, Emojis.YES, new Strings("yes", "Yes")),
     NO(true, false, Emojis.NO, new Strings("no", "No")),
@@ -222,6 +203,7 @@ public class AppealModel implements AbstractModel {
       return this.strings;
     }
 
+    @NullMarked
     public record Strings(
       String button,
       String name
@@ -229,6 +211,7 @@ public class AppealModel implements AbstractModel {
     }
   }
 
+  @NullMarked
   public enum VoteResult {
     NONE,
     YES,
@@ -237,6 +220,7 @@ public class AppealModel implements AbstractModel {
     VETO;
   }
 
+  @NullMarked
   public enum Result {
     ACCEPTED(SharedConstants.COLOR_GREEN, new Strings("accepted", "Accepted")),
     DENIED(SharedConstants.COLOR_RED, new Strings("denied", "Denied")),
@@ -258,6 +242,7 @@ public class AppealModel implements AbstractModel {
       return this.strings;
     }
 
+    @NullMarked
     public record Strings(
       String name,
       String nameForStartOfSentence

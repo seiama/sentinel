@@ -170,11 +170,10 @@ public final class FactoidCommand implements GuildCommand {
                 response = null;
               }
               return this.factoids.findByGuildAndName(guild.getId(), name)
-                .flatMap(model -> {
-                  model.setDescription(description.orElse(null));
-                  model.setResponse(response);
-                  return this.factoids.save(model);
-                })
+                .flatMap(model -> this.factoids.update(model, m -> {
+                  m.setDescription(description.orElse(null));
+                  m.setResponse(response);
+                }))
                 .switchIfEmpty(this.factoids.insert(new FactoidModel(new ObjectId(), guild.getId(), name, description.orElse("(description not set)"), response, null)))
                 .flatMap(model -> {
                   if (model.commandId() == null) {
@@ -182,10 +181,7 @@ public final class FactoidCommand implements GuildCommand {
                       applicationId,
                       guild.getId().asLong(),
                       model.asRequest()
-                    )).flatMap(data -> {
-                      model.setCommandId(Snowflake.of(data.id()));
-                      return this.factoids.save(model);
-                    });
+                    )).flatMap(data -> this.factoids.update(model, m -> m.setCommandId(Snowflake.of(data.id()))));
                   } else {
                     if (description.isPresent()) {
                       return this.appAction((applicationId, service) -> service.modifyGuildApplicationCommand(

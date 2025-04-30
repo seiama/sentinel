@@ -1,16 +1,9 @@
 package com.seiama.sentinel.common.model;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.seiama.sentinel.common.SharedConstants;
-import com.seiama.sentinel.common.annotation.MongoDate;
-import com.seiama.sentinel.common.annotation.MongoId;
-import com.seiama.sentinel.common.annotation.MongoPrimaryId;
 import com.seiama.sentinel.common.discord.Emojis;
-import com.seiama.sentinel.common.jackson.ObjectIdExtendedJsonSerializer;
 import discord4j.common.util.Snowflake;
 import discord4j.core.object.emoji.Emoji;
 import discord4j.core.object.entity.User;
@@ -21,16 +14,16 @@ import org.bson.types.ObjectId;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.MongoId;
 
 @Document(collection = "punishments")
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @NullMarked
 public class PunishmentModel implements AbstractModel {
-  @MongoPrimaryId
+  @MongoId
   private ObjectId _id;
   private Snowflake guild;
   private Type type;
-  @MongoDate
   private Instant date;
   private Snowflake punisherId;
   private String punisherUsername;
@@ -48,7 +41,6 @@ public class PunishmentModel implements AbstractModel {
   // a stale punishment is no longer considered active; if a punishment record banning a user
   // is inserted and that record is then marked as stale; then the user is no longer considered banned
   private @Nullable Boolean stale;
-  @MongoDate
   private @Nullable Instant staleAt;
   private @Nullable Snowflake staleById;
   private @Nullable String staleByUsername;
@@ -57,11 +49,9 @@ public class PunishmentModel implements AbstractModel {
   private @Nullable String staleReason;
   private @Nullable Boolean staleAutomatic;
   // only non-null if the punishment was appealed
-  @MongoId
   private @Nullable ObjectId staleAppeal;
   private @Nullable String importBy;
   private @Nullable String importId;
-  @MongoDate
   private @Nullable Instant importAt;
   private @Nullable Snowflake dmNotificationMessageId;
   private @Nullable Snowflake privateNotificationThreadId;
@@ -327,103 +317,7 @@ public class PunishmentModel implements AbstractModel {
     return this.dmNotificationMessageId != null || this.privateNotificationThreadId != null;
   }
 
-  interface Partial extends AbstractPartial {
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-    interface Reason extends Partial {
-      @JsonProperty @Nullable String reason();
-    }
-
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-    interface Expunged extends Partial {
-      @JsonProperty @Nullable Boolean expunged();
-    }
-
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-    @SuppressWarnings("EmptyLineSeparator")
-    interface Stale extends Partial {
-      static Stale of(
-        final Optional<User> by,
-        final @Nullable String reason,
-        final boolean automatic,
-        final @Nullable ObjectId appeal
-      ) {
-        return of(
-          by.map(User::getId),
-          by.map(User::getUsername),
-          by.map(Discriminator::new),
-          reason,
-          automatic,
-          appeal
-        );
-      }
-
-      static Stale of(
-        final Optional<Snowflake> byId,
-        final Optional<String> byUsername,
-        final Optional<Discriminator> byDiscriminator,
-        final @Nullable String reason,
-        final boolean automatic,
-        final @Nullable ObjectId appeal
-      ) {
-        return new Stale() {
-          @Override
-          public Boolean stale() {
-            return true;
-          }
-
-          @Override
-          public Instant staleAt() {
-            return Instant.now();
-          }
-
-          @Override
-          public Snowflake staleById() {
-            return byId.orElse(null);
-          }
-
-          @Override
-          public String staleByUsername() {
-            return byUsername.orElse(null);
-          }
-
-          @Override
-          public Discriminator staleByDiscriminator() {
-            return byDiscriminator.orElse(null);
-          }
-
-          @Override
-          public String staleReason() {
-            return reason;
-          }
-
-          @Override
-          public Boolean staleAutomatic() {
-            return automatic;
-          }
-
-          @Override
-          public @Nullable ObjectId staleAppeal() {
-            return appeal;
-          }
-        };
-      }
-
-      @JsonProperty @Nullable Boolean stale();
-      @JsonProperty Instant staleAt();
-      @JsonProperty Snowflake staleById();
-      @JsonProperty String staleByUsername();
-      @JsonProperty
-      Discriminator staleByDiscriminator();
-      @JsonProperty @Nullable String staleReason();
-      @JsonProperty @Nullable Boolean staleAutomatic();
-      @JsonSerialize(using = ObjectIdExtendedJsonSerializer.class)
-      @JsonProperty @MongoId @Nullable ObjectId staleAppeal();
-    }
-  }
-
+  @NullMarked
   public enum Type {
     BAN(SharedConstants.COLOR_RED, true, true, new Strings("ban", "banned"), Emojis.DOT_RED),
     KICK(SharedConstants.COLOR_GREY, true, true, new Strings("kick", "kicked"), Emojis.DOT_GREY),
@@ -465,6 +359,7 @@ public class PunishmentModel implements AbstractModel {
       return this.emoji;
     }
 
+    @NullMarked
     public record Strings(
       String name,
       String actioned

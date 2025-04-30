@@ -1,6 +1,5 @@
 package com.seiama.sentinel.common.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.seiama.sentinel.common.model.response.Response;
@@ -9,17 +8,14 @@ import discord4j.discordjson.json.ApplicationCommandRequest;
 import org.bson.types.ObjectId;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
+import org.springframework.data.mongodb.core.mapping.MongoId;
 
 @Document(collection = "factoids")
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @NullMarked
 public class FactoidModel implements AbstractModel {
-  @Field(_ID)
-  @JsonProperty(_ID)
-  @Id
+  @MongoId
   private ObjectId _id;
   private Snowflake guild;
   private String name;
