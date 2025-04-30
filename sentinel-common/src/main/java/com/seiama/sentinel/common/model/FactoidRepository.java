@@ -10,8 +10,8 @@ import reactor.core.publisher.Mono;
 
 @NullMarked
 @Repository
-public interface FactoidRepository extends ReactiveMongoRepository<FactoidModel.Complete, ObjectId>, FactoidRepositoryCustom {
-  Flux<FactoidModel.Complete> findAllByGuild(final Snowflake guild);
+public interface FactoidRepository extends ReactiveMongoRepository<FactoidModel, ObjectId> {
+  Flux<FactoidModel> findAllByGuild(final Snowflake guild);
 
-  Mono<FactoidModel.Complete> findByGuildAndName(final Snowflake guild, final String name);
+  Mono<FactoidModel> findByGuildAndName(final Snowflake guild, final String name);
 }

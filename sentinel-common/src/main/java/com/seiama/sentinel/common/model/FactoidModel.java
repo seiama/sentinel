@@ -1,6 +1,5 @@
 package com.seiama.sentinel.common.model;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -14,49 +13,80 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
+@Document(collection = "factoids")
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @NullMarked
-public interface FactoidModel {
-  String COLLECTION = "factoids";
+public class FactoidModel implements AbstractModel {
+  @Field(_ID)
+  @JsonProperty(_ID)
+  @Id
+  private ObjectId _id;
+  private Snowflake guild;
+  private String name;
+  private String description;
+  private Response response;
+  private @Nullable Snowflake commandId;
 
-  interface Fields {
-    @SuppressWarnings("ConstantName")
-    String _ID = AbstractModel._ID;
+  public FactoidModel() {
   }
 
-  interface Partial extends AbstractPartial {
-    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-    interface SetDescriptionAndResponse extends Partial {
-      @JsonInclude(JsonInclude.Include.NON_NULL)
-      @JsonProperty @Nullable String description();
-
-      @JsonInclude(JsonInclude.Include.NON_NULL)
-      @JsonProperty @Nullable Response response();
-    }
-
-    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-    interface SetCommandId extends Partial {
-      @JsonProperty
-      Snowflake commandId();
-    }
+  public FactoidModel(
+    final ObjectId _id,
+    final Snowflake guild,
+    final String name,
+    final String description,
+    final Response response,
+    final @Nullable Snowflake commandId
+  ) {
+    this._id = _id;
+    this.guild = guild;
+    this.name = name;
+    this.description = description;
+    this.response = response;
+    this.commandId = commandId;
   }
 
-  @Document(collection = COLLECTION)
-  @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-  record Complete(
-    @Field(Fields._ID)
-    @JsonProperty(Fields._ID)
-    @Id ObjectId _id,
-    Snowflake guild,
-    String name,
-    String description,
-    Response response,
-    @Nullable Snowflake commandId
-  ) implements AbstractModel {
-    public ApplicationCommandRequest asRequest() {
-      return ApplicationCommandRequest.builder()
-        .name(this.name())
-        .description(this.description())
-        .build();
-    }
+  @Override
+  public ObjectId _id() {
+    return this._id;
+  }
+
+  public Snowflake guild() {
+    return this.guild;
+  }
+
+  public String name() {
+    return this.name;
+  }
+
+  public String description() {
+    return this.description;
+  }
+
+  public void setDescription(final String description) {
+    this.description = description;
+  }
+
+  public Response response() {
+    return this.response;
+  }
+
+  public void setResponse(final Response response) {
+    this.response = response;
+  }
+
+  public @Nullable Snowflake commandId() {
+    return this.commandId;
+  }
+
+  public void setCommandId(final @Nullable Snowflake commandId) {
+    this.commandId = commandId;
+  }
+
+  public ApplicationCommandRequest asRequest() {
+    return ApplicationCommandRequest.builder()
+      .name(this.name)
+      .description(this.description)
+      .build();
   }
 }

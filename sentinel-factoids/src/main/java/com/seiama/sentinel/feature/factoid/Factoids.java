@@ -26,7 +26,7 @@ public class Factoids implements Listener {
       return event.getInteraction()
         .getGuild()
         .flatMap(guild -> this.factoids.findByGuildAndName(guild.getId(), event.getCommandName()))
-        .map(FactoidModel.Complete::response)
+        .map(FactoidModel::response)
         .flatMap(response -> response.decorate(event.reply()));
     }).then();
   }

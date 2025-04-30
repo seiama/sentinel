@@ -1,20 +1,18 @@
 package com.seiama.sentinel.common.model;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.seiama.sentinel.common.SharedConstants;
 import com.seiama.sentinel.common.annotation.MongoDate;
 import com.seiama.sentinel.common.annotation.MongoId;
 import com.seiama.sentinel.common.annotation.MongoPrimaryId;
 import com.seiama.sentinel.common.discord.Emojis;
-import com.seiama.sentinel.common.jackson.InstantExtendedJsonSerializer;
 import discord4j.common.util.Snowflake;
 import discord4j.core.object.emoji.Emoji;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -22,26 +20,145 @@ import org.bson.types.ObjectId;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 import org.springframework.data.mongodb.core.query.Update;
 
+@Document(collection = "appeals")
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @NullMarked
-public interface AppealModel {
-  String COLLECTION = "appeals";
+public class AppealModel implements AbstractModel {
+  @MongoPrimaryId
+  private ObjectId _id;
+  private Snowflake guild;
+  @MongoDate
+  private Instant date;
+  private Snowflake user;
+  @MongoId
+  private ObjectId punishment;
+  private Snowflake appealChannel;
+  private Snowflake appealThread;
+  private Snowflake appealDiscussionThread;
+  private @Nullable Snowflake voteMessage;
+  private Map<String, List<Snowflake>> votes; // cannot key by Vote
+  @Field("vote_reasons")
+  private Map<String, Map<Snowflake, @Nullable String>> voteReasons; // cannot key by Vote
+  private  @Nullable Result result;
+  private @Nullable String reason;
+  @MongoDate
+  private @Nullable Instant nextAttemptMayBeMadeAt;
 
-  @SuppressWarnings("MethodName")
-  static Update setVote(final Snowflake user, final Vote vote, final @Nullable String reason) {
-    final Update updates = new Update();
-    for (final Vote value : Vote.VALUES) {
-      if (value != vote) {
-        updates.pull(Fields.votes(value), user);
-      }
-    }
-    updates.addToSet(Fields.votes(vote), user);
-    updates.set(Fields.voteReasons(vote, user), reason);
-    return updates;
+  public AppealModel() {
   }
 
-  interface Fields {
+  public AppealModel(
+    final ObjectId _id,
+    final Snowflake guild,
+    final Instant date,
+    final Snowflake user,
+    final ObjectId punishment,
+    final Snowflake appealChannel,
+    final Snowflake appealThread,
+    final Snowflake appealDiscussionThread,
+    final @Nullable Snowflake voteMessage,
+    final Map<String, List<Snowflake>> votes,
+    final @Nullable Result result,
+    final @Nullable String reason,
+    final @Nullable Instant nextAttemptMayBeMadeAt
+  ) {
+    this._id = _id;
+    this.guild = guild;
+    this.date = date;
+    this.user = user;
+    this.punishment = punishment;
+    this.appealChannel = appealChannel;
+    this.appealThread = appealThread;
+    this.appealDiscussionThread = appealDiscussionThread;
+    this.voteMessage = voteMessage;
+    this.votes = votes;
+    this.result = result;
+    this.reason = reason;
+    this.nextAttemptMayBeMadeAt = nextAttemptMayBeMadeAt;
+  }
+
+  @Override
+  public ObjectId _id() {
+    return this._id;
+  }
+
+  public Snowflake guild() {
+    return this.guild;
+  }
+
+  public Instant date() {
+    return this.date;
+  }
+
+  public Snowflake user() {
+    return this.user;
+  }
+
+  public ObjectId punishment() {
+    return this.punishment;
+  }
+
+  public Snowflake appealChannel() {
+    return this.appealChannel;
+  }
+
+  public Snowflake appealThread() {
+    return this.appealThread;
+  }
+
+  public Snowflake appealDiscussionThread() {
+    return this.appealDiscussionThread;
+  }
+
+  public @Nullable Snowflake voteMessage() {
+    return this.voteMessage;
+  }
+
+  public void setVoteMessage(final @Nullable Snowflake voteMessage) {
+    this.voteMessage = voteMessage;
+  }
+
+  public Map<String, List<Snowflake>> votes() {
+    return this.votes;
+  }
+
+  @SuppressWarnings("MethodName")
+  public void setVote(final Snowflake user, final Vote vote, final @Nullable String reason) {
+    for (final Map.Entry<String, List<Snowflake>> entry : this.votes.entrySet()) {
+      entry.getValue().remove(user);
+    }
+    this.votes.computeIfAbsent(vote.name(), k -> new ArrayList<>()).add(user);
+    this.voteReasons.computeIfAbsent(vote.name(), k -> new HashMap<>()).put(user, reason);
+  }
+
+  public @Nullable Result result() {
+    return this.result;
+  }
+
+  public void setResult(final @Nullable Result result) {
+    this.result = result;
+  }
+
+  public @Nullable String reason() {
+    return this.reason;
+  }
+
+  public void setReason(final @Nullable String reason) {
+    this.reason = reason;
+  }
+
+  public @Nullable Instant nextAttemptMayBeMadeAt() {
+    return this.nextAttemptMayBeMadeAt;
+  }
+
+  public void setNextAttemptMayBeMadeAt(final @Nullable Instant nextAttemptMayBeMadeAt) {
+    this.nextAttemptMayBeMadeAt = nextAttemptMayBeMadeAt;
+  }
+
+  public interface Fields {
     String VOTES = "votes";
     String VOTE_REASONS = "vote_reasons";
 
@@ -54,43 +171,7 @@ public interface AppealModel {
     }
   }
 
-  interface Partial extends AbstractPartial {
-    @JsonInclude(value = JsonInclude.Include.NON_NULL)
-    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-    @SuppressWarnings("EmptyLineSeparator")
-    interface Close extends Partial {
-      @JsonProperty Result result();
-      @JsonProperty @Nullable String reason();
-      @JsonSerialize(using = InstantExtendedJsonSerializer.class)
-      @JsonProperty @MongoDate @Nullable Instant nextAttemptMayBeMadeAt();
-    }
-
-    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-    interface VoteMessage extends Partial {
-      @JsonInclude(value = JsonInclude.Include.NON_NULL) @Nullable Snowflake voteMessage();
-    }
-  }
-
-  @Document(collection = COLLECTION)
-  @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-  record Complete(
-    @MongoPrimaryId ObjectId _id,
-    Snowflake guild,
-    @MongoDate Instant date,
-    Snowflake user,
-    @MongoId ObjectId punishment,
-    Snowflake appealChannel,
-    Snowflake appealThread,
-    Snowflake appealDiscussionThread,
-    @Nullable Snowflake voteMessage,
-    Map<String, List<Snowflake>> votes, // cannot key by Vote
-    @Nullable Result result,
-    @Nullable String reason,
-    @MongoDate @Nullable Instant nextAttemptMayBeMadeAt
-  ) implements AbstractModel {
-  }
-
-  enum Vote {
+  public enum Vote {
     YES(true, false, Emojis.YES, new Strings("yes", "Yes")),
     NO(true, false, Emojis.NO, new Strings("no", "No")),
     ABSTAIN(true, false, Emojis.PERSON_SHRUGGING, new Strings("abstain", "Abstain")),
@@ -148,7 +229,7 @@ public interface AppealModel {
     }
   }
 
-  enum VoteResult {
+  public enum VoteResult {
     NONE,
     YES,
     NO,
@@ -156,7 +237,7 @@ public interface AppealModel {
     VETO;
   }
 
-  enum Result {
+  public enum Result {
     ACCEPTED(SharedConstants.COLOR_GREEN, new Strings("accepted", "Accepted")),
     DENIED(SharedConstants.COLOR_RED, new Strings("denied", "Denied")),
     CANCELLED(SharedConstants.COLOR_ORANGE, new Strings("cancelled", "Cancelled"));

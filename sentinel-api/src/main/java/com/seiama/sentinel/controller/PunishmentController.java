@@ -28,13 +28,13 @@ public class PunishmentController {
 
   @CrossOrigin
   @GetMapping("/v1/punishments/{guild}")
-  public Flux<PunishmentModel.Complete> punishments(final @PathVariable("guild") Snowflake guild) {
+  public Flux<PunishmentModel> punishments(final @PathVariable("guild") Snowflake guild) {
     return this.punishments.findAllByGuild(guild);
   }
 
   @CrossOrigin
   @GetMapping("/v1/punishments/{guild}/{id}")
-  public Mono<PunishmentModel.Complete> punishmentById(final @PathVariable("guild") Snowflake guild, final @PathVariable("id") ObjectId id) {
+  public Mono<PunishmentModel> punishmentById(final @PathVariable("guild") Snowflake guild, final @PathVariable("id") ObjectId id) {
     return this.punishments.findById(id);
   }
 }

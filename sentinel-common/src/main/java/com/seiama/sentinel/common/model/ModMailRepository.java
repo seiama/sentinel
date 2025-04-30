@@ -7,5 +7,5 @@ import org.springframework.stereotype.Repository;
 
 @NullMarked
 @Repository
-public interface ModMailRepository extends ReactiveMongoRepository<ModMailModel.Complete, ObjectId>, ModMailRepositoryCustom {
+public interface ModMailRepository extends AbstractRepository<ModMailModel>, ReactiveMongoRepository<ModMailModel, ObjectId> {
 }

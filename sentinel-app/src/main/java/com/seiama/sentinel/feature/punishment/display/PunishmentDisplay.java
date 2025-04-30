@@ -21,7 +21,7 @@ public final class PunishmentDisplay {
   private PunishmentDisplay() {
   }
 
-  public static EmbedCreateSpec punishment(final PunishmentModel.Complete punishment, final PunishmentDisplayStyle display) {
+  public static EmbedCreateSpec punishment(final PunishmentModel punishment, final PunishmentDisplayStyle display) {
     final EmbedCreateSpec.Builder embed = EmbedCreateSpec.builder();
     embed.color(Color.of(punishment.type().color()));
     if (display.type) embed.addField("Type", String.format("%s %s%s", punishment.type().emoji().asFormat(), punishment.type().strings().name(), automaticSuffix(punishment.automatic())), true);

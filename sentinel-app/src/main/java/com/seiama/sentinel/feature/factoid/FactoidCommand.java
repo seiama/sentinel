@@ -31,7 +31,6 @@ import java.util.Optional;
 import java.util.function.BiFunction;
 import org.bson.types.ObjectId;
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -171,30 +170,22 @@ public final class FactoidCommand implements GuildCommand {
                 response = null;
               }
               return this.factoids.findByGuildAndName(guild.getId(), name)
-                .flatMap(model -> this.factoids.update(model, new FactoidModel.Partial.SetDescriptionAndResponse() {
-                  @Override
-                  public @Nullable String description() {
-                    return description.orElse(null);
-                  }
-
-                  @Override
-                  public @Nullable Response response() {
-                    return response;
-                  }
-                }))
-                .switchIfEmpty(this.factoids.insert(new FactoidModel.Complete(new ObjectId(), guild.getId(), name, description.orElse("(description not set)"), response, null)))
+                .flatMap(model -> {
+                  model.setDescription(description.orElse(null));
+                  model.setResponse(response);
+                  return this.factoids.save(model);
+                })
+                .switchIfEmpty(this.factoids.insert(new FactoidModel(new ObjectId(), guild.getId(), name, description.orElse("(description not set)"), response, null)))
                 .flatMap(model -> {
                   if (model.commandId() == null) {
                     return this.appAction((applicationId, service) -> service.createGuildApplicationCommand(
                       applicationId,
                       guild.getId().asLong(),
                       model.asRequest()
-                    )).flatMap(data -> this.factoids.update(model, new FactoidModel.Partial.SetCommandId() {
-                      @Override
-                      public Snowflake commandId() {
-                        return Snowflake.of(data.id());
-                      }
-                    }));
+                    )).flatMap(data -> {
+                      model.setCommandId(Snowflake.of(data.id()));
+                      return this.factoids.save(model);
+                    });
                   } else {
                     if (description.isPresent()) {
                       return this.appAction((applicationId, service) -> service.modifyGuildApplicationCommand(

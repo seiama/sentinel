@@ -52,20 +52,20 @@ public final class Punishments {
     return this.punishments;
   }
 
-  public Flux<PunishmentModel.Complete> findActive(final Snowflake guild, final Snowflake punishedId, final PunishmentModel.Type type) {
+  public Flux<PunishmentModel> findActive(final Snowflake guild, final Snowflake punishedId, final PunishmentModel.Type type) {
     return this.punishments.findAllByGuildAndPunishedIdAndTypeAndStaleIsNotOrderByDateDesc(guild, punishedId, type, true);
   }
 
-  public Mono<PunishmentModel.Complete> createUsing(final Creator creator) {
+  public Mono<PunishmentModel> createUsing(final Creator creator) {
     return creator.create(this.guilds, this);
   }
 
-  public Mono<PunishmentModel.Complete> create(
+  public Mono<PunishmentModel> create(
     final GatewayDiscordClient client,
     final Guild guild,
-    final PunishmentModel.Complete punishment,
+    final PunishmentModel punishment,
     final User punished,
-    final PunishmentAction<User, PunishmentModel.Complete> action
+    final PunishmentAction<User, PunishmentModel> action
   ) {
     return this.punishments
       .insert(punishment)
@@ -80,27 +80,22 @@ public final class Punishments {
     final GatewayDiscordClient client,
     final Guild guild,
     final User user,
-    final PunishmentModel.Complete punishment
+    final PunishmentModel punishment
   ) {
     if (punishment.type().notification() && ACTUALLY_NOTIFY_USER) {
       return user.getPrivateChannel()
         .flatMap(channel -> channel.createMessage(PunishmentMessages.punishmentPunishedDirectMessageEmbed(punishment, guild)))
-        .flatMap(message -> this.punishments.update(punishment, new PunishmentModel.Partial.DirectMessageNotified() {
-          @Override
-          public Snowflake dmNotificationMessageId() {
-            return message.getId();
-          }
-        }))
+        .flatMap(message -> this.punishments.update(punishment, m -> m.setDmNotificationMessageId(message.getId())))
         .onErrorResume(t -> this.createPrivateThreadNotification(client, guild, user, punishment)); // avoid possible 50007
     }
     return Mono.empty();
   }
 
-  private Mono<PunishmentModel.Complete> createPrivateThreadNotification(
+  private Mono<PunishmentModel> createPrivateThreadNotification(
     final GatewayDiscordClient client,
     final Guild guild,
     final User user,
-    final PunishmentModel.Complete punishment
+    final PunishmentModel punishment
   ) {
     if (punishment.type().notification() && !punishment.type().terminal() && ACTUALLY_NOTIFY_USER) {
       final RestClient rest = client.rest();
@@ -122,17 +117,12 @@ public final class Punishments {
               rest.getChannelService().modifyThread(thread.getId().asLong(), ThreadModifyRequest.builder().locked(true).build(), null)
             ).thenReturn(thread));
         })
-        .flatMap(thread -> this.punishments.update(punishment, new PunishmentModel.Partial.PrivateThreadNotified() {
-          @Override
-          public Snowflake privateNotificationThreadId() {
-            return thread.getId();
-          }
-        }));
+        .flatMap(thread -> this.punishments.update(punishment, m -> m.setPrivateNotificationThreadId(thread.getId())));
     }
     return Mono.empty();
   }
 
-  private Mono<?> logToChannel(final Guild guild, final Supplier<Mono<PunishmentModel.Complete>> freshPunishmentSource) {
+  private Mono<?> logToChannel(final Guild guild, final Supplier<Mono<PunishmentModel>> freshPunishmentSource) {
     return this.guilds.findByGuild(guild.getId())
       .mapNotNull(guildModel -> guildModel.features().punishments().logChannel())
       .flatMap(guild::getChannelById)
@@ -143,15 +133,15 @@ public final class Punishments {
   private Mono<Void> applyPunishment(
     final Guild guild,
     final User user,
-    final PunishmentModel.Complete punishment,
-    final PunishmentAction<User, PunishmentModel.Complete> action
+    final PunishmentModel punishment,
+    final PunishmentAction<User, PunishmentModel> action
   ) {
     return ACTUALLY_APPLY_PUNISHMENT
       ? action.apply(guild, user, punishment)
       : Mono.empty();
   }
 
-  public Mono<Void> unenforce(final Guild guild, final PunishmentModel.Complete punishment, final String reason) {
+  public Mono<Void> unenforce(final Guild guild, final PunishmentModel punishment, final String reason) {
     return switch (punishment.type()) {
       case BAN -> PunishmentAction.unban().apply(guild, punishment.punishedId(), reason)
         .onErrorResume(ClientException.class, Reactive.<Void>ignoringException()); // avoid possible 10026
@@ -169,6 +159,6 @@ public final class Punishments {
 
   @FunctionalInterface
   public interface Creator {
-    Mono<PunishmentModel.Complete> create(final GuildRepository guilds, final Punishments punishments);
+    Mono<PunishmentModel> create(final GuildRepository guilds, final Punishments punishments);
   }
 }
