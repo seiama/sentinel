@@ -6,6 +6,7 @@ import com.seiama.sentinel.common.model.Feature;
 import com.seiama.sentinel.common.model.PunishmentModel;
 import com.seiama.sentinel.feature.punishment.PunishmentAction;
 import com.seiama.sentinel.feature.punishment.Punishments;
+import com.seiama.sentinel.feature.punishment.TimeoutDuration;
 import com.seiama.sentinel.feature.punishment.creator.ChatInteractionPunishmentCreator;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
@@ -68,7 +69,7 @@ public final class TimeoutCommand implements GuildCommand {
           .description("The duration")
           .type(ApplicationCommandOption.Type.STRING.getValue())
           .choices(
-            Arrays.stream(PunishmentAction.MuteDuration.values())
+            Arrays.stream(TimeoutDuration.values())
               .map(option -> {
                 return ApplicationCommandOptionChoiceData.builder()
                   .name(option.description())
@@ -94,9 +95,9 @@ public final class TimeoutCommand implements GuildCommand {
       .flatMap(ApplicationCommandInteractionOption::getValue)
       .map(ApplicationCommandInteractionOptionValue::asString)
       .orElseThrow();
-    final PunishmentAction.MuteDuration duration = PunishmentAction.MuteDuration.valueOf(durationInput);
+    final TimeoutDuration duration = TimeoutDuration.valueOf(durationInput);
     final Instant now = Instant.now();
-    final Instant endsAt = duration.untilFrom(now);
+    final Instant endsAt = now.plus(duration.duration());
     final Duration between = Duration.between(now, endsAt);
     return this.punishments.createUsing(new ChatInteractionPunishmentCreator(client, event, guild, PunishmentModel.Type.MUTE, between, PunishmentAction.mute(endsAt)));
   }

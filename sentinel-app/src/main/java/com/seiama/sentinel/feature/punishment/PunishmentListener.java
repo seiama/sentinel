@@ -2,6 +2,7 @@ package com.seiama.sentinel.feature.punishment;
 
 import com.seiama.sentinel.common.Listener;
 import com.seiama.sentinel.common.model.PunishmentModel;
+import com.seiama.sentinel.common.model.UserIdentity;
 import com.seiama.sentinel.feature.punishment.display.PunishmentMessages;
 import com.seiama.sentinel.reactive.Reactive;
 import discord4j.common.util.Snowflake;
@@ -71,7 +72,7 @@ public class PunishmentListener implements Listener {
             this.tryGetUser(client, entry)
           ).flatMap(TupleUtils.function((guild, punished, punisher) -> {
             final String reason = entry.getReason().orElse(null);
-            final boolean automatic = this.punishments.shouldBeAssumedAsAutomatic(punisher);
+            final boolean automatic = Punishments.shouldBeAssumedAsAutomatic(punisher);
             final ActionType action = entry.getActionType();
             return switch (action) {
               case MEMBER_KICK, MEMBER_BAN_ADD, MEMBER_UPDATE -> {
@@ -97,8 +98,8 @@ public class PunishmentListener implements Listener {
                       guild.getId(),
                       type,
                       Instant.now(),
-                      punisher,
-                      punished,
+                      punisher.map(UserIdentity::new),
+                      new UserIdentity(punished),
                       reason,
                       communicationDisabledUntil != null
                         ? this.resolveDurationFrom(communicationDisabledUntil)
@@ -106,7 +107,7 @@ public class PunishmentListener implements Listener {
                       automatic
                     ),
                     punished,
-                    PunishmentAction.noop()
+                    PunishmentAction.noop() // the timeout has already been applied
                   );
                 } else if (communicationDisabledUntil != null) {
                   yield this.punishments.findActive(guild.getId(), punished.getId(), PunishmentModel.Type.MUTE)

@@ -1,20 +1,24 @@
 package com.seiama.sentinel.feature.punishment.creator;
 
 import com.seiama.sentinel.command.OptionNames;
+import com.seiama.sentinel.common.discord.Messages;
 import com.seiama.sentinel.common.model.GuildRepository;
 import com.seiama.sentinel.common.model.PunishmentModel;
+import com.seiama.sentinel.common.model.UserIdentity;
 import com.seiama.sentinel.feature.punishment.PunishmentAction;
 import com.seiama.sentinel.feature.punishment.Punishments;
+import com.seiama.sentinel.feature.punishment.display.PunishmentDisplay;
+import com.seiama.sentinel.feature.punishment.display.PunishmentDisplayStyle;
 import com.seiama.sentinel.feature.punishment.display.PunishmentMessages;
 import com.seiama.sentinel.feature.punishment.predicate.CanPunish;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.core.object.command.Interaction;
+import discord4j.core.object.component.TextDisplay;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.User;
 import java.time.Duration;
-import java.time.Instant;
 import java.util.Optional;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -59,7 +63,7 @@ public final class ChatInteractionPunishmentCreator implements Punishments.Creat
       .filterWhen(new CanPunish<>(guilds, this.guild, punisher))
       .switchIfEmpty(
         this.event.editReply()
-          .withContentOrNull(PunishmentMessages.mayNotPunish())
+          .withComponents(TextDisplay.of(PunishmentMessages.mayNotPunish()))
           .then(Mono.empty())
       )
       .flatMap(punished -> punishments.create(
@@ -68,9 +72,9 @@ public final class ChatInteractionPunishmentCreator implements Punishments.Creat
         PunishmentModel.Complete.create(
           this.guild.getId(),
           this.type,
-          Instant.now(),
-          Optional.of(punisher),
-          punished,
+          Messages.getTimestampOrNow(interaction.getMessage()),
+          Optional.of(new UserIdentity(punisher)),
+          new UserIdentity(punished),
           reason,
           this.duration,
           false
@@ -78,6 +82,6 @@ public final class ChatInteractionPunishmentCreator implements Punishments.Creat
         punished,
         this.action
       ))
-      .flatMap(punishment -> this.event.editReply().withContentOrNull(PunishmentMessages.punishmentPunisherResponse(punishment)).thenReturn(punishment));
+      .flatMap(punishment -> this.event.editReply().withComponents(PunishmentDisplay.punishment(punishment, PunishmentDisplayStyle.CREATED)).thenReturn(punishment));
   }
 }

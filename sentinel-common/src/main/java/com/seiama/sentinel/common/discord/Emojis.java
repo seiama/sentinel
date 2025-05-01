@@ -9,6 +9,9 @@ import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public interface Emojis {
+  UnicodeEmoji ARROW_LEFT = UnicodeEmoji.of("⬅️");
+  UnicodeEmoji ARROW_RIGHT = UnicodeEmoji.of("➡️");
+  UnicodeEmoji ATHLETIC_SHOE = UnicodeEmoji.of("👟");
   UnicodeEmoji CLOCK1 = UnicodeEmoji.of("🕐");
   UnicodeEmoji HAMMER = UnicodeEmoji.of("🔨");
   UnicodeEmoji PENCIL = UnicodeEmoji.of("📝");

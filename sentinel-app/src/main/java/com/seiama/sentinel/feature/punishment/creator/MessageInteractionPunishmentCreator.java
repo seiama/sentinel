@@ -1,9 +1,13 @@
 package com.seiama.sentinel.feature.punishment.creator;
 
+import com.seiama.sentinel.common.discord.Messages;
 import com.seiama.sentinel.common.model.GuildRepository;
 import com.seiama.sentinel.common.model.PunishmentModel;
+import com.seiama.sentinel.common.model.UserIdentity;
 import com.seiama.sentinel.feature.punishment.PunishmentAction;
 import com.seiama.sentinel.feature.punishment.Punishments;
+import com.seiama.sentinel.feature.punishment.display.PunishmentDisplay;
+import com.seiama.sentinel.feature.punishment.display.PunishmentDisplayStyle;
 import com.seiama.sentinel.feature.punishment.display.PunishmentMessages;
 import com.seiama.sentinel.feature.punishment.predicate.CanPunish;
 import discord4j.core.GatewayDiscordClient;
@@ -13,7 +17,6 @@ import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.User;
-import java.time.Instant;
 import java.util.Optional;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -61,9 +64,9 @@ public final class MessageInteractionPunishmentCreator implements Punishments.Cr
         PunishmentModel.Complete.create(
           this.guild.getId(),
           this.type,
-          Instant.now(),
-          Optional.of(punisher),
-          punished,
+          Messages.getTimestampOrNow(interaction.getMessage()),
+          Optional.of(new UserIdentity(punisher)),
+          new UserIdentity(punished),
           this.reason,
           null,
           false
@@ -72,7 +75,7 @@ public final class MessageInteractionPunishmentCreator implements Punishments.Cr
         this.action
       ))
       .flatMap(punishment -> {
-        return this.event.editReply().withContentOrNull(PunishmentMessages.punishmentPunisherResponse(punishment)).thenReturn(punishment);
+        return this.event.editReply().withComponents(PunishmentDisplay.punishment(punishment, PunishmentDisplayStyle.CREATED)).thenReturn(punishment);
       });
   }
 }

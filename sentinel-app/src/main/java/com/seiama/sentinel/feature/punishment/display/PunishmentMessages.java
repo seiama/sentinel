@@ -9,7 +9,6 @@ import discord4j.common.util.TimestampFormat;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.core.spec.MessageCreateSpec;
-import discord4j.rest.util.Color;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import org.jspecify.annotations.NullMarked;
@@ -33,7 +32,7 @@ public final class PunishmentMessages {
     return MessageCreateSpec.builder()
       .addEmbed(
         EmbedCreateSpec.builder()
-          .color(Color.of(punishment.type().color()))
+          .color(punishment.type().color())
           .author(Discord.author(guild).orElse(null))
           .title("You've been " + punishment.type().strings().actioned() + ".")
           .addField("Reason", Objects.requireNonNullElse(punishment.reason(), REASON_NOT_SPECIFIED), false)
@@ -43,6 +42,7 @@ public final class PunishmentMessages {
       .build();
   }
 
+  @Deprecated(forRemoval = true)
   public static String punishmentPunisherResponse(final PunishmentModel.Complete punishment) {
     final @Nullable String reason = punishment.reason();
     return String.format(
@@ -59,7 +59,7 @@ public final class PunishmentMessages {
   }
 
   public static String punishmentUpdated(final PunishmentModel.Complete punishment) {
-    return String.format("Punishment `%s` has been updated.", punishment._id());
+    return String.format("Punishment `%s` was successfully updated.", punishment._id());
   }
 
   public static String punishmentMarkedStale(final PunishmentModel.Complete punishment) {
@@ -79,6 +79,7 @@ public final class PunishmentMessages {
     return "%s That user may not be punished.".formatted(Emojis.NO.asFormat());
   }
 
+  @Deprecated(forRemoval = true)
   public static EmbedCreateSpec punishmentSearchEmbed(final PunishmentSearchResult result, final String title) {
     final EmbedCreateSpec.Builder embed = EmbedCreateSpec.builder();
     embed.author(Discord.author(result.user()).orElse(null));

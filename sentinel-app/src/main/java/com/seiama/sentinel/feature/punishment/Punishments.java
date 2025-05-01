@@ -13,6 +13,7 @@ import com.seiama.sentinel.reactive.Reactive;
 import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.object.entity.Guild;
+import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.User;
 import discord4j.core.object.entity.channel.Channel;
 import discord4j.core.object.entity.channel.TextChannel;
@@ -137,7 +138,7 @@ public final class Punishments {
       .mapNotNull(guildModel -> guildModel.features().punishments().logChannel())
       .flatMap(guild::getChannelById)
       .cast(TextChannel.class)
-      .flatMap(channel -> freshPunishmentSource.get().flatMap(punishment -> channel.createMessage(PunishmentDisplay.punishment(punishment, PunishmentDisplayStyle.LOG))));
+      .flatMap(channel -> freshPunishmentSource.get().flatMap(punishment -> channel.createMessage().withFlags(Message.Flag.IS_COMPONENTS_V2).withComponents(PunishmentDisplay.punishment(punishment, PunishmentDisplayStyle.LOG))));
   }
 
   private Mono<Void> applyPunishment(
@@ -160,10 +161,9 @@ public final class Punishments {
     };
   }
 
-  boolean shouldBeAssumedAsAutomatic(final Optional<User> punisher) {
+  static boolean shouldBeAssumedAsAutomatic(final Optional<User> punisher) {
     return punisher
-      .map(User::getId)
-      .map(SHOULD_BE_ASSUMED_AS_AUTOMATIC_BY::contains)
+      .map(user -> user.isBot() || SHOULD_BE_ASSUMED_AS_AUTOMATIC_BY.contains(user.getId()))
       .orElse(false);
   }
 

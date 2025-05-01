@@ -13,6 +13,7 @@ import com.seiama.sentinel.common.discord.Emojis;
 import com.seiama.sentinel.common.jackson.InstantExtendedJsonSerializer;
 import discord4j.common.util.Snowflake;
 import discord4j.core.object.emoji.Emoji;
+import discord4j.rest.util.Color;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
@@ -161,15 +162,15 @@ public interface AppealModel {
     DENIED(SharedConstants.COLOR_RED, new Strings("denied", "Denied")),
     CANCELLED(SharedConstants.COLOR_ORANGE, new Strings("cancelled", "Cancelled"));
 
-    private final int color;
+    private final Color color;
     private final Strings strings;
 
-    Result(final int color, final Strings strings) {
+    Result(final Color color, final Strings strings) {
       this.color = color;
       this.strings = strings;
     }
 
-    public int color() {
+    public Color color() {
       return this.color;
     }
 

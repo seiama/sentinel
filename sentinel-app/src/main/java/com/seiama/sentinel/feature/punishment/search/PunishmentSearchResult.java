@@ -5,6 +5,7 @@ import discord4j.core.object.entity.User;
 import java.util.List;
 import org.jspecify.annotations.NullMarked;
 
+@Deprecated(forRemoval = true)
 @NullMarked
 public record PunishmentSearchResult(
   User user,

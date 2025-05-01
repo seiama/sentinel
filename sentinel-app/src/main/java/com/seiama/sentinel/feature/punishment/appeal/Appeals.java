@@ -338,7 +338,7 @@ public class Appeals implements Listener {
       final DiscordClient rest = this.client.rest();
       final UnaryOperator<EmbedCreateSpec.Builder> embedForBoth = embed -> {
         return embed
-          .color(Color.of(this.result.color()))
+          .color(this.result.color())
           .title("Appeal " + this.result.strings().name());
       };
       final EmbedData embedForPunished = this.createEmbedForPunished(embedForBoth.apply(EmbedCreateSpec.builder())).asRequest();
