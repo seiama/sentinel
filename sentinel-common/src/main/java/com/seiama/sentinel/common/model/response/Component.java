@@ -64,6 +64,7 @@ public record Component(
       .build();
   }
 
+  @NullMarked
   @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
   public record UnfurledMediaItem(
     String url
@@ -77,6 +78,7 @@ public record Component(
 
   }
 
+  @NullMarked
   @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
   public record MediaGalleryItem(
     UnfurledMediaItem media,
