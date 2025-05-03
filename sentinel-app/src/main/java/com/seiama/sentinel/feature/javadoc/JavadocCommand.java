@@ -5,7 +5,7 @@ import com.seiama.sentinel.command.Command;
 import com.seiama.sentinel.command.GuildCommand;
 import com.seiama.sentinel.command.OptionNames;
 import com.seiama.sentinel.command.Options;
-import com.seiama.sentinel.common.discord.Emoji;
+import com.seiama.sentinel.common.discord.Emojis;
 import com.seiama.sentinel.common.model.Feature;
 import com.seiama.sentinel.common.model.JavadocModel;
 import com.seiama.sentinel.common.model.JavadocRepository;
@@ -135,11 +135,11 @@ public final class JavadocCommand implements GuildCommand {
               try {
                 document = Jsoup.connect(url).followRedirects(true).get();
               } catch (final IOException exception) {
-                return event.editReply().withContentOrNull(Emoji.NO.asFormat() + " we cannot load the url for check");
+                return event.editReply().withContentOrNull(Emojis.NO.asFormat() + " we cannot load the url for check");
               }
               final Element descriptionMetaTag = document.select("meta[name=description]").first();
               if (descriptionMetaTag == null || !descriptionMetaTag.attr("content").equalsIgnoreCase("package index")) {
-                return event.editReply().withContentOrNull(Emoji.NO.asFormat() + " the url javadoc url `%s` its invalid".formatted(url));
+                return event.editReply().withContentOrNull(Emojis.NO.asFormat() + " the url javadoc url `%s` its invalid".formatted(url));
               }
               return this.javadocs.findByGuildAndName(guild.getId(), name)
                 .flatMap(model -> this.javadocs.update(model, new JavadocModel.Partial.SetUrl() {
@@ -170,17 +170,17 @@ public final class JavadocCommand implements GuildCommand {
                     ));
                   }
                 })
-                .then(event.editReply().withContentOrNull(Emoji.YES.asFormat()));
+                .then(event.editReply().withContentOrNull(Emojis.YES.asFormat()));
             });
         },
         REMOVE, option -> {
           return Mono.justOrEmpty(Options.string(option, OptionNames.NAME))
             .flatMap(name -> {
               return this.javadocs.findByGuildAndName(guild.getId(), name)
-                .switchIfEmpty(event.editReply().withContentOrNull("%s Could not find a javadoc with name `%s`.".formatted(Emoji.NO.asFormat(), name)).then(Mono.empty()))
+                .switchIfEmpty(event.editReply().withContentOrNull("%s Could not find a javadoc with name `%s`.".formatted(Emojis.NO.asFormat(), name)).then(Mono.empty()))
                 .flatMap(model -> this.appAction((id, service) -> service.deleteGuildApplicationCommand(id, guild.getId().asLong(), model.commandId().asLong())).thenReturn(model))
                 .flatMap(this.javadocs::delete)
-                .then(event.editReply().withContentOrNull(Emoji.YES.asFormat()));
+                .then(event.editReply().withContentOrNull(Emojis.YES.asFormat()));
             });
         }
       )));
