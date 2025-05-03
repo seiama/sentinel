@@ -21,6 +21,7 @@ public record Response(
   @Nullable String content,
   @Nullable List<Component> components,
   @Nullable List<Embed> embeds,
+  @Deprecated(forRemoval = true)
   @Nullable List<Button> buttons
 ) {
   public InteractionApplicationCommandCallbackReplyMono decorate(final InteractionApplicationCommandCallbackReplyMono mono) {
