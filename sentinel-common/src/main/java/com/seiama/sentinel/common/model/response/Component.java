@@ -39,7 +39,6 @@ public record Component(
   @Nullable UnfurledMediaItem media,
   @Nullable List<MediaGalleryItem> items
 ) {
-
   public ComponentData unwrap() {
     return ComponentData.builder()
       .id(Possible.ofNullable(this.id))
@@ -69,7 +68,6 @@ public record Component(
   public record UnfurledMediaItem(
     String url
   ) {
-
     public UnfurledMediaItemData unwrap() {
       return UnfurledMediaItemData.builder()
         .url(this.url)
@@ -85,7 +83,6 @@ public record Component(
     @Nullable String description,
     @Nullable Boolean spoiler
   ) {
-
     public MediaGalleryItemData unwrap() {
       return MediaGalleryItemData.builder()
         .media(this.media.unwrap())
@@ -95,5 +92,4 @@ public record Component(
     }
 
   }
-
 }
