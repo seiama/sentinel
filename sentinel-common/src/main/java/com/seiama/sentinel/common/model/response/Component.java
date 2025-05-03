@@ -73,7 +73,6 @@ public record Component(
         .url(this.url)
         .build();
     }
-
   }
 
   @NullMarked
@@ -90,6 +89,5 @@ public record Component(
         .spoiler(Possible.ofNullable(this.spoiler))
         .build();
     }
-
   }
 }
