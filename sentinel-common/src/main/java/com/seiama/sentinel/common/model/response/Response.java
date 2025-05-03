@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.google.common.collect.Lists;
 import discord4j.core.object.component.ActionRow;
 import discord4j.core.object.component.LayoutComponent;
+import discord4j.core.object.component.MessageComponent;
+import discord4j.core.object.component.TopLevelMessageComponent;
 import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.core.spec.InteractionApplicationCommandCallbackReplyMono;
 import discord4j.discordjson.possible.Possible;
@@ -17,10 +19,15 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public record Response(
   @Nullable String content,
+  @Nullable List<Component> components,
   @Nullable List<Embed> embeds,
+  @Deprecated(forRemoval = true)
   @Nullable List<Button> buttons
 ) {
   public InteractionApplicationCommandCallbackReplyMono decorate(final InteractionApplicationCommandCallbackReplyMono mono) {
+    if (this.useComponentsV2()) {
+      return mono.withComponents(this.wrapComponents());
+    }
     return mono
       .withContent(this.wrapContent())
       .withEmbeds(this.wrapEmbeds())
@@ -39,8 +46,10 @@ public record Response(
       : Possible.absent();
   }
 
-  public Possible<List<LayoutComponent>> wrapComponents() {
-    if (this.buttons != null) {
+  public Possible<List<? extends TopLevelMessageComponent>> wrapComponents() {
+    if (this.components != null && !this.components.isEmpty()) {
+      return Possible.of(this.components.stream().map(Component::unwrap).map(MessageComponent::fromData).filter(messageComponent -> messageComponent instanceof TopLevelMessageComponent).map(TopLevelMessageComponent.class::cast).toList());
+    } else if (this.buttons != null) {
       final List<LayoutComponent> components = new ArrayList<>();
       for (final List<Button> buttons : Lists.partition(this.buttons, 5)) {
         components.add(ActionRow.of(
@@ -52,5 +61,9 @@ public record Response(
       return Possible.of(components);
     }
     return Possible.absent();
+  }
+
+  private boolean useComponentsV2() {
+    return this.components != null && this.components.stream().map(Component::unwrap).anyMatch(componentData -> MessageComponent.Type.of(componentData.type()).isRequiredFlag());
   }
 }

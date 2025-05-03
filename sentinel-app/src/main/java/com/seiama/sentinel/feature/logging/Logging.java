@@ -2,7 +2,7 @@ package com.seiama.sentinel.feature.logging;
 
 import com.seiama.common.Comparables;
 import com.seiama.sentinel.common.Listener;
-import com.seiama.sentinel.common.discord.Emoji;
+import com.seiama.sentinel.common.discord.Emojis;
 import com.seiama.sentinel.common.discord.UserDisplay;
 import com.seiama.sentinel.common.model.Feature;
 import com.seiama.sentinel.common.model.GuildModel;
@@ -45,14 +45,14 @@ public class Logging implements Listener {
                 final Member member = event.getMember();
                 final StringBuilder sb = new StringBuilder();
                 sb
-                  .append(Emoji.DOT_GREEN.asFormat())
+                  .append(Emojis.DOT_GREEN.asFormat())
                   .append(' ')
                   .append(UserDisplay.render(UserDisplay.Renderer.MENTION_WITH_TRAILING_BACKTICK_WRAPPED_USERNAME_AND_ID, new UserIdentity(member)))
                   .append(" joined - created ");
                 final Instant userCreation = member.getId().getTimestamp();
                 sb.append(TimestampFormat.RELATIVE_TIME.format(userCreation));
                 if (Comparables.lessThanOrEqual(Duration.between(userCreation, Instant.now()), NEW_THRESHOLD)) {
-                  sb.append(' ').append(Emoji.DOT_ORANGE.asFormat());
+                  sb.append(' ').append(Emojis.DOT_ORANGE.asFormat());
                 }
                 return channel.createMessage(sb.toString());
               });
@@ -65,7 +65,7 @@ public class Logging implements Listener {
               .flatMap(channel -> {
                 final StringBuilder sb = new StringBuilder();
                 sb
-                  .append(Emoji.DOT_RED.asFormat())
+                  .append(Emojis.DOT_RED.asFormat())
                   .append(' ')
                   .append(UserDisplay.render(UserDisplay.Renderer.MENTION_WITH_TRAILING_BACKTICK_WRAPPED_USERNAME_AND_ID, new UserIdentity(event.getUser())))
                   .append(" left");

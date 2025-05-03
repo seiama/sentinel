@@ -1,7 +1,6 @@
 package com.seiama.sentinel.feature.punishment.creator;
 
 import com.seiama.sentinel.command.OptionNames;
-import com.seiama.sentinel.command.Options;
 import com.seiama.sentinel.common.model.GuildRepository;
 import com.seiama.sentinel.common.model.PunishmentModel;
 import com.seiama.sentinel.feature.punishment.PunishmentAction;
@@ -30,7 +29,14 @@ public final class ChatInteractionPunishmentCreator implements Punishments.Creat
   private final @Nullable Duration duration;
   private final PunishmentAction<User, PunishmentModel.Complete> action;
 
-  public ChatInteractionPunishmentCreator(final GatewayDiscordClient client, final ChatInputInteractionEvent event, final Guild guild, final PunishmentModel.Type type, final @Nullable Duration duration, final PunishmentAction<User, PunishmentModel.Complete> action) {
+  public ChatInteractionPunishmentCreator(
+    final GatewayDiscordClient client,
+    final ChatInputInteractionEvent event,
+    final Guild guild,
+    final PunishmentModel.Type type,
+    final @Nullable Duration duration,
+    final PunishmentAction<User, PunishmentModel.Complete> action
+  ) {
     this.client = client;
     this.event = event;
     this.guild = guild;
@@ -48,9 +54,8 @@ public final class ChatInteractionPunishmentCreator implements Punishments.Creat
   private Mono<PunishmentModel.Complete> deferred(final GuildRepository guilds, final Punishments punishments) {
     final Interaction interaction = this.event.getInteraction();
     final Member punisher = interaction.getMember().orElseThrow();
-    final @Nullable String reason = Options.string(this.event, OptionNames.REASON).orElse(null);
-    return Options.user(this.event, OptionNames.MEMBER)
-      .orElse(Mono.empty())
+    final @Nullable String reason = this.event.getOptionAsString(OptionNames.REASON).orElse(null);
+    return this.event.getOptionAsUser(OptionNames.MEMBER)
       .filterWhen(new CanPunish<>(guilds, this.guild, punisher))
       .switchIfEmpty(
         this.event.editReply()

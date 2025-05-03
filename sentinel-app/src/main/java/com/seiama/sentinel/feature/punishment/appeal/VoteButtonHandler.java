@@ -1,6 +1,6 @@
 package com.seiama.sentinel.feature.punishment.appeal;
 
-import com.seiama.sentinel.common.discord.Emoji;
+import com.seiama.sentinel.common.discord.Emojis;
 import com.seiama.sentinel.common.discord.Modals;
 import com.seiama.sentinel.common.model.AppealModel;
 import com.seiama.sentinel.common.model.AppealRepository;
@@ -47,7 +47,7 @@ class VoteButtonHandler implements Function<ButtonInteractionEvent, Publisher<Ob
                 event.createFollowup()
                   .withEphemeral(true)
                   .withContent("%s You can't cast \"%s\" on this vote as you are the one who created this punishment.".formatted(
-                    Emoji.NO.asFormat(),
+                    Emojis.NO.asFormat(),
                     vote.strings().name()
                   ))
               );

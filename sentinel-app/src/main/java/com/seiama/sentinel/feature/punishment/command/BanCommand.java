@@ -2,7 +2,6 @@ package com.seiama.sentinel.feature.punishment.command;
 
 import com.seiama.sentinel.command.GuildCommand;
 import com.seiama.sentinel.command.OptionNames;
-import com.seiama.sentinel.command.Options;
 import com.seiama.sentinel.common.model.Feature;
 import com.seiama.sentinel.common.model.PunishmentModel;
 import com.seiama.sentinel.feature.punishment.PunishmentAction;
@@ -76,7 +75,7 @@ public final class BanCommand implements GuildCommand {
   @Override
   public Mono<?> on(final GatewayDiscordClient client, final ChatInputInteractionEvent event, final Guild guild) {
     return this.punishments.createUsing(new ChatInteractionPunishmentCreator(client, event, guild, PunishmentModel.Type.BAN, null, PunishmentAction.ban(
-      Options.bool(event, OptionNames.DELETE_MESSAGES).orElse(true)
+      event.getOptionAsBoolean(OptionNames.DELETE_MESSAGES).orElse(true)
     )));
   }
 }

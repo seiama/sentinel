@@ -1,7 +1,7 @@
 package com.seiama.sentinel.feature.punishment.appeal;
 
 import com.seiama.sentinel.common.SharedConstants;
-import com.seiama.sentinel.common.discord.Emoji;
+import com.seiama.sentinel.common.discord.Emojis;
 import com.seiama.sentinel.common.discord.UserDisplay;
 import com.seiama.sentinel.common.model.AppealModel;
 import com.seiama.sentinel.common.model.AppealRepository;
@@ -142,7 +142,7 @@ class StartHandler implements Function<MemberJoinEvent, Publisher<Void>> {
               appealThreadChannel.createMessage(
                 EmbedCreateSpec.builder()
                   .color(Color.of(SharedConstants.COLOR_YELLOW))
-                  .title("%1$s WARNING %1$s".formatted(Emoji.WARNING.asFormat()))
+                  .title("%1$s WARNING %1$s".formatted(Emojis.WARNING.asFormat()))
                   .description("Please note that any messages sent in this channel will be shared with the user who is appealing. For staff discussion, please use %s.".formatted(
                     MentionUtil.forChannel(Snowflake.of(appealDiscussionThread.id()))
                   ))
