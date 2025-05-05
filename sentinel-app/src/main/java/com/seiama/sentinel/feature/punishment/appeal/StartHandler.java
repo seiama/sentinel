@@ -30,6 +30,7 @@ import discord4j.discordjson.json.StartThreadWithoutMessageRequest;
 import discord4j.discordjson.json.UserData;
 import discord4j.rest.RestClient;
 import discord4j.rest.http.client.ClientException;
+import discord4j.rest.util.AllowedMentions;
 import discord4j.rest.util.Color;
 import java.time.Instant;
 import java.util.Map;
@@ -158,12 +159,13 @@ class StartHandler implements Function<MemberJoinEvent, Publisher<Void>> {
 
                 return Mono.when(
                   rest.getChannelService().addThreadMember(appealThread.id().asLong(), relayUser.id().asLong()),
-                  channel.createMessage().withFlags(Message.Flag.IS_COMPONENTS_V2).withComponents(PunishmentDisplay.punishment(punishment, PunishmentDisplayStyle.APPEAL)),
+                  channel.createMessage().withFlags(Message.Flag.IS_COMPONENTS_V2).withAllowedMentions(AllowedMentions.suppressAll()).withComponents(PunishmentDisplay.punishment(punishment, PunishmentDisplayStyle.APPEAL)),
                   channel.createMessage(String.format("Hey, %s! This appeal is now active. Please explain why you think this punishment should be appealed.", member.getMention())),
                   this.client.getChannelById(appealThreadId)
                     .ofType(ThreadChannel.class)
                     .flatMapMany(appealThreadChannel -> Flux.just(
                       appealThreadChannel.createMessage()
+                        .withAllowedMentions(AllowedMentions.suppressAll())
                         .withFlags(Message.Flag.IS_COMPONENTS_V2)
                         .withComponents(PunishmentDisplay.punishment(punishment, PunishmentDisplayStyle.FULL)),
                       appealThreadChannel.createMessage()

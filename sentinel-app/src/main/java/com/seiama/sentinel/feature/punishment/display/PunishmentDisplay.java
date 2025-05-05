@@ -38,7 +38,7 @@ public final class PunishmentDisplay {
   public static Container punishment(final PunishmentModel.Complete punishment, final PunishmentDisplayStyle display) {
     return Components.container(OptionalInt.empty(), container -> {
       container.add(TextDisplay.of(String.format(
-        "## Punishment %s",
+        "### Punishment %s",
         punishment._id()
       )));
       if (display.type) {

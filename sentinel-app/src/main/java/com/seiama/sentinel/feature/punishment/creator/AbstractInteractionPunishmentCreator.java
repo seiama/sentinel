@@ -16,6 +16,7 @@ import discord4j.core.object.command.Interaction;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.User;
+import discord4j.rest.util.AllowedMentions;
 import java.time.Duration;
 import java.util.Optional;
 import org.jspecify.annotations.NullMarked;
@@ -79,7 +80,11 @@ public abstract class AbstractInteractionPunishmentCreator<E extends DeferrableI
         punished,
         this.action
       ))
-      .flatMap(punishment -> this.event.editReply().withComponents(PunishmentDisplay.punishment(punishment, PunishmentDisplayStyle.CREATED)).thenReturn(punishment));
+      .flatMap(punishment -> this.event.editReply()
+        .withAllowedMentionsOrNull(AllowedMentions.suppressAll())
+        .withComponents(PunishmentDisplay.punishment(punishment, PunishmentDisplayStyle.CREATED))
+        .thenReturn(punishment)
+      );
   }
 
   protected abstract Mono<User> getPunishedUser();

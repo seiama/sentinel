@@ -24,6 +24,7 @@ import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.User;
 import discord4j.discordjson.json.ApplicationCommandOptionData;
 import discord4j.discordjson.json.ApplicationCommandRequest;
+import discord4j.rest.util.AllowedMentions;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -165,7 +166,7 @@ public final class PunishmentCommand implements GuildCommand {
           .filterWhen(new CanQueryAndMutate<>(this.guilds, guild, punisher))
           .handle(AsObjectId.INSTANCE)
           .flatMap(this.punishments::findById)
-          .flatMap(punishment -> event.editReply().withComponents(PunishmentDisplay.punishment(punishment, PunishmentDisplayStyle.FULL)))
+          .flatMap(punishment -> event.editReply().withAllowedMentions(AllowedMentions.suppressAll()).withComponents(PunishmentDisplay.punishment(punishment, PunishmentDisplayStyle.FULL)))
           .onErrorResume(throwable -> event.editReply().withContentOrNull(PunishmentMessages.PUNISHMENT_NOT_FOUND));
       },
       REASON, option -> {
@@ -194,10 +195,13 @@ public final class PunishmentCommand implements GuildCommand {
               .flatMap(model -> this.punishments.update(model, PunishmentModel.Partial.Stale.of(Optional.of(punisher), reason.orElse(null), false, null)))
               .flatMap(model -> this.punishmentOps.unenforce(guild, model, String.format("Punishment (%s) has been marked stale.", model._id())).thenReturn(model));
           }))
-          .flatMap(result -> event.editReply().withComponents(
-            PunishmentDisplay.punishment(result, PunishmentDisplayStyle.FULL),
-            PunishmentDisplay.updated(result)
-          ));
+          .flatMap(result -> event.editReply()
+            .withAllowedMentionsOrNull(AllowedMentions.suppressAll())
+            .withComponents(
+              PunishmentDisplay.punishment(result, PunishmentDisplayStyle.FULL),
+              PunishmentDisplay.updated(result)
+            )
+          );
       },
       SEARCH, option -> {
         return Mono.justOrEmpty(option.getOption(USER).orElse(null))

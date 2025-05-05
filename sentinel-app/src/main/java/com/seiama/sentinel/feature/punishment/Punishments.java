@@ -22,6 +22,7 @@ import discord4j.discordjson.json.ThreadModifyRequest;
 import discord4j.rest.RestClient;
 import discord4j.rest.entity.RestChannel;
 import discord4j.rest.http.client.ClientException;
+import discord4j.rest.util.AllowedMentions;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -141,7 +142,11 @@ public final class Punishments {
       .mapNotNull(guildModel -> guildModel.features().punishments().logChannel())
       .flatMap(guild::getChannelById)
       .cast(TextChannel.class)
-      .flatMap(channel -> freshPunishmentSource.get().flatMap(punishment -> channel.createMessage().withFlags(Message.Flag.IS_COMPONENTS_V2).withComponents(PunishmentDisplay.punishment(punishment, PunishmentDisplayStyle.LOG))));
+      .flatMap(channel -> freshPunishmentSource.get().flatMap(punishment -> channel.createMessage()
+        .withAllowedMentions(AllowedMentions.suppressAll())
+        .withFlags(Message.Flag.IS_COMPONENTS_V2)
+        .withComponents(PunishmentDisplay.punishment(punishment, PunishmentDisplayStyle.LOG))
+      ));
   }
 
   private Mono<Void> applyPunishment(

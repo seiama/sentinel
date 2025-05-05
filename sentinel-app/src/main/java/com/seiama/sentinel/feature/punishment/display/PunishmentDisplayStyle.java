@@ -4,9 +4,42 @@ import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public enum PunishmentDisplayStyle {
-  FULL(true, true, true, true, true, true, true, true, true, true),
-  CREATED(true, false, false, false, false, true, true, true, true, false),
-  LOG(true, false, false, false, true, true, true, true, true, true),
+  FULL(
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+  ),
+  CREATED(
+    true,
+    false,
+    false,
+    false,
+    false,
+    false,
+    true,
+    true,
+    true,
+    false
+  ),
+  LOG(
+    true,
+    false,
+    false,
+    false,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+  ),
   APPEAL(
     true,
     true,
