@@ -21,7 +21,6 @@ import reactor.core.publisher.Mono;
 @Component
 @NullMarked
 public final class BanCommand implements GuildCommand {
-  private static final String NAME = "ban";
   private final Punishments punishments;
 
   @Autowired
@@ -31,13 +30,13 @@ public final class BanCommand implements GuildCommand {
 
   @Override
   public String name() {
-    return NAME;
+    return "ban";
   }
 
   @Override
   public ApplicationCommandRequest request() {
     return ApplicationCommandRequest.builder()
-      .name(NAME)
+      .name(this.name())
       .description("Ban a member")
       .defaultPermission(false)
       .addOption(
@@ -74,8 +73,15 @@ public final class BanCommand implements GuildCommand {
 
   @Override
   public Mono<?> on(final GatewayDiscordClient client, final ChatInputInteractionEvent event, final Guild guild) {
-    return this.punishments.createUsing(new ChatInteractionPunishmentCreator(client, event, guild, PunishmentModel.Type.BAN, null, PunishmentAction.ban(
-      event.getOptionAsBoolean(OptionNames.DELETE_MESSAGES).orElse(true)
-    )));
+    return this.punishments.createUsing(new ChatInteractionPunishmentCreator(
+      client,
+      event,
+      guild,
+      PunishmentModel.Type.BAN,
+      null,
+      PunishmentAction.ban(
+        event.getOptionAsBoolean(OptionNames.DELETE_MESSAGES).orElse(true)
+      )
+    ));
   }
 }

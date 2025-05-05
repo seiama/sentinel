@@ -37,8 +37,6 @@ import reactor.function.TupleUtils;
 @Component
 @NullMarked
 public final class PunishmentCommand implements GuildCommand {
-  private static final String NAME = "punishment";
-
   private static final String SEARCH = "search";
   private static final String USER = "user";
   private static final String SHOW = "show";
@@ -58,13 +56,13 @@ public final class PunishmentCommand implements GuildCommand {
 
   @Override
   public String name() {
-    return NAME;
+    return "punishment";
   }
 
   @Override
   public ApplicationCommandRequest request() {
     return ApplicationCommandRequest.builder()
-      .name(NAME)
+      .name(this.name())
       .description("Query and manage punishments")
       .defaultPermission(false)
       .addOption(
@@ -184,7 +182,7 @@ public final class PunishmentCommand implements GuildCommand {
                 }
               }));
           }))
-          .flatMap(result -> event.editReply().withContentOrNull(PunishmentMessages.punishmentUpdated(result)));
+          .flatMap(result -> event.editReply().withComponents(PunishmentDisplay.updated(result)));
       },
       STALE, option -> {
         return Mono.justOrEmpty(Options.string(option, OptionNames.PUNISHMENT).orElse(null))
@@ -196,7 +194,10 @@ public final class PunishmentCommand implements GuildCommand {
               .flatMap(model -> this.punishments.update(model, PunishmentModel.Partial.Stale.of(Optional.of(punisher), reason.orElse(null), false, null)))
               .flatMap(model -> this.punishmentOps.unenforce(guild, model, String.format("Punishment (%s) has been marked stale.", model._id())).thenReturn(model));
           }))
-          .flatMap(result -> event.editReply().withContentOrNull(PunishmentMessages.punishmentMarkedStale(result)).withComponents(PunishmentDisplay.punishment(result, PunishmentDisplayStyle.FULL))); // todo???????
+          .flatMap(result -> event.editReply().withComponents(
+            PunishmentDisplay.punishment(result, PunishmentDisplayStyle.FULL),
+            PunishmentDisplay.updated(result)
+          ));
       },
       SEARCH, option -> {
         return Mono.justOrEmpty(option.getOption(USER).orElse(null))

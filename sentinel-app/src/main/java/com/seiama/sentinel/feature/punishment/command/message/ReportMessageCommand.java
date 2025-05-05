@@ -17,8 +17,6 @@ import reactor.core.publisher.Mono;
 @Component
 @NullMarked
 public final class ReportMessageCommand implements MessageCommand {
-  private static final String NAME = "Report";
-
   private final ModMail modmail;
 
   @Autowired
@@ -28,13 +26,13 @@ public final class ReportMessageCommand implements MessageCommand {
 
   @Override
   public String name() {
-    return NAME;
+    return "Report";
   }
 
   @Override
   public ApplicationCommandRequest request() {
     return ApplicationCommandRequest.builder()
-      .name(NAME)
+      .name(this.name())
       .type(ApplicationCommand.Type.MESSAGE.getValue())
       .defaultPermission(false)
       .build();

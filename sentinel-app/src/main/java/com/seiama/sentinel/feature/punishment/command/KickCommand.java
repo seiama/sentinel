@@ -21,7 +21,6 @@ import reactor.core.publisher.Mono;
 @Component
 @NullMarked
 public final class KickCommand implements GuildCommand {
-  private static final String NAME = "kick";
   private final Punishments punishments;
 
   @Autowired
@@ -31,13 +30,13 @@ public final class KickCommand implements GuildCommand {
 
   @Override
   public String name() {
-    return NAME;
+    return "kick";
   }
 
   @Override
   public ApplicationCommandRequest request() {
     return ApplicationCommandRequest.builder()
-      .name(NAME)
+      .name(this.name())
       .description("Kick a member")
       .defaultPermission(false)
       .addOption(
@@ -66,6 +65,13 @@ public final class KickCommand implements GuildCommand {
 
   @Override
   public Mono<?> on(final GatewayDiscordClient client, final ChatInputInteractionEvent event, final Guild guild) {
-    return this.punishments.createUsing(new ChatInteractionPunishmentCreator(client, event, guild, PunishmentModel.Type.KICK, null, PunishmentAction.kick()));
+    return this.punishments.createUsing(new ChatInteractionPunishmentCreator(
+      client,
+      event,
+      guild,
+      PunishmentModel.Type.KICK,
+      null,
+      PunishmentAction.kick()
+    ));
   }
 }

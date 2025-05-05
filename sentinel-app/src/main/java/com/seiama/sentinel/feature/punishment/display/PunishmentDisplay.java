@@ -203,6 +203,13 @@ public final class PunishmentDisplay {
     }, null, false);
   }
 
+  public static TextDisplay updated(final PunishmentModel.Complete punishment) {
+    return TextDisplay.of(String.format(
+      "Punishment `%s` was successfully updated.",
+      punishment._id()
+    ));
+  }
+
   private static String field(final String name, final Stream<@Nullable String> values) {
     return String.format(
       "**%s**: %s",

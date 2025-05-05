@@ -44,7 +44,10 @@ public final class Punishments {
   private final PunishmentRepository punishments;
 
   @Autowired
-  private Punishments(final GuildRepository guilds, final PunishmentRepository punishments) {
+  public Punishments(
+    final GuildRepository guilds,
+    final PunishmentRepository punishments
+  ) {
     this.guilds = guilds;
     this.punishments = punishments;
   }

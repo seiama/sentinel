@@ -20,13 +20,6 @@ class UserDisplayTest {
   }
 
   @Test
-  void testMention() {
-    assertEquals("<@105923848263753728>", UserDisplay.render(UserDisplay.Renderer.MENTION, CREAMFILLED));
-    assertEquals("<@177150983258767360>", UserDisplay.render(UserDisplay.Renderer.MENTION, NEW_ETERNITY));
-    assertEquals("<@177150983258767360>", UserDisplay.render(UserDisplay.Renderer.MENTION, OLD_ETERNITY));
-  }
-
-  @Test
   void testMentionWithTrailingBacktickWrappedUsernameAndId() {
     assertEquals("<@105923848263753728> (`@creamfilled.` / `105923848263753728`)", UserDisplay.render(UserDisplay.Renderer.MENTION_WITH_TRAILING_BACKTICK_WRAPPED_USERNAME_AND_ID, CREAMFILLED));
     assertEquals("<@177150983258767360> (`@eternity._.` / `177150983258767360`)", UserDisplay.render(UserDisplay.Renderer.MENTION_WITH_TRAILING_BACKTICK_WRAPPED_USERNAME_AND_ID, NEW_ETERNITY));

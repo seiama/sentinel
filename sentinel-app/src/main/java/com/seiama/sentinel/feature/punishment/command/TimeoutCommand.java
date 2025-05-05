@@ -10,8 +10,6 @@ import com.seiama.sentinel.feature.punishment.TimeoutDuration;
 import com.seiama.sentinel.feature.punishment.creator.ChatInteractionPunishmentCreator;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
-import discord4j.core.object.command.ApplicationCommandInteractionOption;
-import discord4j.core.object.command.ApplicationCommandInteractionOptionValue;
 import discord4j.core.object.command.ApplicationCommandOption;
 import discord4j.core.object.entity.Guild;
 import discord4j.discordjson.json.ApplicationCommandOptionChoiceData;
@@ -28,7 +26,6 @@ import reactor.core.publisher.Mono;
 @Component
 @NullMarked
 public final class TimeoutCommand implements GuildCommand {
-  private static final String NAME = "timeout";
   private final Punishments punishments;
 
   @Autowired
@@ -38,13 +35,13 @@ public final class TimeoutCommand implements GuildCommand {
 
   @Override
   public String name() {
-    return NAME;
+    return "timeout";
   }
 
   @Override
   public ApplicationCommandRequest request() {
     return ApplicationCommandRequest.builder()
-      .name(NAME)
+      .name(this.name())
       .description("Timeout a member")
       .defaultPermission(false)
       .addOption(
@@ -91,14 +88,19 @@ public final class TimeoutCommand implements GuildCommand {
 
   @Override
   public Mono<?> on(final GatewayDiscordClient client, final ChatInputInteractionEvent event, final Guild guild) {
-    final String durationInput = event.getOption(OptionNames.DURATION)
-      .flatMap(ApplicationCommandInteractionOption::getValue)
-      .map(ApplicationCommandInteractionOptionValue::asString)
+    final Duration duration = event.getOptionAsString(OptionNames.DURATION)
+      .map(TimeoutDuration::valueOf)
+      .map(TimeoutDuration::duration)
       .orElseThrow();
-    final TimeoutDuration duration = TimeoutDuration.valueOf(durationInput);
-    final Instant now = Instant.now();
-    final Instant endsAt = now.plus(duration.duration());
-    final Duration between = Duration.between(now, endsAt);
-    return this.punishments.createUsing(new ChatInteractionPunishmentCreator(client, event, guild, PunishmentModel.Type.MUTE, between, PunishmentAction.mute(endsAt)));
+    final Instant startsAt = Instant.now();
+    final Instant endsAt = startsAt.plus(duration);
+    return this.punishments.createUsing(new ChatInteractionPunishmentCreator(
+      client,
+      event,
+      guild,
+      PunishmentModel.Type.MUTE,
+      Duration.between(startsAt, endsAt),
+      PunishmentAction.mute(endsAt)
+    ));
   }
 }

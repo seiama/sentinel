@@ -32,6 +32,8 @@ import discord4j.core.object.emoji.Emoji;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.User;
+import discord4j.core.object.entity.channel.GuildMessageChannel;
+import discord4j.core.object.entity.channel.ThreadChannel;
 import discord4j.core.spec.EmbedCreateFields;
 import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.core.util.MentionUtil;
@@ -39,7 +41,6 @@ import discord4j.discordjson.json.EmbedData;
 import discord4j.discordjson.json.MessageData;
 import discord4j.discordjson.json.MessageEditRequest;
 import discord4j.discordjson.json.PermissionsEditRequest;
-import discord4j.discordjson.json.ThreadModifyRequest;
 import discord4j.discordjson.possible.Possible;
 import discord4j.rest.RestClient;
 import discord4j.rest.http.client.ClientException;
@@ -105,7 +106,15 @@ public class Appeals implements Listener {
   private final RestClient relayRest;
 
   @Autowired
-  private Appeals(final GuildRepository guilds, final PunishmentRepository punishments, final Punishments punishmentOps, final AppealRepository appeals, final TemporaryMessageLinkRepository messageLinks, final @Qualifier("relayRest") RestClient relayRest) {
+  public Appeals(
+    final GuildRepository guilds,
+    final PunishmentRepository punishments,
+    final Punishments punishmentOps,
+    final AppealRepository appeals,
+    final TemporaryMessageLinkRepository messageLinks,
+    @Qualifier("relayRest")
+    final RestClient relayRest
+  ) {
     this.guilds = guilds;
     this.punishments = punishments;
     this.punishmentOps = punishmentOps;
@@ -226,11 +235,13 @@ public class Appeals implements Listener {
         this.client.getSelf().flatMap(user -> {
           final Instant now = Instant.now();
           return switch (result) {
-            case NONE -> this.client.rest().getChannelById(this.model.appealDiscussionThread()).createMessage(String.format(
-              "%s The result of the vote could not be determined at this time and will be recalculated %s.",
-              Emojis.CLOCK1.asFormat(),
-              TimestampFormat.LONG_DATE_TIME.format(Instant.now().plus(VOTE_CHECK_INTERVAL))
-            ));
+            case NONE -> this.client.getChannelById(this.model.appealDiscussionThread())
+              .ofType(ThreadChannel.class)
+              .flatMap(channel -> channel.createMessage().withContent(String.format(
+                "%s The result of the vote could not be determined at this time and will be recalculated %s.",
+                Emojis.CLOCK1.asFormat(),
+                TimestampFormat.LONG_DATE_TIME.format(Instant.now().plus(VOTE_CHECK_INTERVAL))
+              )));
             case YES -> Appeals.this.accept(this.client, this.model, user);
             case NO -> Appeals.this.deny(this.client, this.model, user, null, now.plus(COOLDOWN_NO));
             case LATER -> Appeals.this.deny(this.client, this.model, user, null, now.plus(COOLDOWN_LATER));
@@ -255,6 +266,23 @@ public class Appeals implements Listener {
 
   private Mono<Void> acceptOrDenyOrCancel(final AppealFinisher finisher) {
     return finisher.create();
+  }
+
+  static List<PermissionOverwrite> createPermissionOverwrites(final Snowflake everyone, final Snowflake user, final boolean locked) {
+    return List.of(
+      PermissionOverwrite.forMember(
+        user,
+        PermissionSet.of(Permission.VIEW_CHANNEL),
+        locked
+          ? PermissionSet.of(Permission.ADD_REACTIONS, Permission.SEND_MESSAGES)
+          : PermissionSet.of(Permission.ADD_REACTIONS)
+      ),
+      PermissionOverwrite.forRole(
+        everyone,
+        PermissionSet.none(),
+        PermissionSet.of(Permission.VIEW_CHANNEL, Permission.ATTACH_FILES)
+      )
+    );
   }
 
   class AppealFinisher {
@@ -341,18 +369,18 @@ public class Appeals implements Listener {
           .color(this.result.color())
           .title("Appeal " + this.result.strings().name());
       };
-      final EmbedData embedForPunished = this.createEmbedForPunished(embedForBoth.apply(EmbedCreateSpec.builder())).asRequest();
-      final EmbedData embedForStaff = this.createEmbedForStaff(embedForBoth.apply(EmbedCreateSpec.builder())).asRequest();
+      final EmbedCreateSpec embedForPunished = this.createEmbedForPunished(embedForBoth.apply(EmbedCreateSpec.builder()));
+      final EmbedCreateSpec embedForStaff = this.createEmbedForStaff(embedForBoth.apply(EmbedCreateSpec.builder()));
       final String reasonForActionLog = "Appeal has been " + this.result.strings().name();
       return Appeals.this.guilds.findByGuild(this.model.guild())
         .flatMap(guildModel -> Mono.when(
           Mono.when(
             Mono.just(this.result)
               .filter(result -> result != AppealModel.Result.CANCELLED)
-              .flatMap(result -> rest.getChannelById(this.model.appealChannel()).createMessage(embedForPunished)),
+              .flatMap(result -> this.client.getChannelById(this.model.appealChannel()).ofType(GuildMessageChannel.class).flatMap(channel -> channel.createMessage(embedForPunished))),
             Mono.just(this.result)
               .filter(result -> result == AppealModel.Result.ACCEPTED)
-              .flatMap(accepted -> rest.getChannelById(this.model.appealChannel()).createMessage(guildModel.invite())),
+              .flatMap(accepted -> this.client.getChannelById(this.model.appealChannel()).ofType(GuildMessageChannel.class).flatMap(channel -> channel.createMessage(guildModel.invite()))),
             Mono.justOrEmpty(this.model.voteMessage()).flatMap(voteMessage -> rest.getMessageById(this.model.appealDiscussionThread(), voteMessage).edit(
               MessageEditRequest.builder()
                 .components(Possible.of(Optional.empty()))
@@ -369,26 +397,24 @@ public class Appeals implements Listener {
               reasonForActionLog
             ).onErrorResume(ClientException.class, Reactive.<Void>ignoringException()) // avoid possible 10009 if the user has left the guild
           ),
-          rest.getChannelById(this.model.appealThread()).createMessage(embedForStaff).then(
-            rest.getChannelService().modifyThread(
-              this.model.appealThread().asLong(),
-              ThreadModifyRequest.builder()
-                .archived(true)
-                .locked(true)
-                .build(),
-              reasonForActionLog
-            )
-          ),
-          rest.getChannelById(this.model.appealDiscussionThread()).createMessage(embedForStaff).then(
-            rest.getChannelService().modifyThread(
-              this.model.appealDiscussionThread().asLong(),
-              ThreadModifyRequest.builder()
-                .archived(true)
-                .locked(true)
-                .build(),
-              reasonForActionLog
-            )
-          )
+          this.client.getChannelById(this.model.appealThread())
+            .ofType(ThreadChannel.class)
+            .flatMapMany(channel -> Flux.just(
+              channel.createMessage(embedForStaff),
+              channel.edit()
+                .withArchived(true)
+                .withLocked(true)
+                .withReason(reasonForActionLog)
+            )),
+          this.client.getChannelById(this.model.appealDiscussionThread())
+            .ofType(ThreadChannel.class)
+            .flatMapMany(channel -> Flux.just(
+              channel.createMessage(embedForStaff),
+              channel.edit()
+                .withArchived(true)
+                .withLocked(true)
+                .withReason(reasonForActionLog)
+            ))
         ));
     }
 

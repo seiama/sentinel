@@ -21,7 +21,6 @@ import reactor.core.publisher.Mono;
 @Component
 @NullMarked
 public final class NoteCommand implements GuildCommand {
-  private static final String NAME = "note";
   private final Punishments punishments;
 
   @Autowired
@@ -31,13 +30,13 @@ public final class NoteCommand implements GuildCommand {
 
   @Override
   public String name() {
-    return NAME;
+    return "note";
   }
 
   @Override
   public ApplicationCommandRequest request() {
     return ApplicationCommandRequest.builder()
-      .name(NAME)
+      .name(this.name())
       .description("Add a note to a member")
       .defaultPermission(false)
       .addOption(
@@ -66,6 +65,13 @@ public final class NoteCommand implements GuildCommand {
 
   @Override
   public Mono<?> on(final GatewayDiscordClient client, final ChatInputInteractionEvent event, final Guild guild) {
-    return this.punishments.createUsing(new ChatInteractionPunishmentCreator(client, event, guild, PunishmentModel.Type.NOTE, null, PunishmentAction.note()));
+    return this.punishments.createUsing(new ChatInteractionPunishmentCreator(
+      client,
+      event,
+      guild,
+      PunishmentModel.Type.NOTE,
+      null,
+      PunishmentAction.note()
+    ));
   }
 }
