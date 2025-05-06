@@ -137,7 +137,7 @@ public final class PunishmentDisplay {
           )));
         }
       }
-      if (display.stale && punishment.stale()) {
+      if (display.stale && Boolean.TRUE.equals(punishment.stale())) {
         final Instant staleAt = punishment.staleAt();
         if (staleAt != null) {
           container.add(TextDisplay.of(field(

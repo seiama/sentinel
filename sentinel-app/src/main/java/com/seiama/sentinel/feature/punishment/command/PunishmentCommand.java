@@ -166,7 +166,7 @@ public final class PunishmentCommand implements GuildCommand {
           .filterWhen(new CanQueryAndMutate<>(this.guilds, guild, punisher))
           .handle(AsObjectId.INSTANCE)
           .flatMap(this.punishments::findById)
-          .flatMap(punishment -> event.editReply().withAllowedMentions(AllowedMentions.suppressAll()).withComponents(PunishmentDisplay.punishment(punishment, PunishmentDisplayStyle.FULL)))
+          .flatMap(punishment -> event.editReply().withAllowedMentionsOrNull(AllowedMentions.suppressAll()).withComponents(PunishmentDisplay.punishment(punishment, PunishmentDisplayStyle.FULL)))
           .onErrorResume(throwable -> event.editReply().withContentOrNull(PunishmentMessages.PUNISHMENT_NOT_FOUND));
       },
       REASON, option -> {
