@@ -13,11 +13,11 @@ import org.jspecify.annotations.Nullable;
 public record Emoji(
   String name,
   @Nullable Snowflake id,
-  boolean animated
+  @Nullable Boolean animated
 ) {
   public discord4j.core.object.emoji.Emoji unwrap() {
     if (this.id != null) {
-      return CustomEmoji.of(this.id, this.name, this.animated);
+      return CustomEmoji.of(this.id, this.name, Boolean.TRUE.equals(this.animated));
     } else {
       return UnicodeEmoji.of(this.name);
     }
