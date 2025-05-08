@@ -17,7 +17,7 @@ public final class DiscriminatorCodec implements Codec<Discriminator> {
   public Discriminator decode(final BsonReader reader, final DecoderContext decoderContext) {
     final BsonType type = reader.getCurrentBsonType();
     return switch (type) {
-      case STRING -> new Discriminator(reader.readString());
+      case STRING -> Discriminator.of(reader.readString());
       case NULL -> null;
       default -> throw new BsonInvalidOperationException(String.format("Invalid discriminator value type, found: %s", type));
     };

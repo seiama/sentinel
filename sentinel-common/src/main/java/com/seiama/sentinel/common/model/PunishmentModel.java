@@ -53,7 +53,7 @@ public interface PunishmentModel {
         return of(
           by.map(User::getId),
           by.map(User::getUsername),
-          by.map(Discriminator::new),
+          by.map(Discriminator::of),
           reason,
           automatic,
           appeal

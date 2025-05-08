@@ -4,6 +4,7 @@ import com.seiama.functional.function.exceptional.Consumer1E;
 import com.seiama.functional.function.exceptional.RunnableE;
 import discord4j.core.object.entity.User;
 import discord4j.discordjson.json.UserData;
+import java.util.Objects;
 import org.jetbrains.annotations.VisibleForTesting;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -17,12 +18,18 @@ public record Discriminator(
   @VisibleForTesting
   public static final String TEMPORARY_MIGRATION_MARKER = "0";
 
-  public Discriminator(final UserData user) {
-    this(user.discriminator());
+  private static final Discriminator MIGRATED = new Discriminator(TEMPORARY_MIGRATION_MARKER);
+
+  public static Discriminator of(final UserData user) {
+    return of(user.discriminator());
   }
 
-  public Discriminator(final User user) {
-    this(user.getDiscriminator());
+  public static Discriminator of(final User user) {
+    return of(user.getDiscriminator());
+  }
+
+  public static Discriminator of(final @Nullable String value) {
+    return Objects.equals(value, TEMPORARY_MIGRATION_MARKER) ? MIGRATED : new Discriminator(value);
   }
 
   public boolean migrated() {
