@@ -30,7 +30,9 @@ spotless {
 repositories {
   mavenCentral()
   maven("https://central.sonatype.com/repository/maven-snapshots/")
-  maven("https://s01.oss.sonatype.org/content/repositories/snapshots/") // TODO: https://central.sonatype.org/news/20250326_ossrh_sunset/
+  // TODO: https://central.sonatype.org/news/20250326_ossrh_sunset/
+  maven("https://oss.sonatype.org/content/repositories/snapshots/") // TODO: When move to another D4J SNAPSHOT PLEASE REMOVE THIS!
+  maven("https://s01.oss.sonatype.org/content/repositories/snapshots/") // TODO: Need for commons of sentinel, first move that things
 }
 
 dependencies {
