@@ -30,6 +30,7 @@ spotless {
 repositories {
   mavenCentral()
   maven("https://central.sonatype.com/repository/maven-snapshots/")
+  maven("https://s01.oss.sonatype.org/content/repositories/snapshots/") // TODO: https://central.sonatype.org/news/20250326_ossrh_sunset/
 }
 
 dependencies {
