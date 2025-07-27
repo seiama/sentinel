@@ -28,7 +28,6 @@ import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.core.util.MentionUtil;
 import discord4j.discordjson.json.ChannelData;
 import discord4j.discordjson.json.StartThreadWithoutMessageRequest;
-import discord4j.discordjson.json.UserData;
 import discord4j.rest.http.client.ClientException;
 import discord4j.rest.util.AllowedMentions;
 import discord4j.rest.util.Color;
