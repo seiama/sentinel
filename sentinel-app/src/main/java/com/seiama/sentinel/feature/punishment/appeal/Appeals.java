@@ -161,16 +161,16 @@ public class Appeals implements Listener {
   }
 
   @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-  static EmbedData createMessage(final MessageData message, final Optional<User> author, final Tuple2<Guild, GuildModel.Complete> guild) {
-    return EmbedData.builder()
+  static EmbedCreateSpec createMessage(final MessageData message, final Optional<User> author, final Tuple2<Guild, GuildModel.Complete> guild) {
+    final EmbedCreateSpec.Builder embed = EmbedCreateSpec.builder()
       .description(message.content())
-      .timestamp(message.editedTimestamp().orElse(message.timestamp()))
-      .author(
-        guild.getT1().getId().equals(guild.getT2().guild())
-          ? Discord.author(guild.getT1()).map(EmbedCreateFields.Author::asRequest).map(Possible::of).orElse(Possible.absent())
-          : Possible.of(Discord.author(message.author(), author))
-      )
-      .build();
+      .timestamp(Instant.parse(message.editedTimestamp().orElse(message.timestamp())));
+    if (guild.getT1().getId().equals(guild.getT2().guild())) {
+      embed.author(Discord.author(guild.getT1()).orElse(null));
+    } else {
+      embed.author(Discord.author(message.author(), author));
+    }
+    return embed.build();
   }
 
   static String createVoteButtonId(final AppealModel.Vote vote) {

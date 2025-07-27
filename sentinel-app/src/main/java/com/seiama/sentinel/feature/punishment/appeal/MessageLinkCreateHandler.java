@@ -13,13 +13,12 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.channel.Channel;
+import discord4j.core.spec.MessageCreateSpec;
 import discord4j.rest.RestClient;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import org.jspecify.annotations.NullMarked;
 import org.reactivestreams.Publisher;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 import reactor.function.TupleUtils;
 import reactor.util.function.Tuple2;
@@ -27,7 +26,6 @@ import reactor.util.function.Tuples;
 
 @NullMarked
 class MessageLinkCreateHandler implements Function<MessageCreateEvent, Publisher<Object>> {
-  private static final Logger LOGGER = LoggerFactory.getLogger(MessageLinkCreateHandler.class);
   private final GuildRepository guilds;
   private final AppealRepository appeals;
   private final TemporaryMessageLinkRepository messageLinks;
@@ -71,8 +69,12 @@ class MessageLinkCreateHandler implements Function<MessageCreateEvent, Publisher
       .flatMap(TupleUtils.function((guild, model, targetChannelId) -> {
         return model.get()
           .map(targetChannelId)
-          .flatMap(channelId -> this.relayRest.getChannelById(channelId).createMessage(Appeals.createMessage(message.getData(), message.getAuthor(), guild)))
-          .doOnError(t -> LOGGER.error("Error sending relay message", t))
+          .flatMap(channelId -> this.relayRest.getChannelById(channelId).createMessage(
+              MessageCreateSpec.builder()
+                .embeds(Appeals.createMessage(message.getData(), message.getAuthor(), guild))
+                .build()
+                .asRequest()
+            )
           .flatMap(newMessage -> this.messageLinks.save(new TemporaryMessageLink(
             guild.getT2()._id(),
             message.getChannelId(),

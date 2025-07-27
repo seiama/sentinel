@@ -4,9 +4,7 @@ import com.seiama.sentinel.common.model.UserIdentity;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.User;
 import discord4j.core.spec.EmbedCreateFields;
-import discord4j.discordjson.json.EmbedAuthorData;
 import discord4j.discordjson.json.UserData;
-import discord4j.discordjson.possible.Possible;
 import discord4j.rest.util.Image;
 import java.util.Optional;
 import org.jspecify.annotations.NullMarked;
@@ -33,10 +31,11 @@ public final class Discord {
   }
 
   @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-  public static EmbedAuthorData author(final UserData data, final Optional<User> user) {
-    return EmbedAuthorData.builder()
-      .name(UserDisplay.render(UserDisplay.Renderer.USERNAME, new UserIdentity(data)))
-      .iconUrl(user.map(User::getAvatarUrl).map(Possible::of).orElse(Possible.absent()))
-      .build();
+  public static EmbedCreateFields.Author author(final UserData data, final Optional<User> user) {
+    return EmbedCreateFields.Author.of(
+      UserDisplay.render(UserDisplay.Renderer.USERNAME, new UserIdentity(data)),
+      null,
+      user.map(User::getAvatarUrl).orElse(null)
+    );
   }
 }
