@@ -38,7 +38,7 @@ class MessageLinkUpdateHandler implements Function<MessageUpdateEvent, Publisher
                 return this.relayRest.getMessageById(targetIds.targetChannelId(), targetIds.targetMessageId()).edit(
                   MessageEditRequest.builder()
                     .embeds(Possible.of(Optional.of(List.of(
-                      Appeals.createMessage(message.getData(), message.getAuthor(), Tuples.of(guild, guildModel))
+                      Appeals.createMessage(message.getData(), message.getAuthor(), Tuples.of(guild, guildModel)).asRequest()
                     ))))
                     .build()
                 );
