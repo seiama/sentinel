@@ -38,6 +38,8 @@ import java.util.function.Function;
 import org.bson.types.ObjectId;
 import org.jspecify.annotations.NullMarked;
 import org.reactivestreams.Publisher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.function.TupleUtils;
@@ -46,6 +48,7 @@ import reactor.util.function.Tuples;
 
 @NullMarked
 class StartHandler implements Function<MemberJoinEvent, Publisher<Void>> {
+  private static final Logger LOGGER = LoggerFactory.getLogger(StartHandler.class);
   private final GatewayDiscordClient client;
 
   private final GuildRepository guilds;
@@ -162,15 +165,18 @@ class StartHandler implements Function<MemberJoinEvent, Publisher<Void>> {
                   channel.createMessage()
                     .withAllowedMentions(AllowedMentions.suppressAll())
                     .withFlags(Message.Flag.IS_COMPONENTS_V2)
-                    .withComponents(PunishmentDisplay.punishment(punishment, PunishmentDisplayStyle.APPEAL)),
-                  channel.createMessage(String.format("Hey, %s! This appeal is now active. Please explain why you think this punishment should be appealed.", member.getMention())),
+                    .withComponents(PunishmentDisplay.punishment(punishment, PunishmentDisplayStyle.APPEAL))
+                    .doOnError(t -> LOGGER.error("Error sending welcome message 1 externalBridgeChannel", t)),
+                  channel.createMessage(String.format("Hey, %s! This appeal is now active. Please explain why you think this punishment should be appealed.", member.getMention()))
+                    .doOnError(t -> LOGGER.error("Error sending welcome message 2 to externalBridgeChannel", t)),
                   this.client.getChannelById(appealThreadId)
                     .ofType(ThreadChannel.class)
                     .flatMapMany(appealThreadChannel -> Flux.just(
                       appealThreadChannel.createMessage()
                         .withAllowedMentions(AllowedMentions.suppressAll())
                         .withFlags(Message.Flag.IS_COMPONENTS_V2)
-                        .withComponents(PunishmentDisplay.punishment(punishment, PunishmentDisplayStyle.FULL)),
+                        .withComponents(PunishmentDisplay.punishment(punishment, PunishmentDisplayStyle.FULL))
+                        .doOnError(t -> LOGGER.error("Error sending welcome message 1 to internalBridgeChannel", t)),
                       appealThreadChannel.createMessage()
                         .withEmbeds(
                           EmbedCreateSpec.builder()
@@ -181,6 +187,7 @@ class StartHandler implements Function<MemberJoinEvent, Publisher<Void>> {
                             ))
                             .build()
                         )
+                        .doOnError(t -> LOGGER.error("Error sending welcome message 2 to internalBridgeChannel", t))
                     )),
                   this.client.getChannelById(appealDiscussionThreadId)
                     .ofType(ThreadChannel.class)
@@ -193,6 +200,7 @@ class StartHandler implements Function<MemberJoinEvent, Publisher<Void>> {
                             .description(MentionUtil.forChannel(appealThreadId))
                             .build()
                         )
+                        .doOnError(t -> LOGGER.error("Error sending welcome message 1 to internalDiscussionChannel", t))
                         .flatMap(Message::pin),
                       this.punishmentOps.repository().findAllByGuildAndPunishedIdOrderByDateDesc(punishment.guild(), member.getId())
                         .filter(item -> item.type() != PunishmentModel.Type.NOTE)
@@ -206,6 +214,7 @@ class StartHandler implements Function<MemberJoinEvent, Publisher<Void>> {
                       appealDiscussionThreadChannel.createMessage()
                         .withComponents(Appeals.createVoteButtons(Map.of()))
                         .withEmbeds(Appeals.createVoteSummary(Map.of()))
+                        .doOnError(t -> LOGGER.error("Error sending welcome message 2 to internalDiscussionChannel", t))
                         .flatMap(voteMessage -> Mono.when(
                           voteMessage.pin(),
                           this.appeals.update(model._id(), (AppealModel.Partial.VoteMessage) () -> voteMessage.getId())
@@ -221,6 +230,7 @@ class StartHandler implements Function<MemberJoinEvent, Publisher<Void>> {
                       .build()
                       .asRequest()
                   )
+                    .doOnError(t -> LOGGER.error("Error sending welcome message 1 to internalBridgeChannel#parent", t))
                 );
               }));
           });
