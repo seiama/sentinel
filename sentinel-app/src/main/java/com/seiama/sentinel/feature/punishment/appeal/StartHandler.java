@@ -220,16 +220,19 @@ class StartHandler implements Function<MemberJoinEvent, Publisher<Void>> {
                           this.appeals.update(model._id(), (AppealModel.Partial.VoteMessage) () -> voteMessage.getId())
                         ))
                     )),
-                  rest.getChannelById(config.appealThreadsChannel()).createMessage(
-                    EmbedCreateSpec.builder()
-                      .color(Color.of(Appeals.NEW_APPEAL_NOTIFICATION_COLOR))
-                      .title("A new appeal has been created")
-                      .description(String.format("A new appeal has been created by %s.", UserDisplay.render(UserDisplay.Renderer.MENTION_WITH_TRAILING_BACKTICK_WRAPPED_USERNAME_AND_ID, new UserIdentity(member))))
-                      .addField("Appeal channel", MentionUtil.forChannel(appealThreadId), false)
-                      .addField("Discussion channel", MentionUtil.forChannel(Snowflake.of(appealDiscussionThread.id())), false)
-                      .build()
-                      .asRequest()
-                  )
+                  this.client.getChannelById(config.appealThreadsChannel())
+                    .cast(TextChannel.class)
+                    .flatMap(ch -> ch.createMessage()
+                      .withEmbeds(
+                        EmbedCreateSpec.builder()
+                          .color(Color.of(Appeals.NEW_APPEAL_NOTIFICATION_COLOR))
+                          .title("A new appeal has been created")
+                          .description(String.format("A new appeal has been created by %s.", UserDisplay.render(UserDisplay.Renderer.MENTION_WITH_TRAILING_BACKTICK_WRAPPED_USERNAME_AND_ID, new UserIdentity(member))))
+                          .addField("Appeal channel", MentionUtil.forChannel(appealThreadId), false)
+                          .addField("Discussion channel", MentionUtil.forChannel(Snowflake.of(appealDiscussionThread.id())), false)
+                          .build()
+                      )
+                    )
                     .doOnError(t -> LOGGER.error("Error sending welcome message 1 to internalBridgeChannel#parent", t))
                 );
               }));
