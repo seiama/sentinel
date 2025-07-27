@@ -159,7 +159,10 @@ class StartHandler implements Function<MemberJoinEvent, Publisher<Void>> {
 
                 return Mono.when(
                   rest.getChannelService().addThreadMember(appealThread.id().asLong(), relayUser.id().asLong()),
-                  channel.createMessage().withFlags(Message.Flag.IS_COMPONENTS_V2).withAllowedMentions(AllowedMentions.suppressAll()).withComponents(PunishmentDisplay.punishment(punishment, PunishmentDisplayStyle.APPEAL)),
+                  channel.createMessage()
+                    .withAllowedMentions(AllowedMentions.suppressAll())
+                    .withFlags(Message.Flag.IS_COMPONENTS_V2)
+                    .withComponents(PunishmentDisplay.punishment(punishment, PunishmentDisplayStyle.APPEAL)),
                   channel.createMessage(String.format("Hey, %s! This appeal is now active. Please explain why you think this punishment should be appealed.", member.getMention())),
                   this.client.getChannelById(appealThreadId)
                     .ofType(ThreadChannel.class)

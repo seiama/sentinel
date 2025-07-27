@@ -1,5 +1,6 @@
 package com.seiama.sentinel.common.model;
 
+import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -44,8 +45,17 @@ class DiscriminatorTest {
     final AtomicBoolean onUnmigrated = new AtomicBoolean();
     assertDoesNotThrow(() -> Discriminator.write(
       discriminator,
-      () -> onMigrated.setPlain(true),
-      va -> onUnmigrated.setPlain(true)
+      new Discriminator.Writer() {
+        @Override
+        public void writeNull() throws IOException {
+          onMigrated.setPlain(true);
+        }
+
+        @Override
+        public void write(final String value) throws IOException {
+          onUnmigrated.setPlain(true);
+        }
+      }
     ));
     assertEquals(migrated, onMigrated.get());
     assertEquals(unmigrated, onUnmigrated.get());

@@ -3,11 +3,10 @@ plugins {
 }
 
 dependencies {
-  api("com.discord4j:discord4j-core:3.3.0-20250506.155023-184")
+  api("org.jspecify:jspecify:1.0.0")
+  api("com.discord4j:discord4j-core:3.3.0-SNAPSHOT")
   api("com.fasterxml.jackson.core:jackson-databind:2.18.2")
   implementation("com.google.guava:guava:33.4.0-jre")
-  api("com.seiama:commons:1.0.0-SNAPSHOT")
-  api("com.seiama:functional:1.0.0-SNAPSHOT")
   api("io.projectreactor.netty:reactor-netty-core:1.2.1")
   api("jakarta.persistence:jakarta.persistence-api:3.2.0")
   implementation("net.time4j:time4j-base:5.9.4")

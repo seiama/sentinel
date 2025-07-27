@@ -1,6 +1,5 @@
 package com.seiama.sentinel.feature.logging;
 
-import com.seiama.common.Comparables;
 import com.seiama.sentinel.common.Listener;
 import com.seiama.sentinel.common.discord.Emojis;
 import com.seiama.sentinel.common.discord.UserDisplay;
@@ -51,7 +50,7 @@ public class Logging implements Listener {
                   .append(" joined - created ");
                 final Instant userCreation = member.getId().getTimestamp();
                 sb.append(TimestampFormat.RELATIVE_TIME.format(userCreation));
-                if (Comparables.lessThanOrEqual(Duration.between(userCreation, Instant.now()), NEW_THRESHOLD)) {
+                if (Duration.between(userCreation, Instant.now()).compareTo(NEW_THRESHOLD) <= 0) {
                   sb.append(' ').append(Emojis.DOT_ORANGE.asFormat());
                 }
                 return channel.createMessage(sb.toString());

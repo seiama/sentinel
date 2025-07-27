@@ -1,9 +1,8 @@
 package com.seiama.sentinel.common.model;
 
-import com.seiama.functional.function.exceptional.Consumer1E;
-import com.seiama.functional.function.exceptional.RunnableE;
 import discord4j.core.object.entity.User;
 import discord4j.discordjson.json.UserData;
+import java.io.IOException;
 import java.util.Objects;
 import org.jetbrains.annotations.VisibleForTesting;
 import org.jspecify.annotations.NullMarked;
@@ -46,16 +45,22 @@ public record Discriminator(
     }
   }
 
-  public static <E extends Throwable> void write(
+  public static void write(
     final @Nullable Discriminator discriminator,
-    final RunnableE<E> migrated,
-    final Consumer1E<String, E> unmigrated
-  ) throws E {
+    final Writer writer
+  ) throws IOException {
     final @Nullable String value = unbox(discriminator);
     if (value == null) {
-      migrated.run();
+      writer.writeNull();
     } else {
-      unmigrated.accept(value);
+      writer.write(value);
     }
+  }
+
+  @NullMarked
+  public interface Writer {
+    void writeNull() throws IOException;
+
+    void write(final String value) throws IOException;
   }
 }

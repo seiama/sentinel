@@ -1,6 +1,8 @@
 package com.seiama.sentinel.common.bson;
 
 import com.seiama.sentinel.common.model.Discriminator;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import org.bson.BsonInvalidOperationException;
 import org.bson.BsonReader;
 import org.bson.BsonType;
@@ -25,7 +27,21 @@ public final class DiscriminatorCodec implements Codec<Discriminator> {
 
   @Override
   public void encode(final BsonWriter writer, final Discriminator value, final EncoderContext encoderContext) {
-    Discriminator.write(value, writer::writeNull, writer::writeString);
+    try {
+      Discriminator.write(value, new Discriminator.Writer() {
+        @Override
+        public void writeNull() {
+          writer.writeNull();
+        }
+
+        @Override
+        public void write(final String value) {
+          writer.writeString(value);
+        }
+      });
+    } catch (final IOException e) {
+      throw new UncheckedIOException(e);
+    }
   }
 
   @Override

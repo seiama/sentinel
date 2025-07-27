@@ -1,6 +1,5 @@
 package com.seiama.sentinel.feature.punishment.appeal;
 
-import com.seiama.common.Comparables;
 import com.seiama.sentinel.common.Listener;
 import com.seiama.sentinel.common.discord.Discord;
 import com.seiama.sentinel.common.discord.Emojis;
@@ -128,7 +127,7 @@ public class Appeals implements Listener {
     final Flux<Void> voteTicker = Flux.interval(Duration.ofMinutes(1), VOTE_CHECK_INTERVAL, Schedulers.newSingle("Punishment Appeal Vote Result Ticker"))
       .flatMap(tick -> {
         return this.appeals.findAllByResultIsNull()
-          .filter(model -> Comparables.greaterThanOrEqual(Duration.between(model.date(), Instant.now()), VOTE_DURATION))
+          .filter(model -> Duration.between(model.date(), Instant.now()).compareTo(VOTE_DURATION) >= 0)
           .flatMap(model -> {
             final VoteFinisher finisher = new VoteFinisher(client, model);
             return finisher.create();
