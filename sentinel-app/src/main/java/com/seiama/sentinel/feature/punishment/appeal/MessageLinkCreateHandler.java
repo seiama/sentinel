@@ -14,6 +14,7 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.channel.Channel;
+import discord4j.core.object.entity.channel.MessageChannel;
 import discord4j.core.object.entity.channel.TextChannel;
 import discord4j.core.spec.MessageCreateSpec;
 import java.util.function.Function;
@@ -71,7 +72,7 @@ class MessageLinkCreateHandler implements Function<MessageCreateEvent, Publisher
         return model.get()
           .map(targetChannelId)
           .flatMap(channelId -> this.relayRest.getChannelById(channelId)
-            .cast(TextChannel.class)
+            .cast(MessageChannel.class)
             .flatMap(ch -> ch.createMessage(
               MessageCreateSpec.builder()
                 .embeds(Appeals.createMessage(message.getData(), message.getAuthor(), guild))
