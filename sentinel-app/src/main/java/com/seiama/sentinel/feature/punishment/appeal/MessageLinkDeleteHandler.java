@@ -1,8 +1,9 @@
 package com.seiama.sentinel.feature.punishment.appeal;
 
 import com.seiama.sentinel.model.TemporaryMessageLinkRepository;
+import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.message.MessageDeleteEvent;
-import discord4j.rest.RestClient;
+import discord4j.core.object.entity.Message;
 import java.util.function.Function;
 import org.jspecify.annotations.NullMarked;
 import org.reactivestreams.Publisher;
@@ -10,9 +11,9 @@ import org.reactivestreams.Publisher;
 @NullMarked
 class MessageLinkDeleteHandler implements Function<MessageDeleteEvent, Publisher<Object>> {
   private final TemporaryMessageLinkRepository messageLinks;
-  private final RestClient relayRest;
+  private final GatewayDiscordClient relayRest;
 
-  MessageLinkDeleteHandler(final TemporaryMessageLinkRepository messageLinks, final RestClient relayRest) {
+  MessageLinkDeleteHandler(final TemporaryMessageLinkRepository messageLinks, final GatewayDiscordClient relayRest) {
     this.messageLinks = messageLinks;
     this.relayRest = relayRest;
   }
@@ -21,7 +22,7 @@ class MessageLinkDeleteHandler implements Function<MessageDeleteEvent, Publisher
   public Publisher<Object> apply(final MessageDeleteEvent event) {
     return this.messageLinks.findBySourceMessageId(event.getMessageId().asLong())
       .flatMap(targetIds -> {
-        return this.relayRest.getChannelService().deleteMessage(targetIds.targetChannelId().asLong(), targetIds.targetMessageId().asLong(), null);
+        return this.relayRest.getMessageById(targetIds.targetChannelId(), targetIds.targetMessageId()).flatMap(Message::delete);
       });
   }
 }

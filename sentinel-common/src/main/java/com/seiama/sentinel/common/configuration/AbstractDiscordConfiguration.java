@@ -51,7 +51,7 @@ public abstract class AbstractDiscordConfiguration {
     return rest.getApplicationService();
   }
 
-  private GatewayDiscordClient client(final String token, final Consumer<GatewayBootstrap<GatewayOptions>> gateway) {
+  protected GatewayDiscordClient client(final String token, final Consumer<GatewayBootstrap<GatewayOptions>> gateway) {
     final GatewayBootstrap<GatewayOptions> bootstrap = DiscordClientBuilder.create(token)
       .setDefaultAllowedMentions(AllowedMentions.suppressEveryone())
       .setReactorResources(new ReactorResources(

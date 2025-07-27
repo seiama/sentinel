@@ -1,6 +1,7 @@
 package com.seiama.sentinel.configuration;
 
 import com.seiama.sentinel.common.configuration.AbstractDiscordConfiguration;
+import discord4j.core.GatewayDiscordClient;
 import discord4j.core.object.presence.ClientPresence;
 import discord4j.gateway.ShardInfo;
 import discord4j.gateway.intent.Intent;
@@ -36,6 +37,14 @@ public class DiscordConfiguration extends AbstractDiscordConfiguration {
   @Bean("factoidsRest")
   RestClient factoidsRest() {
     return RestClient.create(System.getenv(DISCORD_TOKEN_FACTOIDS));
+  }
+
+  @Bean("relayClient")
+  GatewayDiscordClient relayClient() {
+    return this.client(System.getenv(DISCORD_TOKEN_RELAY), bootstrap -> {
+      bootstrap.setEnabledIntents(this.intents());
+      bootstrap.setInitialPresence(this::presence);
+    });
   }
 
   @Bean("relayRest")

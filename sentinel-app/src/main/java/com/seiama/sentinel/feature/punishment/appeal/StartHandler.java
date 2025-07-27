@@ -28,7 +28,6 @@ import discord4j.core.util.MentionUtil;
 import discord4j.discordjson.json.ChannelData;
 import discord4j.discordjson.json.StartThreadWithoutMessageRequest;
 import discord4j.discordjson.json.UserData;
-import discord4j.rest.RestClient;
 import discord4j.rest.http.client.ClientException;
 import discord4j.rest.util.AllowedMentions;
 import discord4j.rest.util.Color;
@@ -54,14 +53,14 @@ class StartHandler implements Function<MemberJoinEvent, Publisher<Void>> {
   private final GuildRepository guilds;
   private final Punishments punishmentOps;
   private final AppealRepository appeals;
-  private final RestClient relayRest;
+  private final GatewayDiscordClient relayRest;
 
   StartHandler(
     final GatewayDiscordClient client,
     final GuildRepository guilds,
     final Punishments punishmentOps,
     final AppealRepository appeals,
-    final RestClient relayRest
+    final GatewayDiscordClient relayRest
   ) {
     this.client = client;
     this.guilds = guilds;

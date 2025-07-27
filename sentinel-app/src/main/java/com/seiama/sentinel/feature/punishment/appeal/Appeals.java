@@ -33,15 +33,12 @@ import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.User;
 import discord4j.core.object.entity.channel.GuildMessageChannel;
 import discord4j.core.object.entity.channel.ThreadChannel;
-import discord4j.core.spec.EmbedCreateFields;
 import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.core.util.MentionUtil;
-import discord4j.discordjson.json.EmbedData;
 import discord4j.discordjson.json.MessageData;
 import discord4j.discordjson.json.MessageEditRequest;
 import discord4j.discordjson.json.PermissionsEditRequest;
 import discord4j.discordjson.possible.Possible;
-import discord4j.rest.RestClient;
 import discord4j.rest.http.client.ClientException;
 import discord4j.rest.util.Color;
 import discord4j.rest.util.Permission;
@@ -102,7 +99,7 @@ public class Appeals implements Listener {
   private final Punishments punishmentOps;
   private final AppealRepository appeals;
   private final TemporaryMessageLinkRepository messageLinks;
-  private final RestClient relayRest;
+  private final GatewayDiscordClient relayRest;
 
   @Autowired
   public Appeals(
@@ -111,8 +108,8 @@ public class Appeals implements Listener {
     final Punishments punishmentOps,
     final AppealRepository appeals,
     final TemporaryMessageLinkRepository messageLinks,
-    @Qualifier("relayRest")
-    final RestClient relayRest
+    @Qualifier("relayClient")
+    final GatewayDiscordClient relayRest
   ) {
     this.guilds = guilds;
     this.punishments = punishments;
