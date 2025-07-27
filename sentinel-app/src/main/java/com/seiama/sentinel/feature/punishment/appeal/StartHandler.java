@@ -20,6 +20,7 @@ import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.guild.MemberJoinEvent;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Message;
+import discord4j.core.object.entity.User;
 import discord4j.core.object.entity.channel.Channel;
 import discord4j.core.object.entity.channel.TextChannel;
 import discord4j.core.object.entity.channel.ThreadChannel;
@@ -152,7 +153,7 @@ class StartHandler implements Function<MemberJoinEvent, Publisher<Void>> {
                 null
               ))))
               .map(tuple -> {
-                final Tuple4<TextChannel, ChannelData, ChannelData, UserData> t1 = tuple.getT1();
+                final Tuple4<TextChannel, ChannelData, ChannelData, User> t1 = tuple.getT1();
                 return Tuples.of(t1.getT1(), t1.getT2(), t1.getT3(), t1.getT4(), tuple.getT2());
               })
               .flatMap(TupleUtils.function((channel, appealThread, appealDiscussionThread, relayUser, model) -> {
@@ -160,7 +161,7 @@ class StartHandler implements Function<MemberJoinEvent, Publisher<Void>> {
                 final Snowflake appealDiscussionThreadId = Snowflake.of(appealDiscussionThread.id());
 
                 return Mono.when(
-                  rest.getChannelService().addThreadMember(appealThread.id().asLong(), relayUser.id().asLong()),
+                  rest.getChannelService().addThreadMember(appealThread.id().asLong(), relayUser.getId().asLong()),
                   channel.createMessage()
                     .withAllowedMentions(AllowedMentions.suppressAll())
                     .withFlags(Message.Flag.IS_COMPONENTS_V2)
