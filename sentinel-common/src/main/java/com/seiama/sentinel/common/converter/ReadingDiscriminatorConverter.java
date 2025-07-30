@@ -10,6 +10,6 @@ import org.springframework.data.convert.ReadingConverter;
 public class ReadingDiscriminatorConverter implements Converter<String, Discriminator> {
   @Override
   public Discriminator convert(final String source) {
-    return new Discriminator(source);
+    return Discriminator.of(source);
   }
 }

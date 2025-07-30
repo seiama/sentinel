@@ -126,7 +126,7 @@ public class ModMail implements Listener {
         type,
         user.getId(),
         user.getUsername(),
-        new Discriminator(user),
+        Discriminator.of(user),
         message != null ? message.getId() : null,
         content,
         null,

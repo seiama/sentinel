@@ -4,9 +4,44 @@ import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public enum PunishmentDisplayStyle {
-  FULL(true, true, true, true, true, true, true, true, true),
-  LOG(true, false, false, true, true, true, true, true, true),
+  FULL(
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+  ),
+  CREATED(
+    true,
+    false,
+    false,
+    false,
+    false,
+    false,
+    true,
+    true,
+    true,
+    false
+  ),
+  LOG(
+    true,
+    false,
+    false,
+    false,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+  ),
   APPEAL(
+    true,
     true,
     true,
     true,
@@ -41,6 +76,7 @@ public enum PunishmentDisplayStyle {
   public final boolean type;
   public final boolean stale;
   public final boolean expunged;
+  public final boolean permanent;
   public final boolean time;
   public final boolean issuedBy;
   public final boolean issuedTo;
@@ -48,10 +84,22 @@ public enum PunishmentDisplayStyle {
   public final boolean duration;
   public final boolean notified;
 
-  PunishmentDisplayStyle(final boolean type, final boolean stale, final boolean expunged, final boolean time, final boolean issuedBy, final boolean issuedTo, final boolean reason, final boolean duration, final boolean notified) {
+  PunishmentDisplayStyle(
+    final boolean type,
+    final boolean stale,
+    final boolean expunged,
+    final boolean permanent,
+    final boolean time,
+    final boolean issuedBy,
+    final boolean issuedTo,
+    final boolean reason,
+    final boolean duration,
+    final boolean notified
+  ) {
     this.type = type;
     this.stale = stale;
     this.expunged = expunged;
+    this.permanent = permanent;
     this.time = time;
     this.issuedBy = issuedBy;
     this.issuedTo = issuedTo;

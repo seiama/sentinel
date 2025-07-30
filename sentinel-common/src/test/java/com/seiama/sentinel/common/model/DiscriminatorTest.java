@@ -1,5 +1,6 @@
 package com.seiama.sentinel.common.model;
 
+import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -20,15 +21,15 @@ class DiscriminatorTest {
     "1000,false"
   }, nullValues = "null")
   void testMigrated(final String value, final boolean expected) {
-    final Discriminator discriminator = new Discriminator(value);
+    final Discriminator discriminator = Discriminator.of(value);
     assertEquals(expected, discriminator.migrated());
   }
 
   @Test
   void testUnbox() {
-    assertNull(Discriminator.unbox(new Discriminator((String) null)));
-    assertNull(Discriminator.unbox(new Discriminator(Discriminator.TEMPORARY_MIGRATION_MARKER)));
-    assertEquals("0001", Discriminator.unbox(new Discriminator("0001")));
+    assertNull(Discriminator.unbox(Discriminator.of((String) null)));
+    assertNull(Discriminator.unbox(Discriminator.of(Discriminator.TEMPORARY_MIGRATION_MARKER)));
+    assertEquals("0001", Discriminator.unbox(Discriminator.of("0001")));
   }
 
   @ParameterizedTest
@@ -39,13 +40,22 @@ class DiscriminatorTest {
     "1000,false,true"
   })
   void testWrite(final String value, final boolean migrated, final boolean unmigrated) {
-    final Discriminator discriminator = new Discriminator(value);
+    final Discriminator discriminator = Discriminator.of(value);
     final AtomicBoolean onMigrated = new AtomicBoolean();
     final AtomicBoolean onUnmigrated = new AtomicBoolean();
     assertDoesNotThrow(() -> Discriminator.write(
       discriminator,
-      () -> onMigrated.setPlain(true),
-      va -> onUnmigrated.setPlain(true)
+      new Discriminator.Writer() {
+        @Override
+        public void writeNull() throws IOException {
+          onMigrated.setPlain(true);
+        }
+
+        @Override
+        public void write(final String value) throws IOException {
+          onUnmigrated.setPlain(true);
+        }
+      }
     ));
     assertEquals(migrated, onMigrated.get());
     assertEquals(unmigrated, onUnmigrated.get());

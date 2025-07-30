@@ -19,7 +19,6 @@ import reactor.core.publisher.Mono;
 @Component
 @NullMarked
 public class ModMailCommand implements GuildCommand {
-  private static final String NAME = "modmail";
   private final ModMail modmail;
 
   @Autowired
@@ -29,13 +28,13 @@ public class ModMailCommand implements GuildCommand {
 
   @Override
   public String name() {
-    return NAME;
+    return "modmail";
   }
 
   @Override
   public ApplicationCommandRequest request() {
     return ApplicationCommandRequest.builder()
-      .name(NAME)
+      .name(this.name())
       .description("Sends a message privately to the moderators")
       .defaultPermission(false)
       .addOption(

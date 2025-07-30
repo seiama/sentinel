@@ -20,7 +20,6 @@ import reactor.core.publisher.Mono;
 @Component
 @NullMarked
 public final class QuickBanMessageCommand implements MessageCommand {
-  private static final String NAME = "Quick Ban";
   private final Punishments punishments;
 
   @Autowired
@@ -30,13 +29,13 @@ public final class QuickBanMessageCommand implements MessageCommand {
 
   @Override
   public String name() {
-    return NAME;
+    return "Quick Ban";
   }
 
   @Override
   public ApplicationCommandRequest request() {
     return ApplicationCommandRequest.builder()
-      .name(NAME)
+      .name(this.name())
       .type(ApplicationCommand.Type.MESSAGE.getValue())
       .defaultPermission(false)
       .build();
@@ -50,6 +49,6 @@ public final class QuickBanMessageCommand implements MessageCommand {
   @Override
   public Mono<?> on(final GatewayDiscordClient client, final MessageInteractionEvent event, final Guild guild) {
     final String reason = "Quick-banned for sending a message in " + MentionUtil.forChannel(event.getResolvedMessage().getChannelId());
-    return this.punishments.createUsing(new MessageInteractionPunishmentCreator(client, event, event.getResolvedMessage(), guild, PunishmentModel.Type.BAN, PunishmentAction.ban(true), reason));
+    return this.punishments.createUsing(new MessageInteractionPunishmentCreator(client, event, guild, PunishmentModel.Type.BAN, null, PunishmentAction.ban(true), event.getResolvedMessage(), reason));
   }
 }

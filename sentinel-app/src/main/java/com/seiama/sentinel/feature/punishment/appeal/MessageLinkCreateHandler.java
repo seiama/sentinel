@@ -9,11 +9,13 @@ import com.seiama.sentinel.common.model.GuildRepository;
 import com.seiama.sentinel.model.TemporaryMessageLink;
 import com.seiama.sentinel.model.TemporaryMessageLinkRepository;
 import discord4j.common.util.Snowflake;
+import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.channel.Channel;
-import discord4j.rest.RestClient;
+import discord4j.core.object.entity.channel.MessageChannel;
+import discord4j.core.spec.MessageCreateSpec;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import org.jspecify.annotations.NullMarked;
@@ -28,9 +30,9 @@ class MessageLinkCreateHandler implements Function<MessageCreateEvent, Publisher
   private final GuildRepository guilds;
   private final AppealRepository appeals;
   private final TemporaryMessageLinkRepository messageLinks;
-  private final RestClient relayRest;
+  private final GatewayDiscordClient relayRest;
 
-  MessageLinkCreateHandler(final GuildRepository guilds, final AppealRepository appeals, final TemporaryMessageLinkRepository messageLinks, final RestClient relayRest) {
+  MessageLinkCreateHandler(final GuildRepository guilds, final AppealRepository appeals, final TemporaryMessageLinkRepository messageLinks, final GatewayDiscordClient relayRest) {
     this.guilds = guilds;
     this.appeals = appeals;
     this.messageLinks = messageLinks;
@@ -68,13 +70,20 @@ class MessageLinkCreateHandler implements Function<MessageCreateEvent, Publisher
       .flatMap(TupleUtils.function((guild, model, targetChannelId) -> {
         return model.get()
           .map(targetChannelId)
-          .flatMap(channelId -> this.relayRest.getChannelById(channelId).createMessage(Appeals.createMessage(message.getData(), message.getAuthor(), guild)))
+          .flatMap(channelId -> this.relayRest.getChannelById(channelId)
+            .cast(MessageChannel.class)
+            .flatMap(ch -> ch.createMessage(
+              MessageCreateSpec.builder()
+                .embeds(Appeals.createMessage(message.getData(), message.getAuthor(), guild))
+                .build()
+            ))
+          )
           .flatMap(newMessage -> this.messageLinks.save(new TemporaryMessageLink(
             guild.getT2()._id(),
             message.getChannelId(),
             message.getId(),
-            Snowflake.of(newMessage.channelId()),
-            Snowflake.of(newMessage.id())
+            newMessage.getChannelId(),
+            newMessage.getId()
           )));
       }));
   }

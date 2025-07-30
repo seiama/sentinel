@@ -13,6 +13,7 @@ import com.seiama.sentinel.reactive.Reactive;
 import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.object.entity.Guild;
+import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.User;
 import discord4j.core.object.entity.channel.Channel;
 import discord4j.core.object.entity.channel.TextChannel;
@@ -21,6 +22,7 @@ import discord4j.discordjson.json.ThreadModifyRequest;
 import discord4j.rest.RestClient;
 import discord4j.rest.entity.RestChannel;
 import discord4j.rest.http.client.ClientException;
+import discord4j.rest.util.AllowedMentions;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -43,7 +45,10 @@ public final class Punishments {
   private final PunishmentRepository punishments;
 
   @Autowired
-  private Punishments(final GuildRepository guilds, final PunishmentRepository punishments) {
+  public Punishments(
+    final GuildRepository guilds,
+    final PunishmentRepository punishments
+  ) {
     this.guilds = guilds;
     this.punishments = punishments;
   }
@@ -137,7 +142,11 @@ public final class Punishments {
       .mapNotNull(guildModel -> guildModel.features().punishments().logChannel())
       .flatMap(guild::getChannelById)
       .cast(TextChannel.class)
-      .flatMap(channel -> freshPunishmentSource.get().flatMap(punishment -> channel.createMessage(PunishmentDisplay.punishment(punishment, PunishmentDisplayStyle.LOG))));
+      .flatMap(channel -> freshPunishmentSource.get().flatMap(punishment -> channel.createMessage()
+        .withAllowedMentions(AllowedMentions.suppressAll())
+        .withFlags(Message.Flag.IS_COMPONENTS_V2)
+        .withComponents(PunishmentDisplay.punishment(punishment, PunishmentDisplayStyle.LOG))
+      ));
   }
 
   private Mono<Void> applyPunishment(
@@ -160,10 +169,9 @@ public final class Punishments {
     };
   }
 
-  boolean shouldBeAssumedAsAutomatic(final Optional<User> punisher) {
+  static boolean shouldBeAssumedAsAutomatic(final Optional<User> punisher) {
     return punisher
-      .map(User::getId)
-      .map(SHOULD_BE_ASSUMED_AS_AUTOMATIC_BY::contains)
+      .map(user -> user.isBot() || SHOULD_BE_ASSUMED_AS_AUTOMATIC_BY.contains(user.getId()))
       .orElse(false);
   }
 

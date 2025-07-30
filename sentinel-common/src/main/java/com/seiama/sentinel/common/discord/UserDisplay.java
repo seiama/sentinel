@@ -27,7 +27,6 @@ public interface UserDisplay {
       }
       return sb.toString();
     };
-    Renderer MENTION = identity -> MentionUtil.forUser(identity.id());
     Renderer MENTION_WITH_TRAILING_BACKTICK_WRAPPED_USERNAME_AND_ID = identity -> {
       final Snowflake id = identity.id();
       final @Nullable String username = identity.username();

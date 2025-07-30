@@ -99,11 +99,8 @@ class Commands implements Listener {
               });
           }),
           Mono.defer(() -> {
-            return event.getInteraction().getGuild()
-              .flatMap(guild -> {
-                return Mono.justOrEmpty(this.globalCommandsByName.get(event.getCommandName()))
-                  .flatMap(command -> command.on(client, event));
-              });
+            return Mono.justOrEmpty(this.globalCommandsByName.get(event.getCommandName()))
+              .flatMap(command -> command.on(client, event));
           })
         );
       }),

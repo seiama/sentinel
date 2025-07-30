@@ -11,6 +11,7 @@ import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.interaction.MessageInteractionEvent;
 import discord4j.core.object.command.ApplicationCommand;
 import discord4j.core.object.entity.Guild;
+import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.User;
 import discord4j.discordjson.json.ApplicationCommandRequest;
 import org.jspecify.annotations.NullMarked;
@@ -21,7 +22,6 @@ import reactor.core.publisher.Mono;
 @Component
 @NullMarked
 public final class BanMessageCommand implements MessageCommand {
-  private static final String NAME = "Ban";
   private final Punishments punishments;
 
   @Autowired
@@ -31,13 +31,13 @@ public final class BanMessageCommand implements MessageCommand {
 
   @Override
   public String name() {
-    return NAME;
+    return "Ban";
   }
 
   @Override
   public ApplicationCommandRequest request() {
     return ApplicationCommandRequest.builder()
-      .name(NAME)
+      .name(this.name())
       .type(ApplicationCommand.Type.MESSAGE.getValue())
       .defaultPermission(false)
       .build();
@@ -50,9 +50,23 @@ public final class BanMessageCommand implements MessageCommand {
 
   @Override
   public Mono<?> on(final GatewayDiscordClient client, final MessageInteractionEvent event, final Guild guild) {
-    final String modalTitle = "Ban" + event.getResolvedMessage().getAuthor().map(User::getTag).map(" "::concat).orElse("");
-    return Modals.presentAndCaptureSingleTextInput(event, modalTitle, "Reason", false, (modal, reason) -> {
-      return this.punishments.createUsing(new MessageInteractionPunishmentCreator(client, modal, event.getResolvedMessage(), guild, PunishmentModel.Type.BAN, PunishmentAction.ban(true), reason.orElse(null)));
-    }, null);
+    final Message message = event.getResolvedMessage();
+    return Modals.presentAndCaptureSingleTextInput(
+      event,
+      "Ban" + message.getAuthor().map(User::getTag).map(" "::concat).orElse(""),
+      "Reason",
+      false,
+      (modal, reason) -> this.punishments.createUsing(new MessageInteractionPunishmentCreator(
+        client,
+        modal,
+        guild,
+        PunishmentModel.Type.BAN,
+        null,
+        PunishmentAction.ban(true),
+        message,
+        reason.orElse(null)
+      )),
+      null
+    );
   }
 }

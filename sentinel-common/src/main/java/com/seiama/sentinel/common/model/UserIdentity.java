@@ -24,7 +24,7 @@ public record UserIdentity(
     this(
       user.getId(),
       user.getUsername(),
-      new Discriminator(user)
+      Discriminator.of(user)
     );
   }
 
@@ -32,7 +32,7 @@ public record UserIdentity(
     this(
       Snowflake.of(user.id()),
       user.username(),
-      new Discriminator(user)
+      Discriminator.of(user)
     );
   }
 }

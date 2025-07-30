@@ -26,8 +26,6 @@ import reactor.function.TupleUtils;
 @Component
 @NullMarked
 public final class AppealCommand implements GuildCommand {
-  private static final String NAME = "appeal";
-
   private static final String ACCEPT = "accept";
   private static final String DENY = "deny";
 
@@ -42,13 +40,13 @@ public final class AppealCommand implements GuildCommand {
 
   @Override
   public String name() {
-    return NAME;
+    return "appeal";
   }
 
   @Override
   public ApplicationCommandRequest request() {
     return ApplicationCommandRequest.builder()
-      .name(NAME)
+      .name(this.name())
       .description("Manage punishment appeals")
       .defaultPermission(false)
       .addOption(

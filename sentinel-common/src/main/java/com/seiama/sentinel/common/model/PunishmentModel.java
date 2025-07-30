@@ -14,6 +14,7 @@ import com.seiama.sentinel.common.jackson.ObjectIdExtendedJsonSerializer;
 import discord4j.common.util.Snowflake;
 import discord4j.core.object.emoji.Emoji;
 import discord4j.core.object.entity.User;
+import discord4j.rest.util.Color;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
@@ -52,7 +53,7 @@ public interface PunishmentModel {
         return of(
           by.map(User::getId),
           by.map(User::getUsername),
-          by.map(Discriminator::new),
+          by.map(Discriminator::of),
           reason,
           automatic,
           appeal
@@ -154,6 +155,7 @@ public interface PunishmentModel {
     @Nullable Duration duration,
     // an automatic punishment is one created without any intervention from a moderator
     @Nullable Boolean automatic,
+    @Nullable Boolean permanent,
     @Nullable Boolean expunged,
     // a stale punishment is no longer considered active; if a punishment record banning a user
     // is inserted and that record is then marked as stale, then the user is no longer considered banned
@@ -185,8 +187,8 @@ public interface PunishmentModel {
       final Snowflake guild,
       final Type type,
       final Instant date,
-      final Optional<User> punisher,
-      final User punished,
+      final Optional<UserIdentity> punisher,
+      final UserIdentity punished,
       final @Nullable String reason,
       final @Nullable Duration duration,
       final boolean automatic
@@ -197,20 +199,21 @@ public interface PunishmentModel {
         type,
         date,
         punisher
-          .map(User::getId)
+          .map(UserIdentity::id)
           .orElse(null),
         punisher
-          .map(User::getUsername)
+          .map(UserIdentity::username)
           .orElse(null),
         punisher
-          .map(Discriminator::new)
+          .map(UserIdentity::discriminator)
           .orElse(null),
-        punished.getId(),
-        punished.getUsername(),
-        new Discriminator(punished),
+        punished.id(),
+        punished.username(),
+        punished.discriminator(),
         reason,
         duration,
         automatic,
+        false,
         false,
         false,
         null,
@@ -240,13 +243,13 @@ public interface PunishmentModel {
     NOTE(SharedConstants.COLOR_BLUE, false, false, new Strings("note", "noted"), Emojis.DOT_BLUE),
     WARN(SharedConstants.COLOR_ORANGE, true, false, new Strings("warn", "warned"), Emojis.DOT_ORANGE);
 
-    private final int color;
+    private final Color color;
     private final boolean notification;
     private final boolean terminal;
     private final Strings strings;
     private final Emoji emoji;
 
-    Type(final int color, final boolean notification, final boolean terminal, final Strings strings, final Emoji emoji) {
+    Type(final Color color, final boolean notification, final boolean terminal, final Strings strings, final Emoji emoji) {
       this.color = color;
       this.notification = notification;
       this.terminal = terminal;
@@ -254,7 +257,7 @@ public interface PunishmentModel {
       this.emoji = emoji;
     }
 
-    public int color() {
+    public Color color() {
       return this.color;
     }
 
