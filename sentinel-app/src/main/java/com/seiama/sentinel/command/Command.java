@@ -2,6 +2,7 @@ package com.seiama.sentinel.command;
 
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.core.object.command.ApplicationCommandInteractionOption;
+import discord4j.core.object.command.ApplicationCommandOption;
 import discord4j.discordjson.json.ApplicationCommandRequest;
 import java.util.Map;
 import java.util.Objects;
@@ -19,6 +20,24 @@ public interface Command {
       return executables.entrySet()
         .stream()
         .map(entry -> event.getOption(entry.getKey()).map(option -> entry.getValue().execute(option)).orElse(null))
+        .filter(Objects::nonNull)
+        .findFirst()
+        .orElse(Mono.empty());
+    });
+  }
+
+  /**
+   * Map a {@link ApplicationCommandOption.Type#SUB_COMMAND_GROUP} with the executable options.
+   *
+   * @param subCommandOption the subcommand option
+   * @param executables the map with options to execute
+   * @return a Mono
+   */
+  static Mono<?> executeOne(final ApplicationCommandInteractionOption subCommandOption, final Map<String, Executable> executables) {
+    return Mono.defer(() -> {
+      return executables.entrySet()
+        .stream()
+        .map(entry -> subCommandOption.getOption(entry.getKey()).map(option -> entry.getValue().execute(option)).orElse(null))
         .filter(Objects::nonNull)
         .findFirst()
         .orElse(Mono.empty());
