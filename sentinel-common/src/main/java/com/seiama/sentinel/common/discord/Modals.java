@@ -3,7 +3,7 @@ package com.seiama.sentinel.common.discord;
 import com.seiama.sentinel.reactive.Reactive;
 import discord4j.core.event.domain.interaction.DeferrableInteractionEvent;
 import discord4j.core.event.domain.interaction.ModalSubmitInteractionEvent;
-import discord4j.core.object.component.ActionRow;
+import discord4j.core.object.component.Label;
 import discord4j.core.object.component.TextInput;
 import java.time.Duration;
 import java.util.List;
@@ -33,9 +33,9 @@ public final class Modals {
     final String modalId = createRandomId();
     final String inputId = createRandomId();
     return event
-      .presentModal(modalTitle, modalId, List.of(ActionRow.of(
-        TextInput.paragraph(inputId, inputTitle).required(inputRequired)
-      )))
+      .presentModal(modalTitle, modalId, List.of(
+        Label.of(inputTitle, TextInput.paragraph(inputId).required(inputRequired))
+      ))
       .then(
         event.getClient()
           .on(ModalSubmitInteractionEvent.class, modal -> {

@@ -46,7 +46,7 @@ public record Component(
       .components(Possible.ofNullable(this.components).map(list -> list.stream().map(Component::unwrap).toList()))
       .accessory(Possible.ofNullable(this.accessory).map(Component::unwrap))
       .style(Possible.ofNullable(this.style))
-      .label(Possible.ofNullable(this.label))
+      .label(Possible.ofNullable(Optional.ofNullable(this.label)))
       .emoji(Possible.ofNullable(this.emoji).map(emojiComponent -> emojiComponent.unwrap().asEmojiData()))
       .customId(Possible.ofNullable(this.customId))
       .url(Possible.ofNullable(this.url))

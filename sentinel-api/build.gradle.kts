@@ -11,7 +11,7 @@ tasks.named<Jar>(JavaPlugin.JAR_TASK_NAME) {
 
 dependencies {
   implementation(project(":sentinel-common"))
-  implementation("com.discord4j:discord4j-core:3.3.0-SNAPSHOT")
+  implementation("com.discord4j:discord4j-core:3.3.0")
   implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
   implementation("org.springframework.boot:spring-boot-starter-webflux")
 }
