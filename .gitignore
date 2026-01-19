@@ -17,3 +17,5 @@
 /*.iml
 /.env
 /.env.*
+/sentinel-semi-persistent.mv.db
+/sentinel-semi-persistent.trace.db
