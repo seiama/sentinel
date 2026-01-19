@@ -1,7 +1,6 @@
 package com.seiama.sentinel.feature.application;
 
 import com.seiama.sentinel.common.Listener;
-import com.seiama.sentinel.common.model.AppealModel;
 import com.seiama.sentinel.common.model.ApplicationModel;
 import com.seiama.sentinel.common.model.ApplicationRepository;
 import com.seiama.sentinel.common.model.GuildRepository;
@@ -17,16 +16,15 @@ import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.core.spec.InteractionPresentModalSpec;
 import discord4j.core.spec.PollCreateSpec;
 import discord4j.core.util.MentionUtil;
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.List;
+import java.util.regex.Pattern;
 import org.bson.types.ObjectId;
 import org.jspecify.annotations.NullMarked;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
-
-import java.time.Instant;
-import java.util.HashMap;
-import java.util.List;
-import java.util.regex.Pattern;
 
 @Component
 @NullMarked
@@ -43,7 +41,7 @@ public class ApplicationListener implements Listener {
   private final ApplicationRepository applications;
 
   @Autowired
-  public ApplicationListener(GuildRepository guilds, ApplicationRepository applications) {
+  public ApplicationListener(final GuildRepository guilds, final ApplicationRepository applications) {
     this.guilds = guilds;
     this.applications = applications;
   }
@@ -53,10 +51,9 @@ public class ApplicationListener implements Listener {
     return Mono.when(
       client.on(ButtonInteractionEvent.class, event -> {
         if (!event.getCustomId().equals(OPEN_MODAL_BUTTON_ID)) {
-
           return Mono.empty();
         }
-        var modal = InteractionPresentModalSpec.builder()
+        final InteractionPresentModalSpec modal = InteractionPresentModalSpec.builder()
           .title("Apply for the contributor role")
           .customId(MODAL_ID)
           .addAllComponents(List.of(
@@ -87,7 +84,7 @@ public class ApplicationListener implements Listener {
         if (event.getCustomId().equals(MODAL_ID)) {
           String githubProfile = null;
           String lastPr = null;
-          for (TextInput input : event.getComponents(TextInput.class)) {
+          for (final TextInput input : event.getComponents(TextInput.class)) {
             if (input.getCustomId().equals(GITHUB_PROFILE_INPUT_ID)) {
               githubProfile = input.getValue().orElse(null);
             } else if (input.getCustomId().equals("last_pr_input")) {
@@ -125,7 +122,7 @@ public class ApplicationListener implements Listener {
                           .addAllAnswers(ApplicationModel.Vote.all().map(s -> PollAnswer.of(s.label() /*, s.emoji() */)).toList())
                           .duration(48)
                           .build())
-                        .flatMap((poll) -> this.applications.insert(new ApplicationModel.Complete(
+                        .flatMap(poll -> this.applications.insert(new ApplicationModel.Complete(
                           ObjectId.get(),
                           guild.getId(),
                           Instant.now(),
@@ -151,8 +148,7 @@ public class ApplicationListener implements Listener {
         return event.getAnswer().then();
       })
 
-      // TODO if poll ended grant role
-//      client.on(PollEnded?!)
+    // TODO if poll ended grant role - client.on(PollEnded?!)
     );
   }
 }
