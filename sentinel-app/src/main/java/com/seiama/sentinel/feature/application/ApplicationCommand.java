@@ -27,7 +27,7 @@ public final class ApplicationCommand implements GuildCommand {
   private final GuildRepository guilds;
 
   @Autowired
-  public ApplicationCommand(GuildRepository guilds) {
+  public ApplicationCommand(final GuildRepository guilds) {
     this.guilds = guilds;
   }
 
