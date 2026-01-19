@@ -13,18 +13,16 @@ import com.seiama.sentinel.common.jackson.InstantExtendedJsonSerializer;
 import discord4j.common.util.Snowflake;
 import discord4j.core.object.emoji.Emoji;
 import discord4j.rest.util.Color;
-import org.bson.types.ObjectId;
-import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
-import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.query.Update;
-
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
-
+import org.bson.types.ObjectId;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.query.Update;
 
 @NullMarked
 public interface ApplicationModel {
@@ -88,7 +86,7 @@ public interface ApplicationModel {
   enum Vote {
     YES(false, Emojis.YES, "Yes"),
     NO(false, Emojis.NO, "No"),
-    FAST_TRACK(true, Emojis.HAMMER,"Veto (Leadership Only)");
+    FAST_TRACK(true, Emojis.HAMMER, "Veto (Leadership Only)");
 
     static final Vote[] VALUES = values();
 
