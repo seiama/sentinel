@@ -3,7 +3,6 @@ package com.seiama.sentinel.command;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import com.seiama.sentinel.common.Listener;
-import com.seiama.sentinel.common.model.GuildModel;
 import com.seiama.sentinel.common.model.GuildRepository;
 import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
@@ -12,7 +11,6 @@ import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.core.event.domain.interaction.MessageInteractionEvent;
 import discord4j.discordjson.json.ApplicationCommandRequest;
 import discord4j.rest.service.ApplicationService;
-
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -20,9 +18,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
-
-import jakarta.annotation.PostConstruct;
-import org.bson.types.ObjectId;
 import org.jspecify.annotations.NullMarked;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
