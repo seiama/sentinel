@@ -251,33 +251,12 @@ public final class FactoidCommand implements GuildCommand {
             .flatMap(name -> {
               return this.factoids.findByGuildAndName(guild.getId(), name)
                 .switchIfEmpty(event.editReply().withContentOrNull("%s Could not find a factoid with name `%s`.".formatted(Emojis.NO.asFormat(), name)).then(Mono.empty()))
-                .flatMap(model -> Mono.usingWhen(
-                  Mono.fromCallable(() -> CharSource.wrap(this.mapper.copy().setSerializationInclusion(JsonInclude.Include.NON_NULL).writeValueAsString(model.response())).asByteSource(StandardCharsets.UTF_8).openStream()),
-                  responseStream -> {
-                    final MessageCreateFields.File file = MessageCreateFields.File.of(model.name() + ".json", responseStream);
+                .flatMap(model -> Mono.using(
+                  () -> CharSource.wrap(this.mapper.copy().setSerializationInclusion(JsonInclude.Include.NON_NULL).writeValueAsString(model.response())).asByteSource(StandardCharsets.UTF_8).openStream(),
+                  inputStream -> {
+                    final MessageCreateFields.File file = MessageCreateFields.File.of(model.name() + ".json", inputStream);
                     return event.editReply().withFiles(file).withComponents(Container.of(File.of(UnfurledMediaItem.of(file))));
-                  },
-                  responseStream -> Mono.fromRunnable(() -> {
-                    try {
-                      responseStream.close();
-                    } catch (final IOException e) {
-                      throw new RuntimeException(e);
-                    }
-                  }),
-                  (responseStream, throwable) -> Mono.fromRunnable(() -> {
-                    try {
-                      responseStream.close();
-                    } catch (final IOException e) {
-                      throw new RuntimeException(e);
-                    }
-                  }),
-                  responseStream -> Mono.fromRunnable(() -> {
-                    try {
-                      responseStream.close();
-                    } catch (final IOException e) {
-                      throw new RuntimeException(e);
-                    }
-                  })
+                  }
                 ).onErrorResume(t -> {
                   t.printStackTrace();
                   return event.editReply().withContentOrNull("%s Could not dump JSON for `%s`.".formatted(Emojis.NO.asFormat(), model.name()));
