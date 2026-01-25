@@ -19,6 +19,8 @@ import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.core.object.command.ApplicationCommandInteractionOption;
 import discord4j.core.object.command.ApplicationCommandInteractionOptionValue;
 import discord4j.core.object.command.ApplicationCommandOption;
+import discord4j.core.object.component.ActionRow;
+import discord4j.core.object.component.Button;
 import discord4j.core.object.component.Container;
 import discord4j.core.object.component.File;
 import discord4j.core.object.component.UnfurledMediaItem;
@@ -251,16 +253,37 @@ public final class FactoidCommand implements GuildCommand {
             .flatMap(name -> {
               return this.factoids.findByGuildAndName(guild.getId(), name)
                 .switchIfEmpty(event.editReply().withContentOrNull("%s Could not find a factoid with name `%s`.".formatted(Emojis.NO.asFormat(), name)).then(Mono.empty()))
-                .flatMap(model -> Mono.using(
-                  () -> CharSource.wrap(this.mapper.copy().setSerializationInclusion(JsonInclude.Include.NON_NULL).writeValueAsString(model.response())).asByteSource(StandardCharsets.UTF_8).openStream(),
-                  inputStream -> {
-                    final MessageCreateFields.File file = MessageCreateFields.File.of(model.name() + ".json", inputStream);
-                    return event.editReply().withFiles(file).withComponents(Container.of(File.of(UnfurledMediaItem.of(file))));
+                .flatMap(model -> {
+                  final String json;
+                  try {
+                    json = this.mapper.copy().setSerializationInclusion(JsonInclude.Include.NON_NULL).writeValueAsString(model.response());
+                  } catch (final IOException e) {
+                    return Mono.error(e);
                   }
-                ).onErrorResume(t -> {
+                  return Mono.fromCallable(() -> this.http.post()
+                    .uri("https://api.pastes.dev/post")
+                    .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                    .body(json)
+                    .retrieve()
+                    .body(Map.class))
+                    .flatMap(response -> {
+                      final String key = (String) response.get("key");
+                      final String url = "https://pastes.dev/" + key;
+                      return Mono.using(
+                        () -> CharSource.wrap(json).asByteSource(StandardCharsets.UTF_8).openStream(),
+                        inputStream -> {
+                          final MessageCreateFields.File file = MessageCreateFields.File.of(model.name() + ".json", inputStream);
+                          return event.editReply()
+                            .withFiles(file)
+                            .withComponents(Container.of(File.of(UnfurledMediaItem.of(file)), ActionRow.of(Button.link(url, "See Pastes.dev"))));
+                        }
+                      );
+                    });
+                })
+                .onErrorResume(t -> {
                   t.printStackTrace();
-                  return event.editReply().withContentOrNull("%s Could not dump JSON for `%s`.".formatted(Emojis.NO.asFormat(), model.name()));
-                }));
+                  return event.editReply().withContentOrNull("%s Could not dump JSON for `%s`.".formatted(Emojis.NO.asFormat(), name));
+                });
             });
         }
       )));
