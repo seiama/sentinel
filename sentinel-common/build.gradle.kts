@@ -4,7 +4,7 @@ plugins {
 
 dependencies {
   api("org.jspecify:jspecify:1.0.0")
-  api("com.discord4j:discord4j-core:3.3.0")
+  api("com.discord4j:discord4j-core:3.3.1")
   api("com.fasterxml.jackson.core:jackson-databind:2.18.2")
   implementation("com.google.guava:guava:33.4.0-jre")
   api("io.projectreactor.netty:reactor-netty-core:1.2.1")
