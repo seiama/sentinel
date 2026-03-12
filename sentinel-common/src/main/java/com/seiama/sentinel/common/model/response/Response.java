@@ -7,8 +7,10 @@ import discord4j.core.object.component.ActionRow;
 import discord4j.core.object.component.LayoutComponent;
 import discord4j.core.object.component.MessageComponent;
 import discord4j.core.object.component.TopLevelMessageComponent;
+import discord4j.core.object.entity.Message;
 import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.core.spec.InteractionApplicationCommandCallbackReplyMono;
+import discord4j.core.spec.MessageCreateMono;
 import discord4j.discordjson.possible.Possible;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +29,16 @@ public record Response(
   public InteractionApplicationCommandCallbackReplyMono decorate(final InteractionApplicationCommandCallbackReplyMono mono) {
     if (this.useComponentsV2()) {
       return mono.withComponents(this.wrapComponents());
+    }
+    return mono
+      .withContent(this.wrapContent())
+      .withEmbeds(this.wrapEmbeds())
+      .withComponents(this.wrapComponents());
+  }
+
+  public MessageCreateMono decorate(final MessageCreateMono mono) {
+    if (this.useComponentsV2()) {
+      return mono.withComponents(this.wrapComponents()).withFlags(Message.Flag.IS_COMPONENTS_V2);
     }
     return mono
       .withContent(this.wrapContent())

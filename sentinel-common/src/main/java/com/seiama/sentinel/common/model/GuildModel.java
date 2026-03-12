@@ -1,9 +1,12 @@
 package com.seiama.sentinel.common.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.seiama.sentinel.common.IsEnabled;
 import com.seiama.sentinel.common.annotation.MongoPrimaryId;
+import com.seiama.sentinel.common.model.response.Response;
 import discord4j.common.util.Snowflake;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +42,7 @@ public interface GuildModel {
       Punishments punishments,
       Factoids factoids,
       ModMail modmail,
+      Exploits exploits,
       Logging logging
     ) {
       @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
@@ -80,6 +84,37 @@ public interface GuildModel {
         Snowflake notificationChannel,
         Snowflake threadChannel
       ) implements IsEnabled {
+      }
+
+      @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+      public record Exploits(
+        boolean enabled,
+        Response initialResponse,
+        Snowflake notificationChannel,
+        Snowflake threadChannel
+      ) implements IsEnabled {
+        public interface Partial extends AbstractPartial {
+          @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+          interface SetNotificationChannel extends Exploits.Partial {
+            @JsonInclude(JsonInclude.Include.NON_NULL)
+            @JsonProperty
+            @Nullable Snowflake notificationChannel();
+          }
+
+          @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+          interface SetThreadChannel extends Exploits.Partial {
+            @JsonInclude(JsonInclude.Include.NON_NULL)
+            @JsonProperty
+            @Nullable Snowflake threadChannel();
+          }
+
+          @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+          interface SetInitialResponse extends Exploits.Partial {
+            @JsonInclude(JsonInclude.Include.NON_NULL)
+            @JsonProperty
+            @Nullable Response initialResponse();
+          }
+        }
       }
 
       @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
