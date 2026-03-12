@@ -14,7 +14,7 @@ indra {
   mitLicense()
 
   javaVersions {
-    target(17)
+    target(21)
   }
 }
 
@@ -30,6 +30,7 @@ spotless {
 repositories {
   mavenCentral()
   maven("https://central.sonatype.com/repository/maven-snapshots")
+  maven("https://jitpack.io")
 }
 
 dependencies {

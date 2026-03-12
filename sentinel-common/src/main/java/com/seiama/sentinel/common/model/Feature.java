@@ -11,6 +11,7 @@ public record Feature(
   public static final Feature APPEALS = new Feature(model -> model.featureEnabled(features -> features.punishments().appeals()));
   public static final Feature MODMAIL = new Feature(model -> model.featureEnabled(GuildModel.Complete.Features::modmail));
   public static final Feature FACTOIDS = new Feature(model -> model.featureEnabled(GuildModel.Complete.Features::factoids));
+  public static final Feature JAVADOCS = new Feature(model -> model.featureEnabled(GuildModel.Complete.Features::javadocs));
   public static final Feature LOGGING = new Feature(model -> model.featureEnabled(GuildModel.Complete.Features::logging));
 
   public boolean enabledForGuild(final GuildModel.Complete model) {
