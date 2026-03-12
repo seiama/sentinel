@@ -9,6 +9,7 @@ import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.interaction.ChatInputAutoCompleteEvent;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.core.event.domain.interaction.MessageInteractionEvent;
+import discord4j.core.event.domain.interaction.UserInteractionEvent;
 import discord4j.discordjson.json.ApplicationCommandRequest;
 import discord4j.rest.service.ApplicationService;
 import java.util.Collection;
@@ -34,18 +35,21 @@ class Commands implements Listener {
   private final Set<GlobalCommand> globalCommands;
   private final Set<GuildCommand> guildCommands;
   private final Set<MessageCommand> messageCommands;
+  private final Set<UserCommand> userCommands;
   private final Map<String, GlobalCommand> globalCommandsByName = new HashMap<>();
   private final Table<Snowflake, String, GuildCommand> guildCommandsByGuildAndName = HashBasedTable.create();
   private final Table<Snowflake, String, MessageCommand> messageCommandsByGuildAndName = HashBasedTable.create();
+  private final Table<Snowflake, String, UserCommand> userCommandsByGuildAndName = HashBasedTable.create();
 
   @Autowired
-  Commands(final @Qualifier("applicationId") long applicationId, final GuildRepository guilds, final ApplicationService applicationService, final Set<GlobalCommand> globalCommands, final Set<GuildCommand> guildCommands, final Set<MessageCommand> messageCommands) {
+  Commands(final @Qualifier("applicationId") long applicationId, final GuildRepository guilds, final ApplicationService applicationService, final Set<GlobalCommand> globalCommands, final Set<GuildCommand> guildCommands, final Set<MessageCommand> messageCommands, final Set<UserCommand> userCommands) {
     this.applicationId = applicationId;
     this.guilds = guilds;
     this.applicationService = applicationService;
     this.globalCommands = globalCommands;
     this.guildCommands = guildCommands;
     this.messageCommands = messageCommands;
+    this.userCommands = userCommands;
   }
 
   @Override
@@ -73,9 +77,16 @@ class Commands implements Listener {
             messages.add(command);
           }
         }
+        final Set<UserCommand> users = new HashSet<>();
+        for (final UserCommand command : this.userCommands) {
+          if (command.feature().enabledForGuild(model)) {
+            this.userCommandsByGuildAndName.put(model.guild(), command.name(), command);
+            users.add(command);
+          }
+        }
         return new GuildRequests(
           model.guild().asLong(),
-          Stream.of(commands, messages)
+          Stream.of(commands, messages, users)
             .flatMap(Collection::stream)
             .map(Command::request)
             .toList()
@@ -109,6 +120,15 @@ class Commands implements Listener {
           return event.getInteraction().getGuild()
             .flatMap(guild -> {
               return Mono.justOrEmpty(this.messageCommandsByGuildAndName.get(guild.getId(), event.getCommandName()))
+                .flatMap(command -> command.on(client, event, guild));
+            });
+        });
+      }),
+      client.on(UserInteractionEvent.class, event -> {
+        return Mono.defer(() -> {
+          return event.getInteraction().getGuild()
+            .flatMap(guild -> {
+              return Mono.justOrEmpty(this.userCommandsByGuildAndName.get(guild.getId(), event.getCommandName()))
                 .flatMap(command -> command.on(client, event, guild));
             });
         });
