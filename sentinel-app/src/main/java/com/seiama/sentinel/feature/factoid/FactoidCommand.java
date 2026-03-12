@@ -1,6 +1,8 @@
 package com.seiama.sentinel.feature.factoid;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.io.CharSource;
 import com.seiama.sentinel.command.Command;
 import com.seiama.sentinel.command.GuildCommand;
 import com.seiama.sentinel.command.OptionNames;
@@ -17,14 +19,22 @@ import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.core.object.command.ApplicationCommandInteractionOption;
 import discord4j.core.object.command.ApplicationCommandInteractionOptionValue;
 import discord4j.core.object.command.ApplicationCommandOption;
+import discord4j.core.object.component.ActionRow;
+import discord4j.core.object.component.Button;
+import discord4j.core.object.component.Container;
+import discord4j.core.object.component.File;
+import discord4j.core.object.component.UnfurledMediaItem;
 import discord4j.core.object.entity.Guild;
+import discord4j.core.spec.MessageCreateFields;
 import discord4j.discordjson.json.ApplicationCommandOptionChoiceData;
 import discord4j.discordjson.json.ApplicationCommandOptionData;
 import discord4j.discordjson.json.ApplicationCommandRequest;
 import discord4j.rest.RestClient;
 import discord4j.rest.service.ApplicationService;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -44,6 +54,7 @@ public final class FactoidCommand implements GuildCommand {
 
   private static final String SET = "set";
   private static final String REMOVE = "remove";
+  private static final String DUMP_JSON = "dump-json";
 
   private final FactoidRepository factoids;
   private final RestClient rest;
@@ -118,6 +129,22 @@ public final class FactoidCommand implements GuildCommand {
             ApplicationCommandOptionData.builder()
               .name(OptionNames.NAME)
               .description("The name of the factoid to remove")
+              .required(true)
+              .type(ApplicationCommandOption.Type.STRING.getValue())
+              .autocomplete(true)
+              .build()
+          )
+          .build()
+      )
+      .addOption(
+        ApplicationCommandOptionData.builder()
+          .name(DUMP_JSON)
+          .description("Dump the JSON of a factoid")
+          .type(ApplicationCommandOption.Type.SUB_COMMAND.getValue())
+          .addOption(
+            ApplicationCommandOptionData.builder()
+              .name(OptionNames.NAME)
+              .description("The name of the factoid to dump the JSON")
               .required(true)
               .type(ApplicationCommandOption.Type.STRING.getValue())
               .autocomplete(true)
@@ -219,6 +246,44 @@ public final class FactoidCommand implements GuildCommand {
                 .flatMap(model -> this.appAction((id, service) -> service.deleteGuildApplicationCommand(id, guild.getId().asLong(), model.commandId().asLong())).thenReturn(model))
                 .flatMap(this.factoids::delete)
                 .then(event.editReply().withContentOrNull(Emojis.YES.asFormat()));
+            });
+        },
+        DUMP_JSON, option -> {
+          return Mono.justOrEmpty(Options.string(option, OptionNames.NAME))
+            .flatMap(name -> {
+              return this.factoids.findByGuildAndName(guild.getId(), name)
+                .switchIfEmpty(event.editReply().withContentOrNull("%s Could not find a factoid with name `%s`.".formatted(Emojis.NO.asFormat(), name)).then(Mono.empty()))
+                .flatMap(model -> {
+                  final String json;
+                  try {
+                    json = this.mapper.copy().setSerializationInclusion(JsonInclude.Include.NON_NULL).writeValueAsString(model.response());
+                  } catch (final IOException e) {
+                    return Mono.error(e);
+                  }
+                  return Mono.fromCallable(() -> this.http.post()
+                    .uri("https://api.pastes.dev/post")
+                    .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                    .body(json)
+                    .retrieve()
+                    .body(Map.class))
+                    .flatMap(response -> {
+                      final String key = (String) response.get("key");
+                      final String url = "https://pastes.dev/" + key;
+                      return Mono.using(
+                        () -> CharSource.wrap(json).asByteSource(StandardCharsets.UTF_8).openStream(),
+                        inputStream -> {
+                          final MessageCreateFields.File file = MessageCreateFields.File.of(model.name() + ".json", inputStream);
+                          return event.editReply()
+                            .withFiles(file)
+                            .withComponents(Container.of(File.of(UnfurledMediaItem.of(file)), ActionRow.of(Button.link(url, "See Pastes.dev"))));
+                        }
+                      );
+                    });
+                })
+                .onErrorResume(t -> {
+                  t.printStackTrace();
+                  return event.editReply().withContentOrNull("%s Could not dump JSON for `%s`.".formatted(Emojis.NO.asFormat(), name));
+                });
             });
         }
       )));
