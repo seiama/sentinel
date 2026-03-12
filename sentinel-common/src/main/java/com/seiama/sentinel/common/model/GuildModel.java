@@ -39,7 +39,8 @@ public interface GuildModel {
       Punishments punishments,
       Factoids factoids,
       ModMail modmail,
-      Logging logging
+      Logging logging,
+      Application application
     ) {
       @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
       public record Punishments(
@@ -91,6 +92,14 @@ public interface GuildModel {
           MEMBER_JOIN,
           MEMBER_LEAVE,
         }
+      }
+
+      @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+      public record Application(
+        boolean enabled,
+        Snowflake applicationChannel,
+        Snowflake notificationChannel
+      ) implements IsEnabled {
       }
     }
   }

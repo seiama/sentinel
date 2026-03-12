@@ -12,6 +12,7 @@ public record Feature(
   public static final Feature MODMAIL = new Feature(model -> model.featureEnabled(GuildModel.Complete.Features::modmail));
   public static final Feature FACTOIDS = new Feature(model -> model.featureEnabled(GuildModel.Complete.Features::factoids));
   public static final Feature LOGGING = new Feature(model -> model.featureEnabled(GuildModel.Complete.Features::logging));
+  public static final Feature APPLICATION = new Feature(model -> model.featureEnabled(GuildModel.Complete.Features::application));
 
   public boolean enabledForGuild(final GuildModel.Complete model) {
     return this.enabledForGuild.test(model);
