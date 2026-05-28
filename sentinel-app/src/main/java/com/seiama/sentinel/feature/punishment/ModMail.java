@@ -12,6 +12,7 @@ import com.seiama.sentinel.common.model.ModMailRepository;
 import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.interaction.ButtonInteractionEvent;
+import discord4j.core.object.MessageReference;
 import discord4j.core.object.command.Interaction;
 import discord4j.core.object.component.ActionRow;
 import discord4j.core.object.component.Button;
@@ -24,6 +25,7 @@ import discord4j.core.spec.MessageCreateSpec;
 import discord4j.discordjson.json.MessageEditRequest;
 import discord4j.discordjson.json.StartThreadWithoutMessageRequest;
 import java.time.Instant;
+import java.util.Optional;
 import org.bson.types.ObjectId;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -140,9 +142,19 @@ public class ModMail implements Listener {
           .timestamp(Instant.now());
         final StringBuilder description = new StringBuilder();
         if (type == ModMailModel.Type.REPORT) {
-          description.append("**Reported Content**:\n\n");
+          if (message != null && message.getMessageReference().map(MessageReference::getType).orElse(MessageReference.Type.UNKNOWN) == MessageReference.Type.FORWARD) {
+            final Optional<String> forwardedContent = (message.getMessageSnapshots().isEmpty()) ? Optional.empty() : message.getMessageSnapshots().get(0).getMessage().getContent();
+            if (forwardedContent.isPresent()) {
+              description.append("**Reported Forwarded Content**:\n\n");
+              description.append(forwardedContent.get());
+            }
+          } else {
+            description.append("**Reported Content**:\n\n");
+          }
         }
-        description.append(content);
+        if (!content.isEmpty()) {
+          description.append(content);
+        }
         embed.description(description.toString());
         if (message != null) {
           message.getAuthor()
